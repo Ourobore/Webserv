@@ -2,6 +2,8 @@ a.out
 *.o
 webserv
 obj/
+objs_client/
+objs_server/
 tags
 .vscode*
 server
