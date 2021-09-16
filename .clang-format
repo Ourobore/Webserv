@@ -1,0 +1,9 @@
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignConsecutiveDeclarations: Consecutive
+BreakBeforeBraces: Allman
+UseTab: Never
+IndentWidth: 4
+NamespaceIndentation: All
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
