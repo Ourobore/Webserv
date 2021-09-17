@@ -1,25 +1,37 @@
 #include "Server.hpp"
 
 Server::Server(int domain, int type, int protocol, int port, u_long interface)
-    : sock(domain, type, protocol, port, interface) {
-  int return_value = 0;
+    : sock(domain, type, protocol, port, interface)
+{
+    int return_value = 0;
 
-  return_value =
-      bind(sock.get_fd(), reinterpret_cast<sockaddr *>(&sock.get_address()),
-           sizeof(sock.get_address()));
-  check_error(return_value, "server socket bind failed");
+    // To avoid "Already in bind" error
+    int yes = 1;
+    setsockopt(sock.get_fd(), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
 
-  return_value = listen(sock.get_fd(), 3);
-  check_error(return_value, "already listening");
+    return_value =
+        bind(sock.get_fd(), reinterpret_cast<sockaddr*>(&sock.get_address()),
+             sizeof(sock.get_address()));
+    check_error(return_value, "server socket bind failed");
+
+    return_value = listen(sock.get_fd(), 3);
+    check_error(return_value, "already listening");
 }
 
-Server::~Server() {}
-
-void Server::check_error(int value, const std::string message) {
-  if (value < 0) {
-    std::cerr << "Error: " << message << std::endl;
-    exit(EXIT_FAILURE);
-  }
+Server::~Server()
+{
 }
 
-Socket &Server::get_socket() { return (sock); }
+void Server::check_error(int value, const std::string message)
+{
+    if (value < 0)
+    {
+        std::cerr << "Error: " << message << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
+Socket& Server::get_socket()
+{
+    return (sock);
+}

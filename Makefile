@@ -5,6 +5,7 @@ SRCS_SERVER	= mainServer.cpp \
 			  $(SRCS_DIR)/Socket.cpp
 
 SRCS_CLIENT	= mainClient.cpp \
+			  $(SRCS_DIR)/ClientSide.cpp \
 			  $(SRCS_DIR)/Client.cpp \
 			  $(SRCS_DIR)/Socket.cpp
 

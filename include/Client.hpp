@@ -2,17 +2,22 @@
 #define CLIENT_HPP
 
 #include "Socket.hpp"
+#include <sys/poll.h>
 
 class Client
 {
   private:
-    Socket sock;
+    int           socket_fd;
+    struct pollfd poll;
     Client();
 
   public:
-    Client(int domain, int type, int protocol, int port, u_long interface);
-    void    check_error(int value, const std::string message);
-    Socket& get_socket();
+    Client(int client_socket_fd);
+    ~Client();
+
+    void           check_error(int value, const std::string message);
+    int            get_socket();
+    struct pollfd& get_poll();
 };
 
 #endif
