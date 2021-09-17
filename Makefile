@@ -1,23 +1,29 @@
 SRCS_DIR	= src
 
-SRCS_SERVER	= mainServer.cpp \
-			  $(SRCS_DIR)/Server.cpp \
+#SRCS		= $(SRCS_DIR)/Server.cpp \
+#			  $(SRCS_DIR)/Socket.cpp \
+#			  $(SRCS_DIR)/ClientSide.cpp \
+#			  $(SRCS_DIR)/Clients.cpp \
+#			  $(SRCS_DIR)/Socket.cpp
+
+SRCS_SERVER	= $(SRCS_DIR)/Server.cpp \
+			  $(SRCS_DIR)/Clients.cpp \
 			  $(SRCS_DIR)/Socket.cpp
 
-SRCS_CLIENT	= mainClient.cpp \
-			  $(SRCS_DIR)/ClientSide.cpp \
-			  $(SRCS_DIR)/Client.cpp \
+SRCS_CLIENT	= $(SRCS_DIR)/ClientSide.cpp \
 			  $(SRCS_DIR)/Socket.cpp
 
-OBJS_SERVER	= $(addprefix $(OBJS_DIR), $(SRCS_SERVER:.cpp=.o))
+OBJS_SERVER	= $(SRCS_SERVER:.cpp=.o)
 
-OBJS_CLIENT	= $(addprefix $(OBJS_DIR), $(SRCS_CLIENT:.cpp=.o))
+OBJS_CLIENT	= $(SRCS_CLIENT:.cpp=.o)
+
+#OBJS	= $(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
 
 INCLUDE		= -Iinclude/
 
-OBJS_DIR_SERVER	= objs_server/
+#OBJS_DIR_SERVER	= objs_server/
 
-OBJS_DIR_CLIENT	= objs_client/
+#OBJS_DIR_CLIENT	= objs_client/
 
 CC			= clang++
 
@@ -27,22 +33,25 @@ SERVER_NAME	= server
 
 CLIENT_NAME	= client
 
-all			: $(SERVER_NAME) $(CLIENT_NAME)
+all			:  $(CLIENT_NAME) $(SERVER_NAME)
 
-$(OBJS_DIR)%.o	: ./%.cpp
+$(OBJS_S)%.o	: ./%.cpp
 			  	  $(CC) $(CPPFLAGS) $(INCLUDE) -c $< -o $@
 
-$(SERVER_NAME)	: $(OBJS_DIR_SERVER) $(OBJS_SERVER)
-			  $(CC) $(CPPFLAGS) $(OBJS_SERVER) -o $(SERVER_NAME)
+$(OBJS_C)%.o	: ./%.cpp
+			  	  $(CC) $(CPPFLAGS) $(INCLUDE) -c $< -o $@
 
-$(CLIENT_NAME)	: $(OBJS_DIR_CLIENT) $(OBJS_CLIENT)
-			  $(CC) $(CPPFLAGS) $(OBJS_CLIENT) -o $(CLIENT_NAME)
+$(SERVER_NAME)	: $(OBJS_SERVER) $(OBJS_S)
+			  $(CC) $(CPPFLAGS) mainServer.cpp $(OBJS_SERVER) $(INCLUDE) -o $(SERVER_NAME)
 
-$(OBJS_DIR_SERVER)	:
-			  @mkdir $(OBJS_DIR_SERVER)
+$(CLIENT_NAME)	: $(OBJS_CLIENT) $(OBJS_C)
+			  $(CC) $(CPPFLAGS) mainClient.cpp $(OBJS_CLIENT) $(INCLUDE) -o $(CLIENT_NAME)
 
-$(OBJS_DIR_CLIENT)	:
-			  @mkdir $(OBJS_DIR_CLIENT)
+#$(OBJS_DIR_SERVER)	:
+#			  @mkdir $(OBJS_DIR_SERVER)
+
+#$(OBJS_DIR_CLIENT)	:
+#			  @mkdir $(OBJS_DIR_CLIENT)
 
 clean		:
 		 	 rm -rf $(OBJS_SERVER) $(OBJS_CLIENT) $(OBJS_DIR_SERVER) $(OBJS_DIR_CLIENT) mainServer.o mainClient.o

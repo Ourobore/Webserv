@@ -9,9 +9,9 @@ ClientSide::ClientSide(int domain, int type, int protocol, int port,
     : sock(domain, type, protocol, port, interface)
 {
     int return_value = 0;
-    return_value = connect(
-        sock.get_fd(), reinterpret_cast<struct sockaddr*>(&sock.get_address()),
-        sizeof(sock.get_address()));
+    return_value =
+        connect(sock.get_fd(), reinterpret_cast<sockaddr*>(&sock.get_address()),
+                sizeof(sock.get_address()));
     check_error(return_value, "client connection failed");
 }
 

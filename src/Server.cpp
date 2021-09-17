@@ -12,17 +12,22 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
     return_value =
         bind(sock.get_fd(), reinterpret_cast<sockaddr*>(&sock.get_address()),
              sizeof(sock.get_address()));
+    if (return_value < 0)
+        close(sock.get_fd());
     check_error(return_value, "server socket bind failed");
 
     return_value = listen(sock.get_fd(), 3);
     check_error(return_value, "already listening");
+
+    poll.fd = sock.get_fd();
+    poll.revents = POLLIN;
 }
 
 Server::~Server()
 {
 }
 
-void Server::check_error(int value, const std::string message)
+void Server::check_error(int value, const std::string message) const
 {
     if (value < 0)
     {
@@ -34,4 +39,9 @@ void Server::check_error(int value, const std::string message)
 Socket& Server::get_socket()
 {
     return (sock);
+}
+
+struct pollfd& Server::get_poll()
+{
+    return (poll);
 }
