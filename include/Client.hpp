@@ -8,7 +8,7 @@ class Client
   private:
     Client();
 
-    Socket sockref;
+    Socket sock;
 
   public:
     Client(int domain, int type, int protocol, int port, u_long interface);

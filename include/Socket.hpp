@@ -17,11 +17,12 @@ class Socket
 
   public:
     Socket(int domain, int type, int protocol, int port, u_long interface);
-    ~Socket();
+    virtual ~Socket();
 
     static void  check_error(int value, const std::string message);
     int          get_fd();
     sockaddr_in& get_address();
+    size_t       get_addrlen();
 };
 
 #endif

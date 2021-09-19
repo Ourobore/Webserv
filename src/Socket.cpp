@@ -30,10 +30,15 @@ void Socket::check_error(int val, const std::string msg)
 
 int Socket::get_fd()
 {
-    return (fd);
+    return fd;
 }
 
 sockaddr_in& Socket::get_address()
 {
-    return (address);
+    return address;
+}
+
+size_t Socket::get_addrlen()
+{
+    return sizeof(address);
 }
