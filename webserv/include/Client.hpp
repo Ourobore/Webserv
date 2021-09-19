@@ -6,11 +6,13 @@
 class Client
 {
   private:
-    Socket sock;
     Client();
+
+    Socket sockref;
 
   public:
     Client(int domain, int type, int protocol, int port, u_long interface);
+
     void    check_error(int value, const std::string message);
     Socket& get_socket();
 };

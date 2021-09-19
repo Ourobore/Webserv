@@ -10,15 +10,16 @@
 class Socket
 {
   private:
+    Socket();
+
     int                fd;
     struct sockaddr_in address;
-    Socket();
 
   public:
     Socket(int domain, int type, int protocol, int port, u_long interface);
     ~Socket();
 
-    void         check_error(int value, const std::string message);
+    static void  check_error(int value, const std::string message);
     int          get_fd();
     sockaddr_in& get_address();
 };

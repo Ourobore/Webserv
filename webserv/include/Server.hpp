@@ -6,14 +6,14 @@
 class Server
 {
   private:
-    Socket sock;
     Server();
+
+    Socket sockref;
 
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);
     ~Server();
 
-    void    check_error(int value, const std::string message);
     Socket& get_socket();
 };
 
