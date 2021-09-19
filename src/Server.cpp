@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "poll.h"
 
 Server::Server(int domain, int type, int protocol, int port, u_long interface)
     : sock(domain, type, protocol, port, interface)
@@ -31,11 +32,40 @@ Server::~Server()
 
 void Server::accept()
 {
-    // Create a communication socket between binded socket and clients
-    acceptfd = ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
-                        reinterpret_cast<socklen_t*>(&addrlen));
-    Socket::check_error(acceptfd, "accept socket failed");
-    recv(acceptfd, buffer, 30000, 0);
+    struct pollfd pfds[5];
+    int           fd_count = 1;
+
+    pfds[0].fd = sockfd;
+    pfds[0].events = POLLIN;
+
+    for (int i = 0; i < fd_count; ++i)
+    {
+        if (poll(pfds, 1, -1) == 0)
+        {
+            std::cout << "timeout" << std::endl;
+        }
+        else
+        {
+            if (pfds[0].revents & POLLIN)
+            {
+                std::cout << "fd " << pfds[0].fd << " is ready to read"
+                          << std::endl;
+                acceptfd =
+                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
+                             reinterpret_cast<socklen_t*>(&addrlen));
+                Socket::check_error(acceptfd, "accept socket failed");
+
+                recv(acceptfd, buffer, 30000, 0);
+                handle();
+                respond();
+            }
+            else
+            {
+                std::cout << "unexpected event occured: " << pfds[0].revents
+                          << std::endl;
+            }
+        }
+    }
 }
 
 void Server::handle()
@@ -71,8 +101,6 @@ void Server::start()
     {
         std::cout << "=== Waiting... ===" << std::endl;
         accept();
-        handle();
-        respond();
         std::cout << "=== Done ! ===" << std::endl;
     }
 }
