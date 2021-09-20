@@ -9,7 +9,7 @@
 #include "Clients.hpp"
 #include "Server.hpp"
 
-static const int PORT = 8080;
+static int PORT;
 
 static void accept_new_connection(Server& server, Clients& clients)
 {
@@ -33,6 +33,7 @@ static void no_bytes_received(Clients& clients, int bytes_received,
         std::cout << "No bytes. Connection hanged up" << std::endl;
     else
         std::cerr << "recv() error" << std::endl;
+
     close(clients.get_poll()[client_index].fd);
     clients.remove_client(client_index);
     std::cout << "----- Client removed -----" << std::endl;
@@ -46,6 +47,7 @@ static void write_bytes(Server& server, Clients& clients, int sender_fd,
     for (int i = 0; i < clients.size(); ++i)
     {
         int receiver_fd = clients.get_poll()[i].fd;
+        // Only write message if receiver is not the server or the sender
         if (receiver_fd != server_socket.get_fd() && receiver_fd != sender_fd)
         {
             if (send(receiver_fd, buffer, bytes_received, 0) == -1)
@@ -54,8 +56,19 @@ static void write_bytes(Server& server, Clients& clients, int sender_fd,
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    // Port selection
+    if (argc == 2 && (PORT = strtol(argv[1], NULL, 10)))
+        std::cout << "Server started on port " << PORT << std::endl;
+    else
+    {
+        std::cout << "Server port was not specified or was not valid. Default "
+                     "port is set at 8080"
+                  << std::endl;
+        PORT = 8080;
+    }
+
     Server  server(AF_INET, SOCK_STREAM, 0, PORT, INADDR_ANY);
     Socket& server_socket = server.get_socket();
 
@@ -73,8 +86,12 @@ int main()
         }
         for (int i = 0; i < clients.size(); ++i)
         {
+            // If revents equals POLLIN, then the clients has an update for the
+            // server
             if (clients.get_poll()[i].revents & POLLIN)
             {
+                // If fd in pollfd is server_fd, server is accesible to add
+                // another client
                 if (clients.get_poll()[i].fd == server_socket.get_fd())
                     accept_new_connection(server, clients);
                 else
