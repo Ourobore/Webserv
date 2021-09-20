@@ -1,9 +1,11 @@
 #include "Clients.hpp"
+#include <sys/poll.h>
 
 Clients::Clients(int server_socket) : _size(1), _capacity(1)
 {
     poll = new (struct pollfd);
     poll[0].fd = server_socket;
+    poll[0].events = POLLIN;
 }
 
 Clients::~Clients()
@@ -65,6 +67,7 @@ void Clients::add_client(int client_socket_fd)
     ++_size;
 }
 
+// Can be optimized with only moving the last client in client_index
 void Clients::remove_client(int client_index)
 {
     poll[client_index].fd = 0;

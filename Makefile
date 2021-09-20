@@ -14,7 +14,8 @@ MAIN 		=	mainServer.cpp
 CLIENT_MAIN =	mainClient.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
-				Client.cpp
+				Clients.cpp \
+				ClientSide.cpp
 
 # *.o files
 OBJDIR = obj/
