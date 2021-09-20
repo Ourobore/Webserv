@@ -33,28 +33,13 @@ void Clients::reallocate()
     poll = new_pfds;
 }
 
-void Clients::check_error(int value, const std::string message) const
+void Clients::check_error(int value, const std::string message)
 {
     if (value < 0)
     {
         std::cerr << "Error: " << message << std::endl;
         exit(EXIT_FAILURE);
     }
-}
-
-struct pollfd* Clients::get_poll()
-{
-    return (poll);
-}
-
-int Clients::size() const
-{
-    return (_size);
-}
-
-int Clients::capacity() const
-{
-    return (_capacity);
 }
 
 void Clients::add_client(int client_socket_fd)
@@ -83,4 +68,19 @@ void Clients::remove_client(int client_index)
     poll[_size - 1].events = 0;
     poll[_size - 1].events = 0;
     --_size;
+}
+
+struct pollfd* Clients::get_poll()
+{
+    return (poll);
+}
+
+int Clients::size() const
+{
+    return (_size);
+}
+
+int Clients::capacity() const
+{
+    return (_capacity);
 }

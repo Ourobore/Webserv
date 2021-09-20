@@ -27,7 +27,7 @@ Server::~Server()
 {
 }
 
-void Server::check_error(int value, const std::string message) const
+void Server::check_error(int value, const std::string message)
 {
     if (value < 0)
     {

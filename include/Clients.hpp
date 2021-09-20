@@ -18,12 +18,13 @@ class Clients
     Clients(int server_socket);
     ~Clients();
 
-    void           check_error(int value, const std::string message) const;
+    static void check_error(int value, const std::string message);
+    void        add_client(int client_socket_fd);
+    void        remove_client(int client_index);
+
     struct pollfd* get_poll();
     int            size() const;
     int            capacity() const;
-    void           add_client(int client_socket_fd);
-    void           remove_client(int client_index);
 };
 
 #endif

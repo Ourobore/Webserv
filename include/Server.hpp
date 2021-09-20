@@ -16,7 +16,7 @@ class Server
     Server(int domain, int type, int protocol, int port, u_long interface);
     ~Server();
 
-    void           check_error(int value, const std::string message) const;
+    static void    check_error(int value, const std::string message);
     Socket&        get_socket();
     struct pollfd& get_poll();
 };
