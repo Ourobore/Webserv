@@ -1,64 +1,55 @@
-SRCS_DIR	= src
+################################################################################
+# Webserv
+SERVER		= server
+CLIENT		= client
 
-#SRCS		= $(SRCS_DIR)/Server.cpp \
-#			  $(SRCS_DIR)/Socket.cpp \
-#			  $(SRCS_DIR)/ClientSide.cpp \
-#			  $(SRCS_DIR)/Clients.cpp \
-#			  $(SRCS_DIR)/Socket.cpp
+# Compilation parameters
+CXX			= clang++
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98
+INC			= -Iinclude/
 
-SRCS_SERVER	= $(SRCS_DIR)/Server.cpp \
-			  $(SRCS_DIR)/Clients.cpp \
-			  $(SRCS_DIR)/Socket.cpp
+# Source files
+SRCDIR		=	src/
+MAIN 		=	mainServer.cpp
+CLIENT_MAIN =	mainClient.cpp
+SRC			=	Socket.cpp \
+				Server.cpp \
+				Client.cpp
 
-SRCS_CLIENT	= $(SRCS_DIR)/ClientSide.cpp \
-			  $(SRCS_DIR)/Socket.cpp
+# *.o files
+OBJDIR = obj/
+OBJ = $(addprefix $(OBJDIR),$(SRC:.cpp=.o))
+MAIN_OBJ = $(addprefix $(OBJDIR),$(MAIN:.cpp=.o))
+CLIENT_MAIN_OBJ = $(addprefix $(OBJDIR),$(CLIENT_MAIN:.cpp=.o))
 
-OBJS_SERVER	= $(SRCS_SERVER:.cpp=.o)
+################################################################################
 
-OBJS_CLIENT	= $(SRCS_CLIENT:.cpp=.o)
+all: $(SERVER) $(CLIENT)
 
-#OBJS	= $(addprefix $(OBJS_DIR), $(SRCS:.cpp=.o))
+# Create main executable `server`
+$(SERVER): $(OBJDIR) $(OBJ) $(MAIN_OBJ)
+	$(CXX) $(CXXFLAGS) $(INC) $(MAIN_OBJ) $(OBJ) -o $(SERVER)
 
-INCLUDE		= -Iinclude/
+# Create the `client` executable
+$(CLIENT): $(OBJDIR) $(OBJ) $(CLIENT_MAIN_OBJ)
+	$(CXX) $(CXXFLAGS) $(INC) $(CLIENT_MAIN_OBJ) $(OBJ) -o $(CLIENT)
 
-#OBJS_DIR_SERVER	= objs_server/
+# Create an obj/ directory with all the *.o files
+$(OBJDIR):
+	mkdir -p $@
 
-#OBJS_DIR_CLIENT	= objs_client/
+# Compile the *.o
+$(OBJDIR)%.o: $(SRCDIR)%.cpp
+	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
-CC			= clang++
+clean:
+	rm -rf $(OBJDIR) vgcore*
 
-CPPFLAGS	= -Wall -Werror -Wextra -std=c++98
+fclean: clean
+	rm -rf $(SERVER) $(CLIENT) a.out*
 
-SERVER_NAME	= server
-
-CLIENT_NAME	= client
-
-all			:  $(CLIENT_NAME) $(SERVER_NAME)
-
-$(OBJS_S)%.o	: ./%.cpp
-			  	  $(CC) $(CPPFLAGS) $(INCLUDE) -c $< -o $@
-
-$(OBJS_C)%.o	: ./%.cpp
-			  	  $(CC) $(CPPFLAGS) $(INCLUDE) -c $< -o $@
-
-$(SERVER_NAME)	: $(OBJS_SERVER) $(OBJS_S)
-			  $(CC) $(CPPFLAGS) mainServer.cpp $(OBJS_SERVER) $(INCLUDE) -o $(SERVER_NAME)
-
-$(CLIENT_NAME)	: $(OBJS_CLIENT) $(OBJS_C)
-			  $(CC) $(CPPFLAGS) mainClient.cpp $(OBJS_CLIENT) $(INCLUDE) -o $(CLIENT_NAME)
-
-#$(OBJS_DIR_SERVER)	:
-#			  @mkdir $(OBJS_DIR_SERVER)
-
-#$(OBJS_DIR_CLIENT)	:
-#			  @mkdir $(OBJS_DIR_CLIENT)
-
-clean		:
-		 	 rm -rf $(OBJS_SERVER) $(OBJS_CLIENT) $(OBJS_DIR_SERVER) $(OBJS_DIR_CLIENT) mainServer.o mainClient.o
-
-fclean		: clean
-		 	 rm -rf $(SERVER_NAME) $(CLIENT_NAME)
-
-re			: clean all
+re: clean fclean all
 
 .PHONY		: all clean re
+
+################################################################################
