@@ -26,7 +26,7 @@ class Server
 
     void receive();
     void handle();
-    void respond();
+    void respond(int i);
 
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);
