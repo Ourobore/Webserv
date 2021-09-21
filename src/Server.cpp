@@ -16,11 +16,11 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
         close(sock.get_fd());
     check_error(return_value, "server socket bind failed");
 
-    return_value = listen(sock.get_fd(), 10);
+    return_value = listen(sock.get_fd(), 3);
     check_error(return_value, "already listening");
 
     poll.fd = sock.get_fd();
-    poll.revents = POLLIN;
+    poll.events = POLLIN;
 }
 
 Server::~Server()

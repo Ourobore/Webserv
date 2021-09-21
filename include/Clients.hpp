@@ -15,7 +15,7 @@ class Clients
     void reallocate();
 
   public:
-    Clients(int server_socket);
+    Clients(struct pollfd& server_poll);
     ~Clients();
 
     static void check_error(int value, const std::string message);
