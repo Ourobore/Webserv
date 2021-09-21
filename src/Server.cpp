@@ -24,48 +24,22 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
     // Let binded socket to listen for requests
     ret = ::listen(sockfd, 10);
     Socket::check_error(ret, "already listening");
+
+    // initilialize vector of struct pollfd with listening socket
+    struct pollfd new_sock = {sockfd, POLLIN, 0};
+    pfds.push_back(new_sock);
 }
 
 Server::~Server()
 {
 }
 
-void Server::accept()
+void Server::receive()
 {
-    struct pollfd pfds[5];
-    int           fd_count = 1;
 
-    pfds[0].fd = sockfd;
-    pfds[0].events = POLLIN;
-
-    for (int i = 0; i < fd_count; ++i)
-    {
-        if (poll(pfds, 1, -1) == 0)
-        {
-            std::cout << "timeout" << std::endl;
-        }
-        else
-        {
-            if (pfds[0].revents & POLLIN)
-            {
-                std::cout << "fd " << pfds[0].fd << " is ready to read"
-                          << std::endl;
-                acceptfd =
-                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
-                             reinterpret_cast<socklen_t*>(&addrlen));
-                Socket::check_error(acceptfd, "accept socket failed");
-
-                recv(acceptfd, buffer, 30000, 0);
-                handle();
-                respond();
-            }
-            else
-            {
-                std::cout << "unexpected event occured: " << pfds[0].revents
-                          << std::endl;
-            }
-        }
-    }
+    recv(acceptfd, buffer, 30000, 0);
+    handle();
+    respond();
 }
 
 void Server::handle()
@@ -100,7 +74,11 @@ void Server::start()
     while (true)
     {
         std::cout << "=== Waiting... ===" << std::endl;
-        accept();
+
+        acceptfd = ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
+                            reinterpret_cast<socklen_t*>(&addrlen));
+        Socket::check_error(acceptfd, "accept socket failed");
+        receive();
         std::cout << "=== Done ! ===" << std::endl;
     }
 }

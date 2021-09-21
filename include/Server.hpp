@@ -5,8 +5,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <poll.h>
 #include <sstream>
 #include <unistd.h>
+#include <vector>
 
 class Server
 {
@@ -18,9 +20,11 @@ class Server
     int                addrlen;
     int                sockfd;
 
-    int  acceptfd;
-    char buffer[30000];
-    void accept();
+    int                        acceptfd;
+    char                       buffer[30000];
+    std::vector<struct pollfd> pfds;
+
+    void receive();
     void handle();
     void respond();
 
