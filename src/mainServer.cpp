@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     Server  server(AF_INET, SOCK_STREAM, 0, PORT, INADDR_ANY);
     Socket& server_socket = server.get_socket();
 
-    Clients clients(server_socket.get_fd());
+    Clients clients(server.get_poll());
 
     char buffer[10000];
 

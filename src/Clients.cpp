@@ -1,11 +1,12 @@
 #include "Clients.hpp"
 #include <sys/poll.h>
 
-Clients::Clients(int server_socket) : _size(1), _capacity(1)
+Clients::Clients(struct pollfd& server_poll) : _size(1), _capacity(1)
 {
     poll = new (struct pollfd);
-    poll[0].fd = server_socket;
-    poll[0].events = POLLIN;
+    poll[0].fd = server_poll.fd;
+    poll[0].events = server_poll.events;
+    poll[0].revents = server_poll.revents;
 }
 
 Clients::~Clients()
