@@ -18,9 +18,6 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
 
     return_value = listen(sock.get_fd(), 3);
     check_error(return_value, "already listening");
-
-    poll.fd = sock.get_fd();
-    poll.events = POLLIN;
 }
 
 Server::~Server()
@@ -39,9 +36,4 @@ void Server::check_error(int value, const std::string message)
 Socket& Server::get_socket()
 {
     return (sock);
-}
-
-struct pollfd& Server::get_poll()
-{
-    return (poll);
 }

@@ -15,7 +15,6 @@ class Clients
 
   public:
     Clients();
-    Clients(struct pollfd& server_poll);
     ~Clients();
 
     static void check_error(int value, const std::string message);

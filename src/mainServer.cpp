@@ -12,15 +12,17 @@
 
 static void accept_new_connection(int server_fd, Clients& clients)
 {
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    socklen_t len = sizeof(addr);
+    // We need to get the server address to connect a new client on it
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    socklen_t len = sizeof(server_addr);
 
-    if (getsockname(server_fd, reinterpret_cast<sockaddr*>(&addr), &len) < 0)
+    if (getsockname(server_fd, reinterpret_cast<sockaddr*>(&server_addr),
+                    &len) < 0)
         std::cout << "getsockname() error" << std::endl;
 
     int new_client =
-        accept(server_fd, reinterpret_cast<sockaddr*>(&addr), &len);
+        accept(server_fd, reinterpret_cast<sockaddr*>(&server_addr), &len);
 
     Clients::check_error(new_client, "accept() error");
 
@@ -42,7 +44,10 @@ static void no_bytes_received(Clients& clients, int bytes_received,
 }
 
 // Search to which server is connected the sockewt client_fd
-int find_server(std::vector<Server>& server, int client_fd)
+// We get the address of the client, and for every server file descriptor, we
+// get it's address We then compare if the ports are equal. If it is the case,
+// it means the client is connected to this one
+static int find_server(std::vector<Server>& server, int client_fd)
 {
     struct sockaddr_in client_addr;
     memset(&client_addr, 0, sizeof(client_addr));
@@ -87,7 +92,7 @@ static void write_bytes(std::vector<Server>& server, Clients& clients,
     }
 }
 
-bool is_server_socket(std::vector<Server>& server, int socket_fd)
+static bool is_server_socket(std::vector<Server>& server, int socket_fd)
 {
     for (size_t i = 0; i < server.size(); ++i)
     {
@@ -97,7 +102,10 @@ bool is_server_socket(std::vector<Server>& server, int socket_fd)
     return (0);
 }
 
-void starting_servers(int argc, char** argv, std::vector<Server>& server)
+// For every argument, if it is an int we save it as a port
+// Then we build a new server socket with it and push it back in the Server
+// vector
+static void starting_servers(int argc, char** argv, std::vector<Server>& server)
 {
     int              PORT;
     std::vector<int> server_ports;

@@ -6,14 +6,6 @@ Clients::Clients() : _size(0), _capacity(1)
     poll = new (struct pollfd);
 }
 
-Clients::Clients(struct pollfd& server_poll) : _size(1), _capacity(1)
-{
-    poll = new (struct pollfd);
-    poll[0].fd = server_poll.fd;
-    poll[0].events = server_poll.events;
-    poll[0].revents = server_poll.revents;
-}
-
 Clients::~Clients()
 {
     delete poll;
