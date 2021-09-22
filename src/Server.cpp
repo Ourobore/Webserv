@@ -1,6 +1,6 @@
 #include "Server.hpp"
 #include "poll.h"
-#include <arpa/inet.h>
+#include <fstream>
 
 Server::Server(int domain, int type, int protocol, int port, u_long interface)
     : sock(domain, type, protocol, port, interface)
@@ -29,7 +29,7 @@ Server::~Server()
 {
 }
 
-void Server::receive()
+void Server::poll_events()
 {
     for (size_t i = 0; i < pfds.size(); i++)
     {
@@ -58,8 +58,8 @@ void Server::receive()
                 // close connection
                 if (nbytes <= 0)
                 {
-                    std::cout << "Client deconnected from socket " << pfds[i].fd
-                              << " hung up" << std::endl;
+                    std::cout << "Client disconnected from socket "
+                              << pfds[i].fd << std::endl;
                     close(pfds[i].fd);
                     pfds.erase(pfds.begin() + i);
                 }
@@ -82,19 +82,32 @@ void Server::handle()
 
 void Server::respond(int i)
 {
-    std::string       hello = "<h1>Hello from Webserv !</h1>\r\n";
-    std::stringstream headers_content;
+    // Read html/index.html file to send as a response
+    std::ifstream     ifs("html/index.html");
+    std::stringstream buf;
+    std::string       content;
+    if (ifs.is_open())
+    {
+        buf << ifs.rdbuf();
+        content = buf.str();
+    }
+    else
+    {
+        content = "<h1>Hello from Webserv !</h1>";
+    }
 
+    // Response headers for web browser clients
+    std::stringstream headers_content;
     headers_content << "HTTP/1.1 200 OK\r\n"
                     << "Connection: keep-alive\r\n"
                     << "Content-Type: text/html\r\n"
-                    << "Content-Length: " << hello.length() << "\r\n"
+                    << "Content-Length: " << content.length() << "\r\n"
                     << "\r\n";
     std::string headers = headers_content.str();
 
     // send to the client through his socket
     send(pfds[i].fd, headers.c_str(), headers.length(), 0);
-    send(pfds[i].fd, hello.c_str(), hello.length(), 0);
+    send(pfds[i].fd, content.c_str(), content.length(), 0);
 }
 
 Socket& Server::get_socket()
@@ -111,11 +124,7 @@ void Server::start()
         struct pollfd* pfds_array = pfds.data();
 
         int poll_count = poll(pfds_array, pfds.size(), -1);
-        if (poll_count == -1)
-        {
-            perror("poll");
-            exit(1);
-        }
-        receive();
+        Socket::check_error(poll_count, "poll");
+        poll_events();
     }
 }

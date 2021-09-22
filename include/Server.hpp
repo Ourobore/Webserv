@@ -24,7 +24,7 @@ class Server
     char                       buffer[30000];
     std::vector<struct pollfd> pfds;
 
-    void receive();
+    void poll_events();
     void handle();
     void respond(int i);
 

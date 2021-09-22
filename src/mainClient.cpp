@@ -4,7 +4,7 @@
 
 #include "Client.hpp"
 
-static const int PORT = 8081;
+static const int PORT = 8080;
 
 int main()
 {
@@ -24,10 +24,6 @@ int main()
         getline(std::cin, input);
         send(sock.get_fd(), input.c_str(), input.length() + 1, 0);
     }
-    server_input = "Client disconnected from server";
     send(sock.get_fd(), server_input.c_str(), server_input.length() + 1, 0);
-
-    read(sock.get_fd(), server_output, 10000);
-    std::cout << server_output << std::endl;
     return (0);
 }
