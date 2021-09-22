@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "poll.h"
+#include <arpa/inet.h>
 
 Server::Server(int domain, int type, int protocol, int port, u_long interface)
     : sock(domain, type, protocol, port, interface)
@@ -43,8 +44,8 @@ void Server::receive()
                              reinterpret_cast<socklen_t*>(&addrlen));
                 Socket::check_error(acceptfd, "accept socket failed");
 
-                std::cout << "New connection from client" << std::endl;
-
+                std::cout << "New connection from client on socket " << acceptfd
+                          << std::endl;
                 // add new client socket to poll fds
                 struct pollfd new_sock = {acceptfd, POLLIN, 0};
                 pfds.push_back(new_sock);
@@ -57,7 +58,8 @@ void Server::receive()
                 // close connection
                 if (nbytes <= 0)
                 {
-                    std::cout << "Client deconnected" << std::endl;
+                    std::cout << "Client deconnected from socket " << pfds[i].fd
+                              << " hung up" << std::endl;
                     close(pfds[i].fd);
                     pfds.erase(pfds.begin() + i);
                 }
