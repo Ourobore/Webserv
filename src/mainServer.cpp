@@ -63,7 +63,7 @@ int find_server(std::vector<Server>& server, int client_fd)
                         &server_len) < 0)
             std::cout << "getsockname() error" << std::endl;
 
-        if (server_addr.sin_port == client_addr.sin_port)
+        if (ntohs(server_addr.sin_port) == ntohs(client_addr.sin_port))
             return (server[i].get_socket().get_fd());
     }
     return (0);
@@ -164,10 +164,8 @@ int main(int argc, char** argv)
                 else
                 {
                     int sender_fd = clients.get_poll()[i].fd;
-                    std::cout << sender_fd << "   "
-                              << find_server(server, sender_fd) << std::endl;
                     int bytes_received =
-                        recv(sender_fd, buffer, strlen(buffer), 0);
+                        recv(sender_fd, buffer, sizeof(buffer), 0);
 
                     if (bytes_received <= 0)
                         no_bytes_received(clients, bytes_received, i);
