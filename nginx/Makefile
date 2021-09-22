@@ -12,6 +12,7 @@ help:
 		@echo "Makefile commands:"
 		@echo "build:		Build the container from $(IMAGE_NAME)"
 		@echo "run:		Run $(CONTAINER_NAME) container in detach mode on port $(PORT)"
+		@echo "bash:		Jump into $(CONTAINER_NAME) container with bash ('exit' to quit)"
 		@echo "start:		Start $(CONTAINER_NAME) container"
 		@echo "stop:		Stop $(CONTAINER_NAME) container"
 		@echo ""
@@ -28,7 +29,10 @@ build:
 		docker build . -t $(IMAGE_NAME)
 
 run:
-		docker run --name $(CONTAINER_NAME) -d -p $(PORT):80 $(IMAGE_NAME) 
+		docker run --name $(CONTAINER_NAME) -d -p $(PORT):80 $(IMAGE_NAME)
+
+bash:
+		docker exec -it $(CONTAINER_NAME) bash
 
 start:
 		-docker start $(CONTAINER_NAME)
