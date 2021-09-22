@@ -11,10 +11,10 @@ class Clients
     int            _size;
     int            _capacity;
 
-    Clients();
     void reallocate();
 
   public:
+    Clients();
     Clients(struct pollfd& server_poll);
     ~Clients();
 

@@ -1,6 +1,11 @@
 #include "Clients.hpp"
 #include <sys/poll.h>
 
+Clients::Clients() : _size(0), _capacity(1)
+{
+    poll = new (struct pollfd);
+}
+
 Clients::Clients(struct pollfd& server_poll) : _size(1), _capacity(1)
 {
     poll = new (struct pollfd);
@@ -20,8 +25,11 @@ void Clients::reallocate()
 {
     struct pollfd* new_pfds;
 
-    new_pfds = reinterpret_cast<pollfd*>(
-        malloc(sizeof(struct pollfd) * _capacity * 2));
+    if (_capacity == 0)
+        new_pfds = reinterpret_cast<pollfd*>(malloc(sizeof(struct pollfd) * 1));
+    else
+        new_pfds = reinterpret_cast<pollfd*>(
+            malloc(sizeof(struct pollfd) * _capacity * 2));
 
     for (int i = 0; i < _size; ++i)
     {
@@ -30,7 +38,11 @@ void Clients::reallocate()
         new_pfds[i].revents = poll[i].revents;
     }
     free(poll);
-    _capacity *= 2;
+
+    if (_capacity == 0)
+        ++_capacity;
+    else
+        _capacity *= 2;
     poll = new_pfds;
 }
 

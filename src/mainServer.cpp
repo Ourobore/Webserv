@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <netinet/in.h>
 #include <sys/_types/_socklen_t.h>
@@ -9,16 +10,17 @@
 #include "Clients.hpp"
 #include "Server.hpp"
 
-static int PORT;
-
-static void accept_new_connection(Server& server, Clients& clients)
+static void accept_new_connection(int server_fd, Clients& clients)
 {
-    Socket& server_socket = server.get_socket();
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    socklen_t len = sizeof(addr);
+
+    if (getsockname(server_fd, reinterpret_cast<sockaddr*>(&addr), &len) < 0)
+        std::cout << "getsockname() error" << std::endl;
 
     int new_client =
-        accept(server_socket.get_fd(),
-               reinterpret_cast<sockaddr*>(&server_socket.get_address()),
-               reinterpret_cast<socklen_t*>(&server_socket.get_address()));
+        accept(server_fd, reinterpret_cast<sockaddr*>(&addr), &len);
 
     Clients::check_error(new_client, "accept() error");
 
@@ -39,16 +41,45 @@ static void no_bytes_received(Clients& clients, int bytes_received,
     std::cout << "----- Client removed -----" << std::endl;
 }
 
-static void write_bytes(Server& server, Clients& clients, int sender_fd,
-                        int bytes_received, char* buffer)
+// Search to which server is connected the sockewt client_fd
+int find_server(std::vector<Server>& server, int client_fd)
 {
-    Socket& server_socket = server.get_socket();
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
+    socklen_t client_len = sizeof(client_addr);
+
+    if (getsockname(client_fd, reinterpret_cast<sockaddr*>(&client_addr),
+                    &client_len) < 0)
+        std::cout << "getsockname() error" << std::endl;
+
+    for (size_t i = 0; i < server.size(); ++i)
+    {
+        struct sockaddr_in server_addr;
+        memset(&server_addr, 0, sizeof(server_addr));
+        socklen_t server_len = sizeof(server_addr);
+
+        if (getsockname(server[i].get_socket().get_fd(),
+                        reinterpret_cast<sockaddr*>(&server_addr),
+                        &server_len) < 0)
+            std::cout << "getsockname() error" << std::endl;
+
+        if (server_addr.sin_port == client_addr.sin_port)
+            return (server[i].get_socket().get_fd());
+    }
+    return (0);
+}
+
+static void write_bytes(std::vector<Server>& server, Clients& clients,
+                        int sender_fd, int bytes_received, char* buffer)
+{
+    int server_fd = find_server(server, sender_fd);
 
     for (int i = 0; i < clients.size(); ++i)
     {
         int receiver_fd = clients.get_poll()[i].fd;
         // Only write message if receiver is not the server or the sender
-        if (receiver_fd != server_socket.get_fd() && receiver_fd != sender_fd)
+        if (find_server(server, receiver_fd) == server_fd &&
+            receiver_fd != server_fd && receiver_fd != sender_fd)
         {
             if (send(receiver_fd, buffer, bytes_received, 0) == -1)
                 std::cout << "send() error" << std::endl;
@@ -56,23 +87,59 @@ static void write_bytes(Server& server, Clients& clients, int sender_fd,
     }
 }
 
-int main(int argc, char** argv)
+bool is_server_socket(std::vector<Server>& server, int socket_fd)
 {
-    // Port selection
-    if (argc == 2 && (PORT = strtol(argv[1], NULL, 10)))
-        std::cout << "Server started on port " << PORT << std::endl;
-    else
+    for (size_t i = 0; i < server.size(); ++i)
     {
-        std::cout << "Server port was not specified or was not valid. Default "
-                     "port is set at 8080"
-                  << std::endl;
-        PORT = 8080;
+        if (server[i].get_socket().get_fd() == socket_fd)
+            return (1);
+    }
+    return (0);
+}
+
+void starting_servers(int argc, char** argv, std::vector<Server>& server)
+{
+    int              PORT;
+    std::vector<int> server_ports;
+    for (int i = 1; i < argc; ++i)
+    {
+        if (!(PORT = strtol(argv[i], NULL, 10)))
+            continue;
+        if (std::find(server_ports.begin(), server_ports.end(), PORT) !=
+            server_ports.end())
+            continue;
+        server_ports.push_back(PORT);
+        server.push_back(
+            Server(AF_INET, SOCK_STREAM, 0, server_ports.back(), INADDR_ANY));
     }
 
-    Server  server(AF_INET, SOCK_STREAM, 0, PORT, INADDR_ANY);
-    Socket& server_socket = server.get_socket();
+    if (server_ports.size() == 0)
+    {
+        std::cout << "No server started. Exiting" << std::endl;
+        exit(1);
+    }
+    else
+    {
+        std::cout << "Servers started on ports: ";
+        for (size_t i = 0; i < server_ports.size(); ++i)
+        {
+            std::cout << server_ports[i];
+            if (i != server_ports.size() - 1)
+                std::cout << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
 
-    Clients clients(server.get_poll());
+int main(int argc, char** argv)
+{
+    std::vector<Server> server;
+    Clients             clients;
+
+    starting_servers(argc, argv, server);
+
+    for (size_t i = 0; i < server.size(); ++i)
+        clients.add_client(server[i].get_socket().get_fd());
 
     char buffer[10000];
 
@@ -86,17 +153,19 @@ int main(int argc, char** argv)
         }
         for (int i = 0; i < clients.size(); ++i)
         {
-            // If revents equals POLLIN, then the clients has an update for the
-            // server
+            // If revents equals POLLIN, then a client has an update for
+            // a server
             if (clients.get_poll()[i].revents & POLLIN)
             {
-                // If fd in pollfd is server_fd, server is accesible to add
-                // another client
-                if (clients.get_poll()[i].fd == server_socket.get_fd())
-                    accept_new_connection(server, clients);
+                // If fd in pollfd is a server_fd, this server is accesible to
+                // add another client
+                if (is_server_socket(server, clients.get_poll()[i].fd))
+                    accept_new_connection(clients.get_poll()[i].fd, clients);
                 else
                 {
                     int sender_fd = clients.get_poll()[i].fd;
+                    std::cout << sender_fd << "   "
+                              << find_server(server, sender_fd) << std::endl;
                     int bytes_received =
                         recv(sender_fd, buffer, strlen(buffer), 0);
 

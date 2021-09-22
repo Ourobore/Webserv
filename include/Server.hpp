@@ -10,9 +10,9 @@ class Server
   private:
     Socket        sock;
     struct pollfd poll;
-    Server();
 
   public:
+    Server();
     Server(int domain, int type, int protocol, int port, u_long interface);
     ~Server();
 
