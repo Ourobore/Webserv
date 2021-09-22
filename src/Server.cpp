@@ -11,13 +11,7 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
     // Init buffer. TODO: try to allocate dynamically ?
     std::memset(buffer, 0, 30000);
 
-    // Bind socket to network
-    int yes = 1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
-    {
-        perror("setsockopt");
-        exit(1);
-    }
+    Socket::reuse_addr(sockfd);
     int ret = bind(sockfd, reinterpret_cast<sockaddr*>(&address), addrlen);
     Socket::check_error(ret, "server socket bind failed");
 
@@ -36,8 +30,6 @@ Server::~Server()
 
 void Server::receive()
 {
-    struct sockaddr_in client_addr;
-
     for (size_t i = 0; i < pfds.size(); i++)
     {
         // check if someone ready to read
@@ -47,8 +39,8 @@ void Server::receive()
             if (pfds[i].fd == sockfd)
             {
                 acceptfd =
-                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&client_addr),
-                             reinterpret_cast<socklen_t*>(&client_addr));
+                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
+                             reinterpret_cast<socklen_t*>(&addrlen));
                 Socket::check_error(acceptfd, "accept socket failed");
 
                 std::cout << "New connection from client" << std::endl;
@@ -65,6 +57,7 @@ void Server::receive()
                 // close connection
                 if (nbytes <= 0)
                 {
+                    std::cout << "Client deconnected" << std::endl;
                     close(pfds[i].fd);
                     pfds.erase(pfds.begin() + i);
                 }
@@ -122,6 +115,5 @@ void Server::start()
             exit(1);
         }
         receive();
-        std::cout << "=== Done ! ===" << std::endl;
     }
 }
