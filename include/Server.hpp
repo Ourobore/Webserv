@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "Request.hpp"
 #include "Socket.hpp"
 #include <poll.h>
 #include <unistd.h>
@@ -19,8 +20,8 @@ class Server
     std::vector<struct pollfd> pfds;
 
     void poll_events();
-    void handle();
-    void respond(int i);
+    void handle(int i);
+    void respond(int i, Request req);
 
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);

@@ -67,24 +67,29 @@ void Server::poll_events()
                 // or receive data from client
                 else
                 {
-                    handle();
+                    handle(i);
                     // send a response to client with socket at i
-                    respond(i);
                 }
             }
         }
     }
 }
 
-void Server::handle()
+void Server::handle(int i)
 {
     std::cout << buffer << std::endl;
+    Request new_req = Request(buffer);
+    respond(i, new_req);
 }
 
-void Server::respond(int i)
+void Server::respond(int i, Request req)
 {
-    // Read html/index.html file to send as a response
-    std::ifstream     ifs("html/index.html");
+    // handle url
+    if (req.url == "/")
+    {
+        req.url = "index.html";
+    }
+    std::ifstream     ifs("html/" + req.url);
     std::stringstream buf;
     std::string       content;
     if (ifs.is_open())
