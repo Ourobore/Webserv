@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "poll.h"
+#include <cstring>
 #include <fstream>
 #include <sstream>
 
@@ -42,11 +43,11 @@ void Server::poll_events()
             {
                 int accept_fd =
                     accept(sock_fd, reinterpret_cast<sockaddr*>(&address),
-                             reinterpret_cast<socklen_t*>(&addrlen));
+                           reinterpret_cast<socklen_t*>(&addrlen));
                 Socket::check_error(accept_fd, "accept socket failed");
 
-                std::cout << "New connection from client on socket " << accept_fd
-                          << std::endl;
+                std::cout << "New connection from client on socket "
+                          << accept_fd << std::endl;
                 // add new client socket to poll fds
                 struct pollfd new_sock = {accept_fd, POLLIN, 0};
                 pfds.push_back(new_sock);
@@ -59,11 +60,11 @@ void Server::poll_events()
                 // close connection
                 if (nbytes <= 0)
                 {
-					if (nbytes == 0)
-                   		std::cout << "Client disconnected from socket "
-                              << pfds[i].fd << std::endl;
-					else
-						std::cout << "recv() error" << std::endl;
+                    if (nbytes == 0)
+                        std::cout << "Client disconnected from socket "
+                                  << pfds[i].fd << std::endl;
+                    else
+                        std::cout << "recv() error" << std::endl;
                     close(pfds[i].fd);
                     pfds.erase(pfds.begin() + i);
                 }
@@ -80,10 +81,10 @@ void Server::poll_events()
 
 void Server::handle(int i)
 {
-	(void)i;
+    (void)i;
     std::cout << buffer << std::endl;
-    //Request new_req = Request(buffer);
-    //respond(i, new_req);
+    // Request new_req = Request(buffer);
+    // respond(i, new_req);
 }
 
 void Server::respond(int i, Request req)
@@ -93,7 +94,7 @@ void Server::respond(int i, Request req)
     {
         req.url = "index.html";
     }
-    std::ifstream     ifs("html/" + req.url);
+    std::ifstream     ifs(("html/" + req.url).c_str());
     std::stringstream buf;
     std::string       content;
     if (ifs.is_open())
