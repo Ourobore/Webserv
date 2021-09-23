@@ -1,6 +1,7 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <netinet/in.h>
@@ -17,11 +18,13 @@ class Socket
 
   public:
     Socket(int domain, int type, int protocol, int port, u_long interface);
-    ~Socket();
+    virtual ~Socket();
 
     static void  check_error(int value, const std::string message);
+    static void  reuse_addr(int fd);
     int          get_fd();
     sockaddr_in& get_address();
+    size_t       get_addrlen();
 };
 
 #endif

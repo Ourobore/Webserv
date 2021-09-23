@@ -23,17 +23,33 @@ void Socket::check_error(int val, const std::string msg)
 {
     if (val < 0)
     {
-        std::cerr << "Error: " << msg << std::endl;
+        std::string err = "Error: " + msg;
+        perror(err.c_str());
+        exit(EXIT_FAILURE);
+    }
+}
+
+void Socket::reuse_addr(int fd)
+{
+    int yes = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
+    {
+        perror("setsockopt");
         exit(EXIT_FAILURE);
     }
 }
 
 int Socket::get_fd()
 {
-    return (fd);
+    return fd;
 }
 
 sockaddr_in& Socket::get_address()
 {
-    return (address);
+    return address;
+}
+
+size_t Socket::get_addrlen()
+{
+    return sizeof(address);
 }

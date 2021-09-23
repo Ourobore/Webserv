@@ -1,47 +1,131 @@
 #include "Server.hpp"
+#include "poll.h"
+#include <fstream>
+#include <sstream>
 
 Server::Server(int domain, int type, int protocol, int port, u_long interface)
     : sock(domain, type, protocol, port, interface)
 {
-    int return_value = 0;
+    address = sock.get_address();
+    addrlen = sizeof(address);
+    sockfd = sock.get_fd();
 
-    // To avoid "Already in bind" error
-    int yes = 1;
-    setsockopt(sock.get_fd(), SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    // Init buffer. TODO: try to allocate dynamically ?
+    std::memset(buffer, 0, 30000);
 
-    return_value =
-        bind(sock.get_fd(), reinterpret_cast<sockaddr*>(&sock.get_address()),
-             sizeof(sock.get_address()));
-    if (return_value < 0)
-        close(sock.get_fd());
-    check_error(return_value, "server socket bind failed");
+    Socket::reuse_addr(sockfd);
+    int ret = bind(sockfd, reinterpret_cast<sockaddr*>(&address), addrlen);
+    Socket::check_error(ret, "server socket bind failed");
 
-    return_value = listen(sock.get_fd(), 3);
-    check_error(return_value, "already listening");
+    // Let binded socket to listen for requests
+    ret = ::listen(sockfd, 10);
+    Socket::check_error(ret, "already listening");
 
-    poll.fd = sock.get_fd();
-    poll.events = POLLIN;
+    // initilialize vector of struct pollfd with listening socket
+    struct pollfd new_sock = {sockfd, POLLIN, 0};
+    pfds.push_back(new_sock);
 }
 
 Server::~Server()
 {
 }
 
-void Server::check_error(int value, const std::string message)
+void Server::poll_events()
 {
-    if (value < 0)
+    for (size_t i = 0; i < pfds.size(); i++)
     {
-        std::cerr << "Error: " << message << std::endl;
-        exit(EXIT_FAILURE);
+        // check if someone ready to read
+        if (pfds[i].revents & POLLIN)
+        {
+            // if this is the listener, handle connection
+            if (pfds[i].fd == sockfd)
+            {
+                acceptfd =
+                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
+                             reinterpret_cast<socklen_t*>(&addrlen));
+                Socket::check_error(acceptfd, "accept socket failed");
+
+                std::cout << "New connection from client on socket " << acceptfd
+                          << std::endl;
+                // add new client socket to poll fds
+                struct pollfd new_sock = {acceptfd, POLLIN, 0};
+                pfds.push_back(new_sock);
+            }
+            // or this is a client
+            else
+            {
+                int nbytes = recv(pfds[i].fd, buffer, 30000, 0);
+
+                // close connection
+                if (nbytes <= 0)
+                {
+                    std::cout << "Client disconnected from socket "
+                              << pfds[i].fd << std::endl;
+                    close(pfds[i].fd);
+                    pfds.erase(pfds.begin() + i);
+                }
+                // or receive data from client
+                else
+                {
+                    handle();
+                    // send a response to client with socket at i
+                    respond(i);
+                }
+            }
+        }
     }
+}
+
+void Server::handle()
+{
+    std::cout << buffer << std::endl;
+}
+
+void Server::respond(int i)
+{
+    // Read html/index.html file to send as a response
+    std::ifstream     ifs("html/index.html");
+    std::stringstream buf;
+    std::string       content;
+    if (ifs.is_open())
+    {
+        buf << ifs.rdbuf();
+        content = buf.str();
+    }
+    else
+    {
+        content = "<h1>Hello from Webserv !</h1>";
+    }
+
+    // Response headers for web browser clients
+    std::stringstream headers_content;
+    headers_content << "HTTP/1.1 200 OK\r\n"
+                    << "Connection: keep-alive\r\n"
+                    << "Content-Type: text/html\r\n"
+                    << "Content-Length: " << content.length() << "\r\n"
+                    << "\r\n";
+    std::string headers = headers_content.str();
+
+    // send to the client through his socket
+    send(pfds[i].fd, headers.c_str(), headers.length(), 0);
+    send(pfds[i].fd, content.c_str(), content.length(), 0);
 }
 
 Socket& Server::get_socket()
 {
-    return (sock);
+    return sock;
 }
 
-struct pollfd& Server::get_poll()
+void Server::start()
 {
-    return (poll);
+    while (true)
+    {
+        std::cout << "=== Waiting... ===" << std::endl;
+        // Convert vector to simple array
+        struct pollfd* pfds_array = pfds.data();
+
+        int poll_count = poll(pfds_array, pfds.size(), -1);
+        Socket::check_error(poll_count, "poll");
+        poll_events();
+    }
 }
