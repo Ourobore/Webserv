@@ -7,16 +7,17 @@
 #include <unistd.h>
 #include <vector>
 
+const int BUFFER_SIZE=30000;
+
 class Server
 {
   private:
     Socket             sock;
     struct sockaddr_in address;
     int                addrlen;
-    int                sockfd;
+    int                sock_fd;
 
-    int                        acceptfd;
-    char                       buffer[30000];
+    char                       buffer[BUFFER_SIZE];
     std::vector<struct pollfd> pfds;
 
     void poll_events();

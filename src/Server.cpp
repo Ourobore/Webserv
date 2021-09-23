@@ -7,22 +7,22 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
     : sock(domain, type, protocol, port, interface)
 {
     address = sock.get_address();
-    addrlen = sizeof(address);
-    sockfd = sock.get_fd();
+    addrlen = sizeof(address); // To check later if the size change
+    sock_fd = sock.get_fd();
 
     // Init buffer. TODO: try to allocate dynamically ?
-    std::memset(buffer, 0, 30000);
+    std::memset(buffer, 0, BUFFER_SIZE);
 
-    Socket::reuse_addr(sockfd);
-    int ret = bind(sockfd, reinterpret_cast<sockaddr*>(&address), addrlen);
+    Socket::reuse_addr(sock_fd);
+    int ret = bind(sock_fd, reinterpret_cast<sockaddr*>(&address), addrlen);
     Socket::check_error(ret, "server socket bind failed");
 
     // Let binded socket to listen for requests
-    ret = ::listen(sockfd, 10);
+    ret = ::listen(sock_fd, 10);
     Socket::check_error(ret, "already listening");
 
     // initilialize vector of struct pollfd with listening socket
-    struct pollfd new_sock = {sockfd, POLLIN, 0};
+    struct pollfd new_sock = {sock_fd, POLLIN, 0};
     pfds.push_back(new_sock);
 }
 
@@ -38,29 +38,32 @@ void Server::poll_events()
         if (pfds[i].revents & POLLIN)
         {
             // if this is the listener, handle connection
-            if (pfds[i].fd == sockfd)
+            if (pfds[i].fd == sock_fd)
             {
-                acceptfd =
-                    ::accept(sockfd, reinterpret_cast<sockaddr*>(&address),
+                int accept_fd =
+                    accept(sock_fd, reinterpret_cast<sockaddr*>(&address),
                              reinterpret_cast<socklen_t*>(&addrlen));
-                Socket::check_error(acceptfd, "accept socket failed");
+                Socket::check_error(accept_fd, "accept socket failed");
 
-                std::cout << "New connection from client on socket " << acceptfd
+                std::cout << "New connection from client on socket " << accept_fd
                           << std::endl;
                 // add new client socket to poll fds
-                struct pollfd new_sock = {acceptfd, POLLIN, 0};
+                struct pollfd new_sock = {accept_fd, POLLIN, 0};
                 pfds.push_back(new_sock);
             }
             // or this is a client
             else
             {
-                int nbytes = recv(pfds[i].fd, buffer, 30000, 0);
+                int nbytes = recv(pfds[i].fd, buffer, BUFFER_SIZE, 0);
 
                 // close connection
                 if (nbytes <= 0)
                 {
-                    std::cout << "Client disconnected from socket "
+					if (nbytes == 0)
+                   		std::cout << "Client disconnected from socket "
                               << pfds[i].fd << std::endl;
+					else
+						std::cout << "recv() error" << std::endl;
                     close(pfds[i].fd);
                     pfds.erase(pfds.begin() + i);
                 }
@@ -77,9 +80,10 @@ void Server::poll_events()
 
 void Server::handle(int i)
 {
+	(void)i;
     std::cout << buffer << std::endl;
-    Request new_req = Request(buffer);
-    respond(i, new_req);
+    //Request new_req = Request(buffer);
+    //respond(i, new_req);
 }
 
 void Server::respond(int i, Request req)
@@ -127,7 +131,7 @@ void Server::start()
     {
         std::cout << "=== Waiting... ===" << std::endl;
         // Convert vector to simple array
-        struct pollfd* pfds_array = pfds.data();
+        struct pollfd* pfds_array = &(pfds[0]);
 
         int poll_count = poll(pfds_array, pfds.size(), -1);
         Socket::check_error(poll_count, "poll");
