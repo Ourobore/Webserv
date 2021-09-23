@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <vector>
 
-const int BUFFER_SIZE=30000;
+const int BUFFER_SIZE = 30000;
 
 class Server
 {

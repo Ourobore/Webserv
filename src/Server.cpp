@@ -81,30 +81,27 @@ void Server::poll_events()
 
 void Server::handle(int i)
 {
-    (void)i;
     std::cout << buffer << std::endl;
-    // Request new_req = Request(buffer);
-    // respond(i, new_req);
+    Request new_req = Request(buffer);
+    std::memset(buffer, 0, BUFFER_SIZE);
+    respond(i, new_req);
 }
 
 void Server::respond(int i, Request req)
 {
     // handle url
-    if (req.url == "/")
-    {
-        req.url = "index.html";
-    }
-    std::ifstream     ifs(("html/" + req.url).c_str());
     std::stringstream buf;
-    std::string       content;
+    std::string       content = "No content\r\n";
+
+    if (req.url == "/")
+        req.url = "index.html";
+
+    std::ifstream ifs(("html/" + req.url).c_str());
+
     if (ifs.is_open())
     {
         buf << ifs.rdbuf();
-        content = buf.str();
-    }
-    else
-    {
-        content = "<h1>Hello from Webserv !</h1>";
+        content = buf.str() + "\r\n";
     }
 
     // Response headers for web browser clients
@@ -117,6 +114,7 @@ void Server::respond(int i, Request req)
     std::string headers = headers_content.str();
 
     // send to the client through his socket
+
     send(pfds[i].fd, headers.c_str(), headers.length(), 0);
     send(pfds[i].fd, content.c_str(), content.length(), 0);
 }
@@ -132,7 +130,7 @@ void Server::start()
     {
         std::cout << "=== Waiting... ===" << std::endl;
         // Convert vector to simple array
-        struct pollfd* pfds_array = &(pfds[0]);
+        struct pollfd* pfds_array = &pfds[0];
 
         int poll_count = poll(pfds_array, pfds.size(), -1);
         Socket::check_error(poll_count, "poll");
