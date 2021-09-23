@@ -87,7 +87,7 @@ void Server::handle(int i)
     respond(i, new_req);
 }
 
-void Server::respond(int i, Request req)
+void Server::respond(int i, Request& req)
 {
     // handle url
     std::stringstream buf;
@@ -96,12 +96,15 @@ void Server::respond(int i, Request req)
     if (req.url == "/")
         req.url = "index.html";
 
-    std::ifstream ifs(("html/" + req.url).c_str());
-
-    if (ifs.is_open())
+    if (!req.url.empty())
     {
-        buf << ifs.rdbuf();
-        content = buf.str() + "\r\n";
+        std::ifstream ifs(("html/" + req.url).c_str());
+
+        if (ifs.is_open())
+        {
+            buf << ifs.rdbuf();
+            content = buf.str() + "\r\n";
+        }
     }
 
     // Response headers for web browser clients

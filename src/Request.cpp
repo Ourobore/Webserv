@@ -14,8 +14,16 @@ Request::Request(char* bytes)
     // {
     // std::cout << *it << std::endl;
     // }
-    method = tokens[0];
-    url = tokens[1];
+    if (tokens[0].compare("GET") == 0)
+    {
+        method = tokens[0];
+        url = tokens[1];
+    }
+    else
+    {
+        method = std::string();
+        url = std::string();
+    }
 }
 
 std::vector<std::string> Request::split_tokens()
