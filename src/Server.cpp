@@ -76,15 +76,19 @@ void Server::poll_events()
 
 void Server::handle(int i)
 {
-    // std::cout << buffer << std::endl;
+    std::cout << buffer << std::endl;
     Request new_req = Request(buffer);
-    respond(i);
+    respond(i, new_req);
 }
 
-void Server::respond(int i)
+void Server::respond(int i, Request req)
 {
-    // Read html/index.html file to send as a response
-    std::ifstream     ifs("html/index.html");
+    // handle url
+    if (req.url == "/")
+    {
+        req.url = "index.html";
+    }
+    std::ifstream     ifs("html/" + req.url);
     std::stringstream buf;
     std::string       content;
     if (ifs.is_open())

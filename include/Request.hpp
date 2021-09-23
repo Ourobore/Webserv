@@ -10,14 +10,14 @@ class Request
 {
   private:
     Request();
-    std::string method;
-    std::string url;
     std::string reqstr;
 
     std::vector<std::string> split_tokens();
 
   public:
     Request(char* bytes);
+    std::string method;
+    std::string url;
 };
 
 #endif

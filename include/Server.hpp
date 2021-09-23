@@ -27,7 +27,7 @@ class Server
 
     void poll_events();
     void handle(int i);
-    void respond(int i);
+    void respond(int i, Request req);
 
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);
