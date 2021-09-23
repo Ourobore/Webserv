@@ -20,11 +20,13 @@ class Socket
     Socket(int domain, int type, int protocol, int port, u_long interface);
     virtual ~Socket();
 
-    static void  check_error(int value, const std::string message);
-    static void  reuse_addr(int fd);
+    static void check_error(int value, const std::string message);
+    void        reuse_addr();
+    static void reuse_addr(int fd);
+
     int          get_fd();
     sockaddr_in& get_address();
-    size_t       get_addrlen();
+    int          get_addrlen();
 };
 
 #endif

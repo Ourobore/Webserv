@@ -6,7 +6,7 @@
 
 #include "Client.hpp"
 
-static int PORT;
+static int PORT = 8080;
 
 int main()
 {

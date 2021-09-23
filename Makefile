@@ -15,7 +15,8 @@ CLIENT_MAIN =	mainClient.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
 				Client.cpp \
-				Request.cpp
+				Request.cpp \
+				Webserv.cpp
 
 # *.o files
 OBJDIR = obj/
