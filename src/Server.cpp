@@ -66,18 +66,19 @@ void Server::poll_events()
                 // or receive data from client
                 else
                 {
-                    handle();
+                    handle(i);
                     // send a response to client with socket at i
-                    respond(i);
                 }
             }
         }
     }
 }
 
-void Server::handle()
+void Server::handle(int i)
 {
-    std::cout << buffer << std::endl;
+    // std::cout << buffer << std::endl;
+    Request new_req = Request(buffer);
+    respond(i);
 }
 
 void Server::respond(int i)
