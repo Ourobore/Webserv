@@ -1,12 +1,16 @@
 #include "Server.hpp"
 #include <iostream>
 
+#include "Webserv.hpp"
+
 int main()
 {
     // Create a new server
-    Server s = Server(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY);
+    Webserv web;
+    web.create_server(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY);
+    web.create_server(AF_INET, SOCK_STREAM, 0, 9090, INADDR_ANY);
 
-    s.start();
+    web.start();
 
     return 0;
 }

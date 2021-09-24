@@ -1,9 +1,5 @@
 #include "Socket.hpp"
 
-Socket::Socket()
-{
-}
-
 Socket::Socket(int domain, int type, int protocol, int port, u_long interface)
 {
 
@@ -12,7 +8,7 @@ Socket::Socket(int domain, int type, int protocol, int port, u_long interface)
     address.sin_addr.s_addr = htonl(interface);
 
     fd = socket(domain, type, protocol);
-    check_error(fd, "cannot create socket");
+    Socket::check_error(fd, "cannot create socket");
 }
 
 Socket::~Socket()
@@ -29,7 +25,7 @@ void Socket::check_error(int val, const std::string msg)
     }
 }
 
-void Socket::reuse_addr(int fd)
+void Socket::reuse_addr()
 {
     int yes = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
@@ -39,17 +35,27 @@ void Socket::reuse_addr(int fd)
     }
 }
 
+void Socket::reuse_addr(int fd)
+{
+    int yes = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
+    {
+        perror("setsockopt()");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int Socket::get_fd()
 {
-    return fd;
+    return (fd);
 }
 
 sockaddr_in& Socket::get_address()
 {
-    return address;
+    return (address);
 }
 
-size_t Socket::get_addrlen()
+int Socket::get_addrlen()
 {
     return sizeof(address);
 }
