@@ -2,21 +2,30 @@
 #define SERVER_HPP
 
 #include "Socket.hpp"
-#include <poll.h>
+#include <netinet/in.h>
 #include <unistd.h>
 
 class Server
 {
   private:
-    Socket sock;
+    Socket             sock;
+    struct sockaddr_in _address;
+    int                _addrlen;
+    int                _port;
+    int                _sock_fd;
+
     Server();
 
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);
-    ~Server();
+    virtual ~Server();
 
-    static void check_error(int value, const std::string message);
-    Socket&     get_socket();
+    // Accessors
+    Socket&             socket();
+    struct sockaddr_in& address();
+    int                 addrlen() const;
+    int                 port() const;
+    int                 sockfd() const;
 };
 
 #endif

@@ -10,12 +10,13 @@ INC			= -Iinclude/
 
 # Source files
 SRCDIR		=	src/
-MAIN 		=	mainServer.cpp
+MAIN 		=	main.cpp
 CLIENT_MAIN =	mainClient.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
-				Clients.cpp \
-				ClientSide.cpp
+				Client.cpp \
+				Request.cpp \
+				Webserv.cpp
 
 # *.o files
 OBJDIR = obj/
