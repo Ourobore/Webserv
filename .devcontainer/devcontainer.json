@@ -1,13 +1,13 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.194.0/containers/docker-existing-dockerfile
 {
-	"name": "Debian C++",
+	"name": "Debian C++ (with Docker)",
 
 	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 	"dockerFile": "Dockerfile",
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": {},
+	"settings": {"editor.formatOnSave": true},
 	
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": ["kube.42header", 
