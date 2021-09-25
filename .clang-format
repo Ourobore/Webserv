@@ -1,7 +1,7 @@
 Language : Cpp
 DerivePointerAlignment: false
 PointerAlignment: Left
-AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveDeclarations: true
 BreakBeforeBraces: Allman
 UseTab: Never
 IndentWidth: 4

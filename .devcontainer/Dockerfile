@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye
 
 # Setting up Docker https://docs.docker.com/engine/install/debian/
 RUN apt-get update && apt-get -y install \
@@ -19,7 +19,7 @@ RUN apt-get update && apt-get -y install \
 RUN apt-get update && apt-get -y install \
     # C++ dependencies
     clang \
-    clang-tools \
+    clangd \
     clang-format \
     make \
     # Docker dependencies
@@ -29,13 +29,12 @@ RUN apt-get update && apt-get -y install \
     # Utilities
     curl \
     git \
-    netcat \
+    netcat-openbsd \
     telnet \
     # Install zsh and oh-my-zsh and make zsh the default shell
     zsh ;\
     cd / && sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
-    && chsh -s $(which zsh)
-
+    && chsh -s $(command -v zsh)
 
 
 # C++ dependencies:
