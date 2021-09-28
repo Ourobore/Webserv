@@ -9,29 +9,40 @@ Request::Request(char* bytes)
     {
         if (!parse_first_header())
         {
-            parse_body(req_lines);
+            parse_body();
             return;
         }
         else
         {
             req_lines.erase(req_lines.begin());
-            parse_headers(req_lines);
-            parse_body(req_lines);
+            parse_headers();
+            parse_body();
         }
     }
 }
 
-void Request::parse_headers(std::vector<std::string> lines)
+void Request::parse_headers()
 {
-    (void)lines;
-    return;
+    std::vector<std::string>::iterator it;
+    std::vector<std::string>           words;
+
+    for (it = req_lines.begin(); it != req_lines.end(); ++it)
+    {
+        words = split_tokens(*it);
+        if (*it == "\r")
+        {
+            req_lines.erase(req_lines.begin(), it + 1);
+            return;
+        }
+    }
+    req_lines.erase(req_lines.begin(), it);
 }
 
-void Request::parse_body(std::vector<std::string> lines)
+void Request::parse_body()
 {
     std::string                        content;
     std::vector<std::string>::iterator it;
-    for (it = lines.begin(); it != lines.end(); ++it)
+    for (it = req_lines.begin(); it != req_lines.end(); ++it)
         content.append(*it);
     tokens.insert(std::pair<std::string, std::string>("Body", content));
 }
@@ -49,26 +60,23 @@ void Request::split_lines()
 // Split line and extract tokens in a vector
 std::vector<std::string> Request::split_tokens(std::string line)
 {
-    std::string              delimiters = " :\r\n";
+    std::string              delimiters = " \r\n";
     std::size_t              prev = 0, pos;
     std::vector<std::string> words;
 
     while ((pos = line.find_first_of(delimiters, prev)) != std::string::npos)
     {
-        if (pos > prev)
-        {
+        if (pos >= prev)
             words.push_back(line.substr(prev, pos - prev));
-            prev = pos + 1;
-        }
+        prev = pos + 1;
     }
-    if (prev < line.length())
-        words.push_back(line.substr(prev, std::string::npos));
+
     return words;
 }
 
 int Request::parse_first_header()
 {
-    const std::string types[3] = {"GET", "POST", "DELETE"};
+    static const std::string types[3] = {"GET", "POST", "DELETE"};
 
     std::vector<std::string> words = split_tokens(req_lines[0]);
     if (words.size() == 3)
@@ -77,11 +85,14 @@ int Request::parse_first_header()
         for (int i = 0; i < 3; ++i)
         {
             if (words[0] == types[i]) // Method is valid
+            {
                 tokens.insert(
                     std::pair<std::string, std::string>("Method", words[0]));
-            else // It is not a valid request, consider it is a simple string
-                return 0;
+                break;
+            }
         }
+        if (tokens.find("Method") == tokens.end())
+            return 0;
 
         // Set URI and Protocol
         tokens.insert(std::pair<std::string, std::string>("URI", words[1]));

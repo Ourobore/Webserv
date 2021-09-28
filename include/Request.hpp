@@ -20,8 +20,8 @@ class Request
     void                     split_lines();
     std::vector<std::string> split_tokens(std::string line);
     int                      parse_first_header();
-    void                     parse_headers(std::vector<std::string> lines);
-    void                     parse_body(std::vector<std::string> lines);
+    void                     parse_headers();
+    void                     parse_body();
 
   public:
     Request(char* bytes);
