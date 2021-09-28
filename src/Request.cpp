@@ -70,6 +70,8 @@ std::vector<std::string> Request::split_tokens(std::string line)
             words.push_back(line.substr(prev, pos - prev));
         prev = pos + 1;
     }
+    if (prev < line.length())
+        words.push_back(line.substr(prev, std::string::npos));
 
     return words;
 }

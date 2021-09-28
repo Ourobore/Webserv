@@ -9,17 +9,19 @@ void Webserv::handle(int socket_index)
     std::memset(buffer, 0, BUFFER_SIZE);
 
     // Start to build the response
-    std::string uri;
     std::string content = "<h1>Hello from Webserv !</h1>\r\n";
+    std::string uri;
 
     // handle root uri
     if (req.tokens.find("URI") != req.tokens.end())
     {
         if (req.tokens.find("URI")->second == "/")
-            uri = "index";
+            uri = "/index";
+        else
+            uri = req.tokens.find("URI")->second;
 
         // Open resource from URI in html/ directory and convert to string
-        std::ifstream     ifs(("html/" + uri + ".html").c_str());
+        std::ifstream     ifs(("html" + uri + ".html").c_str());
         std::stringstream buf;
         if (ifs.is_open())
         {
