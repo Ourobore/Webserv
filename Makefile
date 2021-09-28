@@ -16,7 +16,8 @@ SRC			=	Socket.cpp \
 				Server.cpp \
 				Client.cpp \
 				Request.cpp \
-				Webserv.cpp
+				Webserv_connection.cpp \
+				Webserv_request.cpp \
 
 # *.o files
 OBJDIR = obj/

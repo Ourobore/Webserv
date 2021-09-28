@@ -2,56 +2,18 @@
 
 Request::Request(char* bytes)
 {
-    reqstr = std::string(bytes);
+    const std::string types[] = {"GET", "POST", "DELETE"};
 
-    std::vector<std::string> tokens;
-
-    tokens = split_tokens();
-
-    std::vector<std::string>::iterator it;
-    // std::cout << "TOKENS" << std::endl;
-    // for (it = tokens.begin(); it != tokens.end(); ++it)
-    // {
-    // std::cout << *it << std::endl;
-    // }
-    if (tokens[0].compare("GET") == 0)
-    {
-        method = tokens[0];
-        url = tokens[1];
-    }
-    else
-    {
-        method = std::string();
-        url = std::string();
-    }
+    req_str = std::string(bytes);
+    split_lines();
 }
 
-std::vector<std::string> Request::split_tokens()
+void Request::split_lines()
 {
-    std::string              delimiters = " \r\n";
-    std::size_t              prev = 0, pos;
-    std::vector<std::string> tokens;
-
-    while ((pos = reqstr.find_first_of(delimiters, prev)) != std::string::npos)
+    std::istringstream iss(req_str);
+    std::string        line;
+    while (std::getline(iss, line))
     {
-        if (pos > prev)
-        {
-
-            tokens.push_back(reqstr.substr(prev, pos - prev));
-            int i;
-            while ((i = delimiters.find(reqstr[pos + 1])) >= 0)
-            {
-                if (i > 0)
-                {
-                    pos++;
-                }
-            }
-            prev = pos + 1;
-        }
+        req_lines.push_back(line);
     }
-    if (prev < reqstr.length())
-    {
-        tokens.push_back(reqstr.substr(prev, std::string::npos));
-    }
-    return tokens;
 }

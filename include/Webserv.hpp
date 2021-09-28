@@ -26,9 +26,9 @@ class Webserv
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
 
-    // Handling
-    void handle(int i);
-    void respond(int i, Request req);
+    // Handling request
+    void handle(int socket_index);
+    void respond(int socket_index, std::string content);
 
     Server& get_server(int server_fd);
 

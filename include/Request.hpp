@@ -3,21 +3,27 @@
 
 #include <algorithm>
 #include <iostream>
+#include <istream>
 #include <iterator>
+#include <map>
+#include <sstream>
+#include <string>
 #include <vector>
 
 class Request
 {
   private:
     Request();
-    std::string reqstr;
+    std::string              req_str;
+    std::vector<std::string> req_lines;
 
-    std::vector<std::string> split_tokens();
+    void split_lines();
 
   public:
     Request(char* bytes);
-    std::string method;
-    std::string url;
+    std::map<std::string, std::string> request;
+    std::string                        method;
+    std::string                        uri;
 };
 
 #endif
