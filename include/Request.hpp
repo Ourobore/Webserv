@@ -17,13 +17,17 @@ class Request
     std::string              req_str;
     std::vector<std::string> req_lines;
 
-    void split_lines();
+    void                     split_lines();
+    std::vector<std::string> split_tokens(std::string line);
+    int                      parse_first_header();
+    void                     parse_headers(std::vector<std::string> lines);
+    void                     parse_body(std::vector<std::string> lines);
 
   public:
     Request(char* bytes);
-    std::map<std::string, std::string> request;
-    std::string                        method;
+    std::map<std::string, std::string> tokens;
     std::string                        uri;
+    std::string                        method;
 };
 
 #endif
