@@ -2,6 +2,7 @@
 # Webserv
 SERVER		= server
 CLIENT		= client
+CONFIG		= config
 
 # Compilation parameters
 CXX			= clang++
@@ -12,19 +13,22 @@ INC			= -Iinclude/
 SRCDIR		=	src/
 MAIN 		=	mainServer.cpp
 CLIENT_MAIN =	mainClient.cpp
+CONFIG_MAIN =	mainConfig.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
-				Client.cpp
+				Client.cpp \
+				Config.cpp
 
 # *.o files
 OBJDIR = obj/
 OBJ = $(addprefix $(OBJDIR),$(SRC:.cpp=.o))
 MAIN_OBJ = $(addprefix $(OBJDIR),$(MAIN:.cpp=.o))
 CLIENT_MAIN_OBJ = $(addprefix $(OBJDIR),$(CLIENT_MAIN:.cpp=.o))
+CONFIG_MAIN_OBJ = $(addprefix $(OBJDIR),$(CONFIG_MAIN:.cpp=.o))
 
 ################################################################################
 
-all: $(SERVER) $(CLIENT)
+all: $(SERVER) $(CLIENT) $(CONFIG)
 
 # Create main executable `server`
 $(SERVER): $(OBJDIR) $(OBJ) $(MAIN_OBJ)
@@ -33,6 +37,12 @@ $(SERVER): $(OBJDIR) $(OBJ) $(MAIN_OBJ)
 # Create the `client` executable
 $(CLIENT): $(OBJDIR) $(OBJ) $(CLIENT_MAIN_OBJ)
 	$(CXX) $(CXXFLAGS) $(INC) $(CLIENT_MAIN_OBJ) $(OBJ) -o $(CLIENT)
+
+################################################################################
+# Create the `config` executable
+$(CONFIG): $(OBJDIR) $(OBJ) $(CONFIG_MAIN_OBJ)
+	$(CXX) $(CXXFLAGS) $(INC) $(CONFIG_MAIN_OBJ) $(OBJ) -o $(CONFIG)
+################################################################################
 
 # Create an obj/ directory with all the *.o files
 $(OBJDIR):
