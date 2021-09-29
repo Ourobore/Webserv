@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Webserv.hpp"
+#include "sys/wait.h"
 
 int main()
 {
