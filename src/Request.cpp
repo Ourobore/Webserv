@@ -25,14 +25,33 @@ void Request::parse_headers()
 {
     std::vector<std::string>::iterator it;
     std::vector<std::string>           words;
+    std::string                        key;
+    std::string                        val;
 
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
     {
         words = split_tokens(*it);
-        if (*it == "\r")
+        val = "";
+        if (words.size() >= 2)
         {
-            req_lines.erase(req_lines.begin(), it + 1);
-            return;
+            if (*(words[0].end() - 1) == ':')
+                key = words[0].substr(0, words[0].length() - 1);
+            else
+                key = words[0];
+            for (size_t i = 1; i < words.size(); i++)
+            {
+                val.append(words[i]);
+            }
+            tokens.insert(std::pair<std::string, std::string>(key, val));
+        }
+        else
+        {
+            if (*it == "\r")
+            {
+                req_lines.erase(req_lines.begin(), it + 1);
+                return;
+            }
+            tokens.insert(std::pair<std::string, std::string>(words[0], ""));
         }
     }
     req_lines.erase(req_lines.begin(), it);
