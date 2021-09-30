@@ -4,7 +4,6 @@ obj/
 objs_client/
 objs_server/
 tags
-.vscode*
 server
 client
 nginx/

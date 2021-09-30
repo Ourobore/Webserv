@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "clang build",
+        "command": "clang++",
+        "args": [
+          "-g",
+          "-fstandalone-debug",
+          "-std=c++98",
+          "-Wall",
+          "-Wextra",
+          "-Werror",
+          "-Iinclude",
+          "src/main.cpp",
+          "src/Socket.cpp",
+          "src/Server.cpp",
+          "src/Request.cpp",
+          "src/Webserv_connection.cpp",
+          "src/Webserv_request.cpp",
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }
