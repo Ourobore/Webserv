@@ -2,18 +2,20 @@
 #include "Webserv.hpp"
 #include "parsing_config.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
     // Parse conf/default.conf and create configs
-    std::vector<Config> configs = main_parsing_config(0, NULL);
+    std::vector<Config> configs = main_parsing_config(argc, argv);
     std::cout << "configs[0].get_root(): " << configs[0].get_root()
               << std::endl;
 
     // Create a new server
     // TODO: Create a new server with data from configs
     Webserv web;
-    web.create_server(AF_INET, SOCK_STREAM, 0, 8080, INADDR_ANY);
-    web.create_server(AF_INET, SOCK_STREAM, 0, 9090, INADDR_ANY);
+
+    std::vector<Config>::iterator it;
+    for (it = configs.begin(); it != configs.end(); ++it)
+        web.create_server(AF_INET, SOCK_STREAM, 0, it->get_port(), INADDR_ANY);
 
     web.start();
 
