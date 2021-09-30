@@ -1,0 +1,20 @@
+// Install REST Client extension
+// https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+###
+GET http://localhost:8080/ HTTP/1.1
+
+###
+POST http://localhost:8080/ HTTP/1.1
+Content-Type: text/plain
+
+Hello 42 Student !
+
+###
+DELETE http://localhost:8080/ HTTP/1.1
+content-type: application/json
+
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
