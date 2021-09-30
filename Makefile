@@ -1,7 +1,6 @@
 ################################################################################
 # Webserv
 SERVER		= server
-CLIENT		= client
 
 # Compilation parameters
 CXX			= clang++
@@ -11,31 +10,26 @@ INC			= -Iinclude/
 # Source files
 SRCDIR		=	src/
 MAIN 		=	main.cpp
-CLIENT_MAIN =	mainClient.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
-				Client.cpp \
 				Request.cpp \
 				Webserv_connection.cpp \
 				Webserv_request.cpp \
+				Config.cpp \
+				parsing_config.cpp \
 
 # *.o files
 OBJDIR = obj/
 OBJ = $(addprefix $(OBJDIR),$(SRC:.cpp=.o))
 MAIN_OBJ = $(addprefix $(OBJDIR),$(MAIN:.cpp=.o))
-CLIENT_MAIN_OBJ = $(addprefix $(OBJDIR),$(CLIENT_MAIN:.cpp=.o))
 
 ################################################################################
 
-all: $(SERVER) $(CLIENT)
+all: $(SERVER)
 
 # Create main executable `server`
 $(SERVER): $(OBJDIR) $(OBJ) $(MAIN_OBJ)
 	$(CXX) $(CXXFLAGS) $(INC) $(MAIN_OBJ) $(OBJ) -o $(SERVER)
-
-# Create the `client` executable
-$(CLIENT): $(OBJDIR) $(OBJ) $(CLIENT_MAIN_OBJ)
-	$(CXX) $(CXXFLAGS) $(INC) $(CLIENT_MAIN_OBJ) $(OBJ) -o $(CLIENT)
 
 # Create an obj/ directory with all the *.o files
 $(OBJDIR):
@@ -49,7 +43,7 @@ clean:
 	rm -rf $(OBJDIR) vgcore*
 
 fclean: clean
-	rm -rf $(SERVER) $(CLIENT) a.out*
+	rm -rf $(SERVER) a.out*
 
 re: clean fclean all
 

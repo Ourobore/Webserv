@@ -19,6 +19,8 @@
           "src/Request.cpp",
           "src/Webserv_connection.cpp",
           "src/Webserv_request.cpp",
+          "src/Config.cpp",
+          "src/parsing_config.cpp",
         ],
         "group": {
           "kind": "build",
