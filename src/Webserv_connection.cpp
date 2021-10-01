@@ -86,7 +86,7 @@ void Webserv::start()
         struct pollfd* pfds_array = &(pfds[0]);
 
         int poll_count = poll(pfds_array, pfds.size(), -1);
-        Socket::check_error(poll_count, "poll");
+        Socket::check_error(poll_count, "poll()");
         poll_events();
     }
 }
@@ -107,6 +107,6 @@ Server& Webserv::get_server(int server_fd)
         if (it->sockfd() == server_fd)
             return (*it);
     }
-    return (*servers.end()); // Be careful, for now it muste be undefined if
+    return (*servers.end()); // Be careful, for now it must be undefined if
                              // server_fd is not really a server
 }

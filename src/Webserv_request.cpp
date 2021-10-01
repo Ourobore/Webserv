@@ -1,3 +1,4 @@
+#include "CGIHandler.hpp"
 #include "Webserv.hpp"
 
 // Handle clients requests
@@ -7,6 +8,15 @@ void Webserv::handle(int socket_index)
     std::cout << buffer << std::endl;
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
+
+    // Just a test here, need more verifications. For exemple if we are in a
+    // location
+    if (!req["URI"].empty() &&
+        req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
+    {
+        std::cout << "It's a PHP file!" << std::endl;
+        // CGIHandler handler;
+    }
 
     // Start to build the response
     std::string content = "<h1>Hello from Webserv !</h1>\r\n";

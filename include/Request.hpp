@@ -28,6 +28,8 @@ class Request
     std::map<std::string, std::string> tokens;
     std::string                        uri;
     std::string                        method;
+
+    std::string operator[](const std::string key);
 };
 
 #endif

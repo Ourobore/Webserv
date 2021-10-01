@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include "Config.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 
@@ -16,6 +17,7 @@ class Webserv
 {
   private:
     std::vector<Server>        servers;
+    std::vector<Config>        configs;
     std::vector<struct pollfd> pfds;
 
     char buffer[BUFFER_SIZE];
