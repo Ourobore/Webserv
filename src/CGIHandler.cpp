@@ -40,13 +40,20 @@ void CGIHandler::execute(char buffer[30000]) // Need changes i think
     {
         std::string path_info(variables["PATH_INFO"]);
 
-        char* cgi_executable[2];
-        memset(cgi_executable, 0, 2);
-        memcpy(cgi_executable[0], path_info.c_str(), path_info.length() + 1);
+        char** cgi_executable =
+            new char*[2](); // memset() not needed and no valgrind errors if I
+                            // use () with new. It must initialise
+        // memset(cgi_executable, 0, 2);
+
+        cgi_executable[0] = new char[path_info.length() + 1]();
+        // memset(cgi_executable[0], 0, path_info.length() + 1);
+        memcpy(cgi_executable[0], path_info.c_str(), path_info.length());
+        cgi_executable[1] = NULL;
 
         dup2(pipefd[PIPEWRITE], STDOUT);
         close(pipefd[PIPEREAD]);
-        execve(cgi_executable[0], cgi_executable, CGIHandler::get_env_array());
+        char** env_array = this->get_env_array();
+        execve(cgi_executable[0], cgi_executable, env_array);
         perror("Error: CGI execution failed");
     }
     else
@@ -63,17 +70,17 @@ char** CGIHandler::get_env_array()
 {
     std::map<std::string, std::string>::iterator it;
 
-    char** env_array = new char*[variables.size() + 1];
-    memset(env_array, 0, variables.size() + 1);
+    char** env_array = new char*[variables.size() + 1]();
+    // memset(env_array, 0, variables.size() + 1);
 
     int i = 0;
     for (it = variables.begin(); it != variables.end(); ++it, ++i)
     {
         std::string pair = it->first + "=" + it->second;
 
-        env_array[i] = new char[pair.length() + 1];
-        memset(env_array[i], 0, pair.length() + 1);
-        memcpy(env_array[i], pair.c_str(), pair.length() + 1);
+        env_array[i] = new char[pair.length() + 1]();
+        // memset(env_array[i], 0, pair.length() + 1);
+        memcpy(env_array[i], pair.c_str(), pair.length());
     }
     return (env_array);
 }
