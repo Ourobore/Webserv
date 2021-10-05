@@ -41,7 +41,7 @@ void CGIHandler::execute(char buffer[30000]) // Need changes i think
         std::string path_info(variables["PATH_INFO"]);
 
         char** cgi_executable =
-            new char*[2](); // memset() not needed and no valgrind errors if I
+            new char*[2](); // memset() not needed and no valgrind errors  if I
                             // use () with new. It must initialise
         // memset(cgi_executable, 0, 2);
 
