@@ -9,13 +9,24 @@ void Webserv::handle(int socket_index)
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
 
-    // Just a test here, need more verifications. For exemple if we are in a
+    // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
     if (!req["URI"].empty() &&
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
-        std::cout << "It's a PHP file!" << std::endl;
-        // CGIHandler handler;
+        std::cout << "It's a PHP file!" << std::endl; // To remove
+        CGIHandler handler(req);
+        handler.execute(buffer);
+
+        // To do: get Content-type
+
+        // Isolate body from CGI response
+        std::string string_buffer(buffer);
+        int         pos = string_buffer.find("\r\n\r\n");
+        string_buffer.erase(0, pos + 3);
+
+        respond(socket_index, string_buffer);
+        return;
     }
 
     // Start to build the response
