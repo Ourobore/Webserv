@@ -4,6 +4,11 @@ Webserv::Webserv()
 {
     // Init buffer. TODO: try to allocate dynamically ?
     std::memset(buffer, 0, BUFFER_SIZE);
+
+    // Init status code for server response
+    res_status[200] = "OK";
+    res_status[400] = "Bad Request";
+    res_status[404] = "Not Found";
 }
 
 Webserv::~Webserv()
@@ -69,7 +74,7 @@ void Webserv::poll_events()
                 // Or receive data from client
                 else
                 {
-                    handle(i);
+                    request_handler(i);
                     // send a response to client with socket at i
                 }
             }

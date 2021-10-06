@@ -19,6 +19,7 @@ class Webserv
     std::vector<Server>        servers;
     std::vector<Config>        configs;
     std::vector<struct pollfd> pfds;
+    std::map<int, std::string> res_status;
 
     char buffer[BUFFER_SIZE];
 
@@ -29,8 +30,10 @@ class Webserv
     void close_connection(int bytes_received, int client_index);
 
     // Handling request
-    void handle(int socket_index);
-    void respond(int socket_index, std::string content);
+    void        request_handler(int socket_index);
+    std::string handle_cgi(Request const& req);
+    int         file_to_string(const char* path, std::string& string_buffer);
+    void        respond(int socket_index, int code, std::string content);
 
     Server& get_server(int server_fd);
 

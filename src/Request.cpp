@@ -101,7 +101,7 @@ int Request::parse_first_header()
     static const std::string types[3] = {"GET", "POST", "DELETE"};
 
     std::vector<std::string> words = split_tokens(req_lines[0]);
-    if (words.size() == 3)
+    if (words.size() > 1 && words.size() <= 3)
     {
         // Check method type
         for (int i = 0; i < 3; ++i)
@@ -116,7 +116,9 @@ int Request::parse_first_header()
             return 0;
 
         tokens["URI"] = words[1];
-        tokens["Protocol"] = words[2];
+
+        if (words.size() == 3)
+            tokens["Protocol"] = words[2];
 
         return 1;
     }
