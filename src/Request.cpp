@@ -132,7 +132,7 @@ std::string Request::operator[](const std::string key)
 
     it = tokens.find(key);
     if (it == tokens.end())
-        return (NULL);
+        return ("");
     else
         return (it->second);
 }
