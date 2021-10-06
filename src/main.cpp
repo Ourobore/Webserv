@@ -6,6 +6,8 @@ int main(int argc, char** argv)
 {
     // Parse conf/default.conf and create configs
     std::vector<Config> configs = main_parsing_config(argc, argv);
+    if (configs.empty())
+        return (-1);
     std::cout << "configs[0].get_root(): " << configs[0].get_root()
               << std::endl;
 

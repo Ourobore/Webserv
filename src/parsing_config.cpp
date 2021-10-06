@@ -1,4 +1,7 @@
 #include "parsing_config.hpp"
+#include <iostream>
+#include <ostream>
+#include <string>
 
 std::vector<size_t> recup_server(std::string config)
 {
@@ -50,10 +53,60 @@ int config_error(std::string config_final)
     return (0);
 }
 
+void verif_semicolon(std::string& config_final, size_t i, int nbline)
+{
+    size_t j;
+    size_t server_pos;
+
+    j = i;
+    if (j == 0 || (j > 0 && config_final[j - 1] == ';'))
+        return;
+    j--;
+    if (config_final[j] == ' ' || config_final[j] == '\t' ||
+        config_final[j] == '{' || config_final[j] == '}' ||
+        config_final[j] == '\n')
+    {
+        while (j != 0 && (config_final[j] == ' ' || config_final[j] == '\t' ||
+                          config_final[j] == '{' || config_final[j] == '}'))
+            j--;
+        if (config_final[j] != '\n' && config_final[j] != ' ' &&
+            config_final[j] != '\t')
+            throw std::string("Error (line " + std::to_string(nbline) +
+                              "): Problem endline");
+        return;
+    }
+    if (j >= 5)
+        server_pos = config_final.find("server", (j - 5));
+    else
+        throw std::string("Error (line " + std::to_string(nbline) +
+                          "): Bad character for the endline");
+    if (server_pos != (j - 5))
+        throw std::string("Error (line " + std::to_string(nbline) +
+                          "): Bad character for the endline");
+}
+
 void transform_config(std::string& config_final)
 {
     std::size_t doubleSpace;
+    int         nbline;
 
+    nbline = 1;
+    for (size_t i = 0; i < config_final.size(); i++)
+    {
+        if (config_final[i] == ';' && config_final[i + 1] != '\n')
+            throw std::string("Error (line " + std::to_string(nbline) +
+                              "): semicolon is not end character");
+        if (i > 0)
+            if (config_final[i] == ';' &&
+                (config_final[i - 1] == ' ' || config_final[i - 1] == '\t'))
+                throw std::string("Error (line " + std::to_string(nbline) +
+                                  "): Space or tab before semicolon");
+        if (config_final[i] == '\n')
+        {
+            verif_semicolon(config_final, i, nbline);
+            nbline++;
+        }
+    }
     for (size_t i = 0; i < config_final.size(); i++)
     {
         if (config_final[i] == '\n' || config_final[i] == '\t')
@@ -124,7 +177,7 @@ std::vector<Config> main_parsing_config(int argc, char** argv)
     catch (std::string error)
     {
         std::cerr << error << std::endl;
-        return configs;
+        return std::vector<Config>();
     }
     for (std::vector<Config>::iterator it = configs.begin(); it < configs.end();
          it++)
