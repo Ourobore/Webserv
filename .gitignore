@@ -6,5 +6,4 @@ objs_server/
 tags
 server
 client
-nginx/
 .vscode-ctags
