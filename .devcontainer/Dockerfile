@@ -22,6 +22,7 @@ RUN apt-get update && apt-get -y install \
     clangd \
     clang-format \
     make \
+    valgrind \
     # Docker dependencies
     docker-ce\
     docker-ce-cli \
@@ -37,10 +38,12 @@ RUN apt-get update && apt-get -y install \
     && chsh -s $(command -v zsh)
 
 
+
 # C++ dependencies:
 #   clang
 #   clang-format
 #   make
+#   valgrind
 
 # Utilities:
 #   git

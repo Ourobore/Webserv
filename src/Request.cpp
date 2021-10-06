@@ -125,3 +125,14 @@ int Request::parse_first_header()
 
     return 0;
 }
+
+std::string Request::operator[](const std::string key)
+{
+    std::map<std::string, std::string>::iterator it;
+
+    it = tokens.find(key);
+    if (it == tokens.end())
+        return (NULL);
+    else
+        return (it->second);
+}

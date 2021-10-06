@@ -4,7 +4,7 @@ SERVER		= server
 
 # Compilation parameters
 CXX			= clang++
-CXXFLAGS	= -Wall -Werror -Wextra -std=c++98
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3
 INC			= -Iinclude/
 
 # Source files
@@ -17,6 +17,7 @@ SRC			=	Socket.cpp \
 				Webserv_request.cpp \
 				Config.cpp \
 				parsing_config.cpp \
+				CGIHandler.cpp
 
 # *.o files
 OBJDIR = obj/
