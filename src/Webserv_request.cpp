@@ -34,12 +34,12 @@ void Webserv::handle(int socket_index)
     std::string uri;
 
     // handle root uri
-    if (req.tokens.find("URI") != req.tokens.end())
+    if (!req["URI"].empty())
     {
-        if (req.tokens.find("URI")->second == "/")
+        if (req["URI"] == "/")
             uri = "/index";
         else
-            uri = req.tokens.find("URI")->second;
+            uri = req["URI"];
 
         // Open resource from URI in html/ directory and convert to string
         std::ifstream     ifs(("html" + uri + ".html").c_str());

@@ -7,10 +7,7 @@
 int main(int argc, char** argv)
 {
     // Parse conf/default.conf and create configs
-
     std::vector<Config> configs = main_parsing_config(argc, argv);
-    std::cout << "configs[0].get_root(): " << configs[0].get_root()
-              << std::endl;
 
     // Create a new server
     // TODO: Create a new server with data from configs
