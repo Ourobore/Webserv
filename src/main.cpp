@@ -1,8 +1,9 @@
+#include "CGIHandler.hpp"
 #include "Server.hpp"
 #include "Webserv.hpp"
 #include "parsing_config.hpp"
-
-#include "CGIHandler.hpp"
+#include "utilities.hpp"
+#include <sys/types.h>
 
 int main(int argc, char** argv)
 {
