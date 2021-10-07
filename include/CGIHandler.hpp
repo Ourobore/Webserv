@@ -20,6 +20,8 @@ class CGIHandler
 {
   private:
     std::map<std::string, std::string> variables;
+    char**                             env_array;
+    char**                             cgi_argv;
 
     char** get_env_array();
 
