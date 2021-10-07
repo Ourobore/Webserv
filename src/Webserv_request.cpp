@@ -15,10 +15,14 @@ int Webserv::file_to_string(const char* path, std::string& string_buffer)
 }
 
 // Handle clients requests
-void Webserv::request_handler(int socket_index)
+void Webserv::request_handler(int socket_fd)
 {
     // Print (debug) + parsing new Request + clear buffer for next request
+    // get server config
     std::cout << buffer << std::endl;
+
+    Server& server = get_server_from_client(socket_fd);
+    std::cout << "Verif server: " << server.socket().fd() << std::endl;
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
 
@@ -57,7 +61,7 @@ void Webserv::request_handler(int socket_index)
     else if (req["URI"].empty() || req["Method"].empty())
         file_to_string("html/400.html", content);
 
-    respond(socket_index, code, content);
+    respond(socket_fd, code, content);
 }
 
 std::string Webserv::handle_cgi(Request const& req)
@@ -77,7 +81,7 @@ std::string Webserv::handle_cgi(Request const& req)
     return string_buffer;
 }
 
-void Webserv::respond(int i, int code, std::string content)
+void Webserv::respond(int socket_fd, int code, std::string content)
 {
     std::string connection = "close";
     if (code == 200)
@@ -96,10 +100,10 @@ void Webserv::respond(int i, int code, std::string content)
     std::string headers = headers_content.str();
 
     // send to the client through his socket
-    send(pfds[i].fd, headers.c_str(), headers.length(), 0);
-    send(pfds[i].fd, content.c_str(), content.length(), 0);
+    send(socket_fd, headers.c_str(), headers.length(), 0);
+    send(socket_fd, content.c_str(), content.length(), 0);
 
     // Should we close the connection if status code 400 or 404 ?
-    if (connection == "close")
-        close_connection(0, i);
+    // if (connection == "close")
+    //    close_connection(0, i);
 }

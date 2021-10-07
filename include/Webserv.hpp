@@ -29,11 +29,13 @@ class Webserv
     void close_connection(int bytes_received, int client_index);
 
     // Handling request
-    void        request_handler(int socket_index);
+    void        request_handler(int socket_fd);
     std::string handle_cgi(Request const& req);
     int         file_to_string(const char* path, std::string& string_buffer);
-    void        respond(int socket_index, int code, std::string content);
+    void        respond(int socket_fd, int code, std::string content);
 
+    // Utilities
+    Server& get_server_from_client(int client_fd);
     Server& get_server(int server_fd);
 
   public:

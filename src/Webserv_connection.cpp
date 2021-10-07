@@ -1,4 +1,6 @@
 #include "Webserv.hpp"
+#include "utilities.hpp"
+#include <netinet/in.h>
 
 Webserv::Webserv()
 {
@@ -74,7 +76,7 @@ void Webserv::poll_events()
                 // Or receive data from client
                 else
                 {
-                    request_handler(i);
+                    request_handler(pfds[i].fd);
                     // send a response to client with socket at i
                 }
             }
@@ -109,6 +111,33 @@ void Webserv::create_server(Config config)
     servers.push_back(Server(config));
     struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
     pfds.push_back(pfd);
+}
+
+Server& Webserv::get_server_from_client(int client_fd)
+{
+    struct sockaddr_in client_address;
+    socklen_t          address_length = sizeof(client_address);
+    if (getsockname(client_fd, reinterpret_cast<sockaddr*>(&client_address),
+                    &address_length) == -1)
+    {
+        perror("Error: getsockname()");
+        exit(EXIT_FAILURE);
+    }
+
+    int client_port = ntohs(client_address.sin_port);
+    // u_long client_ip_addr = ntohl(client_address.sin_addr.s_addr);
+
+    std::vector<Server>::iterator it;
+    for (it = servers.begin(); it != servers.end(); ++it)
+    {
+        // u_long verif = ft::to_type<u_long>(it->ip_addr()); // to del
+        if (client_port == it->port() &&
+            client_address.sin_addr.s_addr ==
+                htonl(ft::to_type<u_long>(it->ip_addr())))
+            return (*it);
+        //(void)verif;
+    }
+    return (servers.back());
 }
 
 Server& Webserv::get_server(int server_fd)
