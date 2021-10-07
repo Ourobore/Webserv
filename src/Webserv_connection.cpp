@@ -104,6 +104,11 @@ void Webserv::create_server(int domain, int type, int protocol, int port,
     pfds.push_back(pfd);
 }
 
+void Webserv::create_server(Config config, std::string ip_addr, int port)
+{
+    servers.push_back(Server(config));
+}
+
 Server& Webserv::get_server(int server_fd)
 {
     for (std::vector<Server>::iterator it = servers.begin();

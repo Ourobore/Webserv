@@ -25,6 +25,12 @@ Server::Server(int domain, int type, int protocol, int port, u_long interface)
     // pfds.push_back(new_sock);
 }
 
+Server::Server(Config config)
+    : sock(AF_INET, SOCK_STREAM, 0, config.get_port(), config.get_host()),
+      _port(config.get_port())
+{
+}
+
 Server::~Server()
 {
 }

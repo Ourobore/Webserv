@@ -44,6 +44,7 @@ class Webserv
     void start();
     void create_server(int domain, int type, int protocol, int port,
                        u_long interface);
+    void create_server(Config config, std::string ip_addr, int port);
 };
 
 #endif

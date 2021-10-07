@@ -1,9 +1,11 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "Config.hpp"
 #include "Socket.hpp"
 #include <netinet/in.h>
 #include <unistd.h>
+
 
 class Server
 {
@@ -19,6 +21,7 @@ class Server
   public:
     Server(int domain, int type, int protocol, int port, u_long interface);
     virtual ~Server();
+    Server(Config config);
 
     // Accessors
     Socket&             socket();
