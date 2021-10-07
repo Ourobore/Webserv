@@ -4,10 +4,15 @@ Socket::Socket(int domain, int type, int protocol, int port,
                std::string interface)
     : _ip_addr(interface), _port(port)
 {
+    // If the IP is localhost, we need to chang it to be network 'readable'
+    std::string socket_address = interface;
+    if (socket_address == "localhost")
+        socket_address = "127.0.0.1";
+    in_addr_t socket_ip_addr = inet_addr(socket_address.c_str());
 
     _address.sin_family = domain;
     _address.sin_port = htons(port);
-    _address.sin_addr.s_addr = htonl(ft::to_type<u_long>(_ip_addr));
+    _address.sin_addr.s_addr = socket_ip_addr;
 
     _fd = socket(domain, type, protocol);
     Socket::check_error(_fd, "cannot create socket");

@@ -1,6 +1,7 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#include <arpa/inet.h>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -8,6 +9,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+
 
 #include "utilities.hpp"
 

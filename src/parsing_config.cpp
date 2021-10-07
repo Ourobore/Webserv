@@ -6,16 +6,6 @@
 #include "parsing_config.hpp"
 #include "utilities.hpp"
 
-/*
-std::string int_to_string(int nb)
-{
-    std::stringstream buffer;
-
-    buffer << nb;
-    return buffer.str();
-}
-*/
-
 std::vector<size_t> recup_server(std::string config)
 {
     int                 brackets;

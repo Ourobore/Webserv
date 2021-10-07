@@ -98,14 +98,6 @@ void Webserv::start()
     }
 }
 
-// void Webserv::create_server(int domain, int type, int protocol, int port,
-//                             std::string interface)
-// {
-//     servers.push_back(Server(domain, type, protocol, port, interface));
-//     struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-//     pfds.push_back(pfd);
-// }
-
 void Webserv::create_server(Config config)
 {
     servers.push_back(Server(config));
@@ -113,10 +105,13 @@ void Webserv::create_server(Config config)
     pfds.push_back(pfd);
 }
 
+/* Return the server from which the client is connected */
 Server& Webserv::get_server_from_client(int client_fd)
 {
+    // Get client address from it's file descriptor
     struct sockaddr_in client_address;
     socklen_t          address_length = sizeof(client_address);
+
     if (getsockname(client_fd, reinterpret_cast<sockaddr*>(&client_address),
                     &address_length) == -1)
     {
@@ -124,20 +119,27 @@ Server& Webserv::get_server_from_client(int client_fd)
         exit(EXIT_FAILURE);
     }
 
-    int client_port = ntohs(client_address.sin_port);
-    // u_long client_ip_addr = ntohl(client_address.sin_addr.s_addr);
+    // Get client port and client IP address (in in_addr_t type)
+    int       client_port = ntohs(client_address.sin_port);
+    in_addr_t client_ip_addr = client_address.sin_addr.s_addr;
 
+    // For each server, check if server port and server IP address correspond to
+    // the ones of the client
     std::vector<Server>::iterator it;
     for (it = servers.begin(); it != servers.end(); ++it)
     {
-        // u_long verif = ft::to_type<u_long>(it->ip_addr()); // to del
-        if (client_port == it->port() &&
-            client_address.sin_addr.s_addr ==
-                htonl(ft::to_type<u_long>(it->ip_addr())))
+        // If the IP is localhost, we need to chang it to be network 'readable'
+        std::string server_address = it->ip_addr();
+        if (server_address == "localhost")
+            server_address = "127.0.0.1";
+
+        in_addr_t server_ip_addr = inet_addr(server_address.c_str());
+        if (client_port == it->port() && client_ip_addr == server_ip_addr)
             return (*it);
-        //(void)verif;
     }
     return (servers.back());
+    // We should not arrive here, but right now we can't
+    // determine if there is an error. Return a pointer?
 }
 
 Server& Webserv::get_server(int server_fd)

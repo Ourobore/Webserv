@@ -5,11 +5,13 @@
 #include "Request.hpp"
 #include "Server.hpp"
 
+#include <arpa/inet.h>
 #include <cstring>
 #include <fstream>
 #include <poll.h>
 #include <sstream>
 #include <vector>
+
 
 const int BUFFER_SIZE = 30000;
 
