@@ -16,7 +16,7 @@ class Server
     std::string        _ip_addr;
     int                _port;
     int                _sock_fd;
-    Config&            _config;
+    Config             _config;
 
     Server();
 

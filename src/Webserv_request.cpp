@@ -17,12 +17,17 @@ int Webserv::file_to_string(const char* path, std::string& string_buffer)
 // Handle clients requests
 void Webserv::request_handler(int socket_fd)
 {
-    // Print (debug) + parsing new Request + clear buffer for next request
     // get server config
     std::cout << buffer << std::endl;
 
-    // Server& server = get_server_from_client(socket_fd);
-    // Config& config = server.config();
+    Server& server = get_server_from_client(socket_fd);
+    Config& config = server.config();
+
+    // Debug
+    std::cout << "Host: " << config.get_host() << ", Port:" << config.get_port()
+              << ", Root:" << config.get_root() << std::endl;
+
+    // Parsing Request
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
 

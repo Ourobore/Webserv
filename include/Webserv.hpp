@@ -12,7 +12,6 @@
 #include <sstream>
 #include <vector>
 
-
 const int BUFFER_SIZE = 30000;
 
 class Webserv
