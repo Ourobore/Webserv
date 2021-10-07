@@ -1,6 +1,6 @@
 #include "Webserv.hpp"
 
-Webserv::Webserv(std::vector<Config> configs) : configs(configs)
+Webserv::Webserv()
 {
     // Init buffer. TODO: try to allocate dynamically ?
     std::memset(buffer, 0, BUFFER_SIZE);
@@ -96,17 +96,19 @@ void Webserv::start()
     }
 }
 
-void Webserv::create_server(int domain, int type, int protocol, int port,
-                            u_long interface)
-{
-    servers.push_back(Server(domain, type, protocol, port, interface));
-    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    pfds.push_back(pfd);
-}
+// void Webserv::create_server(int domain, int type, int protocol, int port,
+//                             std::string interface)
+// {
+//     servers.push_back(Server(domain, type, protocol, port, interface));
+//     struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+//     pfds.push_back(pfd);
+// }
 
-void Webserv::create_server(Config config, std::string ip_addr, int port)
+void Webserv::create_server(Config config)
 {
     servers.push_back(Server(config));
+    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+    pfds.push_back(pfd);
 }
 
 Server& Webserv::get_server(int server_fd)

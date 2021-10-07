@@ -16,13 +16,13 @@ int main(int argc, char** argv)
 
     // Create a new server
     // TODO: Create a new server with data from configs
-    Webserv web(configs);
+    Webserv web;
 
     std::vector<Config>::iterator it;
     for (it = configs.begin(); it != configs.end(); ++it)
         // web.create_server(AF_INET, SOCK_STREAM, 0, it->get_port(),
         // INADDR_ANY);
-        web.create_server(*it, it->get_host(), it->get_port());
+        web.create_server(*it);
 
     web.start();
 

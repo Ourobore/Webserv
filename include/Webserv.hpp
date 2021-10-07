@@ -17,7 +17,6 @@ class Webserv
 {
   private:
     std::vector<Server>        servers;
-    std::vector<Config>        configs;
     std::vector<struct pollfd> pfds;
     std::map<int, std::string> res_status;
 
@@ -38,13 +37,13 @@ class Webserv
     Server& get_server(int server_fd);
 
   public:
-    Webserv(std::vector<Config> configs);
+    Webserv();
     ~Webserv();
 
     void start();
-    void create_server(int domain, int type, int protocol, int port,
-                       u_long interface);
-    void create_server(Config config, std::string ip_addr, int port);
+    // void create_server(int domain, int type, int protocol, int port,
+    //                    u_long interface);
+    void create_server(Config config);
 };
 
 #endif

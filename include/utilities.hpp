@@ -1,3 +1,6 @@
+#ifndef UTILITIES_HPP
+#define UTILITIES_HPP
+
 #include <iostream>
 #include <sstream>
 
@@ -14,9 +17,9 @@ namespace ft
     }
 
     /* Takes a std::string and converts it to a type T. Needs template
-       instantiation to determine type, call like: to_T<type>(str)*/
+       instantiation to determine type, call like: to_type<type>(str)*/
     template <class T>
-    T to_T(std::string str)
+    T to_type(std::string str)
     {
         T                  n;
         std::istringstream input(str);
@@ -26,3 +29,5 @@ namespace ft
         return (n);
     }
 } // namespace ft
+
+#endif
