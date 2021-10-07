@@ -1,14 +1,16 @@
 #include "Socket.hpp"
 
-Socket::Socket(int domain, int type, int protocol, int port, u_long interface)
+Socket::Socket(int domain, int type, int protocol, int port,
+               std::string interface)
+    : _ip_addr(interface), _port(port)
 {
 
-    address.sin_family = domain;
-    address.sin_port = htons(port);
-    address.sin_addr.s_addr = htonl(interface);
+    _address.sin_family = domain;
+    _address.sin_port = htons(port);
+    _address.sin_addr.s_addr = htonl(ft::to_type<u_long>(_ip_addr));
 
-    fd = socket(domain, type, protocol);
-    Socket::check_error(fd, "cannot create socket");
+    _fd = socket(domain, type, protocol);
+    Socket::check_error(_fd, "cannot create socket");
 }
 
 Socket::~Socket()
@@ -28,7 +30,7 @@ void Socket::check_error(int val, const std::string msg)
 void Socket::reuse_addr()
 {
     int yes = 1;
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
+    if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1)
     {
         perror("setsockopt");
         exit(EXIT_FAILURE);
@@ -45,17 +47,27 @@ void Socket::reuse_addr(int fd)
     }
 }
 
-int Socket::get_fd()
+int Socket::fd() const
 {
-    return (fd);
+    return (_fd);
 }
 
-sockaddr_in& Socket::get_address()
+sockaddr_in& Socket::address()
 {
-    return (address);
+    return (_address);
 }
 
-int Socket::get_addrlen()
+int Socket::addrlen() const
 {
-    return sizeof(address);
+    return sizeof(_address);
+}
+
+std::string Socket::ip_addr() const
+{
+    return (_ip_addr);
+}
+
+int Socket::port() const
+{
+    return (_port);
 }

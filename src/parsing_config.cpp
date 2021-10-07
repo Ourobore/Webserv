@@ -1,9 +1,12 @@
-#include "parsing_config.hpp"
 #include <iostream>
 #include <ostream>
 #include <sstream>
 #include <string>
 
+#include "parsing_config.hpp"
+#include "utilities.hpp"
+
+/*
 std::string int_to_string(int nb)
 {
     std::stringstream buffer;
@@ -11,6 +14,7 @@ std::string int_to_string(int nb)
     buffer << nb;
     return buffer.str();
 }
+*/
 
 std::vector<size_t> recup_server(std::string config)
 {
@@ -80,17 +84,17 @@ void verif_semicolon(std::string& config_final, size_t i, int nbline)
             j--;
         if (config_final[j] != '\n' && config_final[j] != ' ' &&
             config_final[j] != '\t')
-            throw std::string("Error (line " + int_to_string(nbline) +
+            throw std::string("Error (line " + ft::to_string(nbline) +
                               "): Problem endline");
         return;
     }
     if (j >= 5)
         server_pos = config_final.find("server", (j - 5));
     else
-        throw std::string("Error (line " + int_to_string(nbline) +
+        throw std::string("Error (line " + ft::to_string(nbline) +
                           "): Bad character for the endline");
     if (server_pos != (j - 5))
-        throw std::string("Error (line " + int_to_string(nbline) +
+        throw std::string("Error (line " + ft::to_string(nbline) +
                           "): Bad character for the endline");
 }
 
@@ -103,12 +107,12 @@ void transform_config(std::string& config_final)
     for (size_t i = 0; i < config_final.size(); i++)
     {
         if (config_final[i] == ';' && config_final[i + 1] != '\n')
-            throw std::string("Error (line " + int_to_string(nbline) +
+            throw std::string("Error (line " + ft::to_string(nbline) +
                               "): semicolon is not end character");
         if (i > 0)
             if (config_final[i] == ';' &&
                 (config_final[i - 1] == ' ' || config_final[i - 1] == '\t'))
-                throw std::string("Error (line " + int_to_string(nbline) +
+                throw std::string("Error (line " + ft::to_string(nbline) +
                                   "): Space or tab before semicolon");
         if (config_final[i] == '\n')
         {

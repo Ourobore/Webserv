@@ -17,7 +17,7 @@ SRC			=	Socket.cpp \
 				Webserv_request.cpp \
 				Config.cpp \
 				parsing_config.cpp \
-				CGIHandler.cpp
+				CGIHandler.cpp \
 
 # *.o files
 OBJDIR = obj/

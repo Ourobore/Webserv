@@ -97,7 +97,7 @@ void Webserv::start()
 }
 
 void Webserv::create_server(int domain, int type, int protocol, int port,
-                            u_long interface)
+                            std::string interface)
 {
     servers.push_back(Server(domain, type, protocol, port, interface));
     struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};

@@ -3,6 +3,7 @@
 
 #include "Socket.hpp"
 #include <netinet/in.h>
+#include <string>
 #include <unistd.h>
 
 class Server
@@ -11,19 +12,21 @@ class Server
     Socket             sock;
     struct sockaddr_in _address;
     int                _addrlen;
+    std::string        _ip_addr;
     int                _port;
     int                _sock_fd;
 
     Server();
 
   public:
-    Server(int domain, int type, int protocol, int port, u_long interface);
+    Server(int domain, int type, int protocol, int port, std::string interface);
     virtual ~Server();
 
     // Accessors
     Socket&             socket();
     struct sockaddr_in& address();
     int                 addrlen() const;
+    std::string         ip_addr() const;
     int                 port() const;
     int                 sockfd() const;
 };

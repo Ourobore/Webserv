@@ -1,8 +1,9 @@
+#include "CGIHandler.hpp"
 #include "Server.hpp"
 #include "Webserv.hpp"
 #include "parsing_config.hpp"
-
-#include "CGIHandler.hpp"
+#include "utilities.hpp"
+#include <sys/types.h>
 
 int main(int argc, char** argv)
 {
@@ -19,7 +20,8 @@ int main(int argc, char** argv)
 
     std::vector<Config>::iterator it;
     for (it = configs.begin(); it != configs.end(); ++it)
-        web.create_server(AF_INET, SOCK_STREAM, 0, it->get_port(), INADDR_ANY);
+        web.create_server(AF_INET, SOCK_STREAM, 0, it->get_port(),
+                          it->get_host());
 
     web.start();
 

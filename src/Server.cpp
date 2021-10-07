@@ -3,14 +3,17 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <string>
 
-Server::Server(int domain, int type, int protocol, int port, u_long interface)
-    : sock(domain, type, protocol, port, interface), _port(port)
+Server::Server(int domain, int type, int protocol, int port,
+               std::string interface)
+    : sock(domain, type, protocol, port, interface), _ip_addr(interface),
+      _port(port)
 {
-    _address = sock.get_address();
-    _addrlen = sock.get_addrlen(); // To check later if the size change and must
-                                   // do a reevaluation later
-    _sock_fd = sock.get_fd();
+    _address = sock.address();
+    _addrlen = sock.addrlen(); // To check later if the size change and must
+                               // do a reevaluation later
+    _sock_fd = sock.fd();
 
     Socket::reuse_addr(_sock_fd);
     int ret = bind(_sock_fd, reinterpret_cast<sockaddr*>(&_address), _addrlen);
@@ -42,6 +45,11 @@ struct sockaddr_in& Server::address()
 int Server::addrlen() const
 {
     return (_addrlen);
+}
+
+std::string Server::ip_addr() const
+{
+    return (_ip_addr);
 }
 
 int Server::port() const
