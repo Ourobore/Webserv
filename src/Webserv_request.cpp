@@ -15,7 +15,7 @@ void Webserv::handle(int socket_index)
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
         std::cout << "It's a PHP file!" << std::endl; // To remove
-        CGIHandler handler(req);
+        CGIHandler handler(configs, req);
         handler.execute(buffer);
 
         // To do: get Content-type

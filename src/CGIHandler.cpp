@@ -2,15 +2,18 @@
 #include "Config.hpp"
 #include "Request.hpp"
 
-CGIHandler::CGIHandler(Request request)
+CGIHandler::CGIHandler(Config config, Request request)
 {
     // Setting up CGI variables as envp
     variables["GATEWAY_INTERFACE"] = "CGI/1.1";
-    variables["SERVER_PROTOCOL"] = "HTTP/1.1";
+    variables["SERVER_PROTOCOL"] = request["Protocol"];
     variables["SERVER_SOFTWARE"] = "Webserv";
+    variables["SERVER_ADDR"] = config.get_host();
     variables["PATH_INFO"] = "/"; // Testing, should not use relative path
+    variables["REQUEST_METHOD"] = request["Method"];
     variables["REQUEST_URI"] = request["URI"];
-    variables["SCRIPT_FILENAME"] = "html" + request["URI"];
+    // variables["SCRIPT_FILENAME"] = "html" + request["URI"];
+    variables["PHP_SELF"] = request["URI"];
     variables["REDIRECT_STATUS"] = "200"; // Should the status change,
                                           // we don't know if it is a redirect
 
@@ -32,9 +35,13 @@ CGIHandler::CGIHandler(Request request)
 
 CGIHandler::~CGIHandler()
 {
-    for (int i = 0; i < variables.size(); ++i)
+    for (size_t i = 0; i < variables.size(); ++i)
         delete[] env_array[i];
     delete[] env_array;
+
+    delete[] cgi_argv[0];
+    delete[] cgi_argv[1];
+    delete[] cgi_argv;
 }
 
 void CGIHandler::execute(char buffer[30000]) // Need changes i think
