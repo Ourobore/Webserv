@@ -2,13 +2,13 @@
 #include "Config.hpp"
 #include "Request.hpp"
 
-CGIHandler::CGIHandler(Config config, Request request)
+CGIHandler::CGIHandler(Request request)
 {
     // Setting up CGI variables as envp
     variables["GATEWAY_INTERFACE"] = "CGI/1.1";
     variables["SERVER_PROTOCOL"] = request["Protocol"];
     variables["SERVER_SOFTWARE"] = "Webserv";
-    variables["SERVER_ADDR"] = config.get_host();
+    // variables["SERVER_ADDR"] = config.get_host();
     variables["PATH_INFO"] = "/"; // Testing, should not use relative path
     variables["REQUEST_METHOD"] = request["Method"];
     variables["REQUEST_URI"] = request["URI"];

@@ -39,10 +39,9 @@ void Request::parse_headers()
             else
                 key = words[0];
             for (size_t i = 1; i < words.size(); i++)
-            {
                 val.append(words[i]);
-            }
-            tokens.insert(std::pair<std::string, std::string>(key, val));
+
+            tokens[key] = val;
         }
         else
         {
@@ -51,7 +50,8 @@ void Request::parse_headers()
                 req_lines.erase(req_lines.begin(), it + 1);
                 return;
             }
-            tokens.insert(std::pair<std::string, std::string>(words[0], ""));
+
+            tokens[words[0]] = "";
         }
     }
     req_lines.erase(req_lines.begin(), it);
@@ -63,7 +63,8 @@ void Request::parse_body()
     std::vector<std::string>::iterator it;
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
         content.append(*it);
-    tokens.insert(std::pair<std::string, std::string>("Body", content));
+
+    tokens["Body"] = content;
 }
 
 // Split the request line by line at '\n'
@@ -100,25 +101,24 @@ int Request::parse_first_header()
     static const std::string types[3] = {"GET", "POST", "DELETE"};
 
     std::vector<std::string> words = split_tokens(req_lines[0]);
-    if (words.size() == 3)
+    if (words.size() > 1 && words.size() <= 3)
     {
         // Check method type
         for (int i = 0; i < 3; ++i)
         {
             if (words[0] == types[i]) // Method is valid
             {
-                tokens.insert(
-                    std::pair<std::string, std::string>("Method", words[0]));
+                tokens["Method"] = words[0];
                 break;
             }
         }
-        if (tokens.find("Method") == tokens.end())
+        if (tokens["Method"].empty())
             return 0;
 
-        // Set URI and Protocol
-        tokens.insert(std::pair<std::string, std::string>("URI", words[1]));
-        tokens.insert(
-            std::pair<std::string, std::string>("Protocol", words[2]));
+        tokens["URI"] = words[1];
+
+        if (words.size() == 3)
+            tokens["Protocol"] = words[2];
 
         return 1;
     }
@@ -132,7 +132,7 @@ std::string Request::operator[](const std::string key)
 
     it = tokens.find(key);
     if (it == tokens.end())
-        return (NULL);
+        return ("");
     else
         return (it->second);
 }

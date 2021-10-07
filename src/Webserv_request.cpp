@@ -1,71 +1,105 @@
 #include "CGIHandler.hpp"
 #include "Webserv.hpp"
 
-// Handle clients requests
-void Webserv::handle(int socket_index)
+int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
-    // Print + parsing new Request + clear buffer for next request
+    std::ifstream     ifs(path);
+    std::stringstream buf;
+    if (ifs.is_open())
+    {
+        buf << ifs.rdbuf();
+        string_buffer = buf.str();
+        return 1;
+    }
+    return 0;
+}
+
+// Handle clients requests
+void Webserv::request_handler(int socket_index)
+{
+    // Print (debug) + parsing new Request + clear buffer for next request
     std::cout << buffer << std::endl;
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
 
-    // Just a CGI test here, need more verifications. For exemple if we are in a
-    // location
+    // Start to build the response
+    std::string content = "";
+    std::string uri = "";
+    int         code = 400;
+
+    // CGI request
     if (!req["URI"].empty() &&
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
-        std::cout << "It's a PHP file!" << std::endl; // To remove
-        CGIHandler handler(configs, req);
-        handler.execute(buffer);
-
-        // To do: get Content-type
-
-        // Isolate body from CGI response
-        std::string string_buffer(buffer);
-        int         pos = string_buffer.find("\r\n\r\n");
-        string_buffer.erase(0, pos + 3);
-
-        respond(socket_index, string_buffer);
-        return;
+        content = handle_cgi(req);
+        code = 200;
     }
-
-    // Start to build the response
-    std::string content = "<h1>Hello from Webserv !</h1>\r\n";
-    std::string uri;
-
-    // handle root uri
-    if (req.tokens.find("URI") != req.tokens.end())
+    // Simple resource request is valid
+    else if (!req["URI"].empty())
     {
-        if (req.tokens.find("URI")->second == "/")
-            uri = "/index";
+        // TODO: Get root location
+        if (req["URI"] == "/")
+            uri = "/index.html";
         else
-            uri = req.tokens.find("URI")->second;
+            uri = req["URI"];
 
-        // Open resource from URI in html/ directory and convert to string
-        std::ifstream     ifs(("html" + uri + ".html").c_str());
-        std::stringstream buf;
-        if (ifs.is_open())
+        // 200 OK
+        if (file_to_string(("html" + uri).c_str(), content))
+            code = 200;
+        // 404 Not Found
+        else
         {
-            buf << ifs.rdbuf();
-            content = buf.str();
+            file_to_string("html/404.html", content);
+            code = 404;
         }
     }
-    respond(socket_index, content);
+    // 400 Bad Request
+    else if (req["URI"].empty() || req["Method"].empty())
+        file_to_string("html/400.html", content);
+
+    respond(socket_index, code, content);
 }
 
-void Webserv::respond(int i, std::string content)
+std::string Webserv::handle_cgi(Request const& req)
 {
+    // Just a CGI test here, need more verifications. For exemple if we are in a
+    // location
+    std::cout << "It's a PHP file!" << std::endl; // To remove
+    CGIHandler handler(req);
+    handler.execute(buffer);
+
+    // To do: get Content-type
+
+    // Isolate body from CGI response
+    std::string string_buffer(buffer);
+    int         pos = string_buffer.find("\r\n\r\n");
+    string_buffer.erase(0, pos + 3);
+    return string_buffer;
+}
+
+void Webserv::respond(int i, int code, std::string content)
+{
+    std::string connection = "close";
+    if (code == 200)
+        connection = "keep-alive";
 
     // Response headers for web browser clients
     std::stringstream headers_content;
-    headers_content << "HTTP/1.1 200 OK\r\n"
-                    << "Connection: keep-alive\r\n"
+    headers_content << "HTTP/1.1 " << code << " " << res_status[code] << "\r\n"
+                    << "Server: webserv/42\r\n"
+                    << "Date: \r\n"
                     << "Content-Type: text/html\r\n"
                     << "Content-Length: " << content.length() << "\r\n"
+                    << "Connection: " << connection << "\r\n"
                     << "\r\n";
+
     std::string headers = headers_content.str();
 
     // send to the client through his socket
     send(pfds[i].fd, headers.c_str(), headers.length(), 0);
     send(pfds[i].fd, content.c_str(), content.length(), 0);
+
+    // Should we close the connection if status code 400 or 404 ?
+    if (connection == "close")
+        close_connection(0, i);
 }
