@@ -1,9 +1,12 @@
 #include "Config.hpp"
+#include <iostream>
+#include <string>
 
 Config::Config(std::string config)
 {
     set_host_port(search_config(config, "listen"));
     set_server_name(search_config(config, "server_name"));
+    set_error_page(config);
     set_client_max(search_config(config, "client_max_body_size"));
     set_root(search_config(config, "root"));
     set_index(search_config(config, "index"));
@@ -30,10 +33,6 @@ std::string Config::search_config(std::string config, std::string key)
     if (config[begin + key.size()] != ' ')
         throw std::string("Error: Missing space for " + key);
     end = config.find(";", begin);
-    if (end == std::string::npos)
-        throw std::string("Error: Missing ; for " + key);
-    if (config[end - 1] == ' ')
-        throw std::string("Error: Space between value and ; for " + key);
     if (config.find(key, end + 1) != std::string::npos)
         throw std::string("Error: Double " + key);
     line = config.substr(begin, (end - begin));
@@ -96,6 +95,37 @@ void Config::set_server_name(std::string line)
     }
 }
 
+void Config::set_error_page(std::string config)
+{
+    size_t      begin;
+    size_t      end;
+    size_t      begin_code;
+    size_t      end_code;
+    std::string line;
+    std::string code;
+    std::string value;
+
+    begin = 0;
+    while ((begin = config.find("error_page", begin + 1)) != std::string::npos)
+    {
+        if (config[begin + 10] != ' ')
+            throw std::string("Error: Missing space for error_page");
+        end = config.find(";", begin);
+        line = config.substr(begin, (end - begin));
+        value = line.substr(line.find_last_of(" ") + 1);
+        begin_code = line.find(" ") + 1;
+        end_code = begin_code;
+        while ((end_code = line.find(" ", end_code + 1)) != std::string::npos)
+        {
+            code = line.substr(begin_code, end_code - begin_code);
+            this->error_pages[code] = value;
+            begin_code = end_code + 1;
+        }
+        begin = end;
+    }
+    return;
+}
+
 void Config::set_client_max(std::string line)
 {
     std::stringstream ss;
@@ -149,6 +179,11 @@ std::vector<std::string> Config::get_server_names() const
     return (this->server_names);
 }
 
+std::map<std::string, std::string> Config::get_error_pages() const
+{
+    return (this->error_pages);
+}
+
 int Config::get_client_max() const
 {
     return (this->client_max);
@@ -169,19 +204,27 @@ std::ostream& operator<<(std::ostream& os, Config const& src)
     os << std::endl << "////Configuration////" << std::endl << std::endl;
     os << "Host: " << src.get_host() << std::endl;
     os << "Port: " << src.get_port() << std::endl;
-    os << "Server_names: ";
+    os << "Server_names:" << std::endl;
     std::vector<std::string> names = src.get_server_names();
     for (std::vector<std::string>::iterator it = names.begin();
          it != names.end(); ++it)
-        os << *it << " ";
-    os << std::endl;
+        os << "\t-" << *it << std::endl;
+    std::map<std::string, std::string> error_pages = src.get_error_pages();
+    os << "Error pages:" << std::endl;
+    if (error_pages.empty() == false)
+    {
+        for (std::map<std::string, std::string>::const_iterator it =
+                 error_pages.begin();
+             it != error_pages.end(); ++it)
+            std::cout << "\t-" << it->first << " " << it->second << std::endl;
+    }
     os << "Client_max: " << src.get_client_max() << std::endl;
     os << "Root: " << src.get_root() << std::endl;
-    os << "Index: ";
+    os << "Index:" << std::endl;
     std::vector<std::string> index = src.get_index();
     for (std::vector<std::string>::iterator it = index.begin();
          it != index.end(); ++it)
-        os << *it << " ";
+        os << "\t-" << *it << std::endl;
     os << std::endl;
     return (os);
 }

@@ -32,7 +32,7 @@ CGIHandler::CGIHandler(Request request)
 
 CGIHandler::~CGIHandler()
 {
-    for (int i = 0; i < variables.size(); ++i)
+    for (size_t i = 0; i < variables.size(); ++i)
         delete[] env_array[i];
     delete[] env_array;
 }
