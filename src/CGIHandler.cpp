@@ -13,36 +13,37 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     // Setting up CGI variables as envp
     variables["PHP_SELF"] = request["URI"]; // Dangerous?
-    variables["REDIRECT_STATUS"] = "200";   // Should the status change,?
+    variables["REDIRECT_STATUS"] = "200";
+    // ^ Does the status change? Take from fastcgi_param ^
 
     // Request variables
     variables["REQUEST_URI"] = request["URI"];
     variables["SCRIPT_NAME"] = request["URI"];
-    variables["PATH_INFO"] = ""; // Testing, should not use relative path
+    variables["PATH_INFO"] = "/"; // Testing, should not use relative path
     // variables["PATH_TRANSLATED"] = "";
     variables["QUERY_STRING"] = "";
     variables["AUTH_PATH"] = request["Authorization"];
-    variables["CONTENT_LENGTH"] = ""; // Only if body in request
-    variables["CONTENT_TYPE"] = "";   // Only if there is a Content-Type in the
+    variables["CONTENT_TYPE"] = request["Content-Type"];
+    variables["CONTENT_LENGTH"] = request["Content-Length"];
 
     // Server variables
+    variables["DOCUMENT_ROOT"] = config.get_root();
     variables["SERVER_PROTOCOL"] = request["Protocol"];
     variables["SERVER_ADDR"] = "127.0.0.1";
     variables["SERVER_PORT"] = ft::to_string(config.get_port());
-    variables["DOCUMENT_ROOT"] = config.get_root();
 
-    // Client variables
+    // Client variables. May need to take informations from client socket?
+    variables["REMOTE_HOST"] = "localhost";
     variables["REMOTE_ADDR"] = "127.0.0.1";
     variables["REMOTE_PORT"] = ft::to_string(config.get_port());
-    variables["REMOTE_HOST"] = "localhost";
 
     // HTTP variables
+    variables["HTTP_HOST"] = request["Host"];
     variables["HTTP_ACCEPT"] = request["Accept"];
+    variables["HTTP_CONNECTION"] = request["Connection"];
+    variables["HTTP_USER_AGENT"] = request["User-Agent"];
     variables["HTTP_ACCECPT_ENCODING"] = request["Accept-Encoding"];
     variables["HTTP_ACCECPT_LANGUAGE"] = request["Accept-Language"];
-    variables["HTTP_CONNECTION"] = request["Connection"];
-    variables["HTTP_HOST"] = request["Host"];
-    variables["HTTP_USER_AGENT"] = request["User-Agent"];
     variables["HTTPS"] = ""; // Really needed?
 
     env_array = CGIHandler::get_env_array();
@@ -121,7 +122,6 @@ char** CGIHandler::get_env_array()
     std::map<std::string, std::string>::iterator it;
 
     char** env_array = new char*[variables.size() + 1]();
-    // memset(env_array, 0, variables.size() + 1);
 
     int i = 0;
     for (it = variables.begin(); it != variables.end(); ++it, ++i)
@@ -129,7 +129,6 @@ char** CGIHandler::get_env_array()
         std::string pair = it->first + "=" + it->second;
 
         env_array[i] = new char[pair.length() + 1]();
-        // memset(env_array[i], 0, pair.length() + 1);
         memcpy(env_array[i], pair.c_str(), pair.length());
     }
     return (env_array);

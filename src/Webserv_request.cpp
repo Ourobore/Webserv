@@ -69,12 +69,12 @@ void Webserv::request_handler(int socket_fd)
     respond(socket_fd, code, content);
 }
 
-std::string Webserv::handle_cgi(Config const& config, Request const& req)
+std::string Webserv::handle_cgi(Config const& config, Request const& request)
 {
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
     std::cout << "It's a PHP file!" << std::endl; // To remove
-    CGIHandler handler(config, req);
+    CGIHandler handler(config, request);
     handler.execute(buffer);
 
     // To do: get Content-type
@@ -83,7 +83,8 @@ std::string Webserv::handle_cgi(Config const& config, Request const& req)
     std::string string_buffer(buffer);
     int         pos = string_buffer.find("\r\n\r\n");
     string_buffer.erase(0, pos + 3);
-    return string_buffer;
+
+    return (string_buffer);
 }
 
 void Webserv::respond(int socket_fd, int code, std::string content)
