@@ -7,7 +7,7 @@
 
 Server::Server(Config& config)
     : sock(AF_INET, SOCK_STREAM, 0, config.get_port(), config.get_host()),
-      _ip_addr(config.get_host()), _port(config.get_port()), _config(config)
+      _config(config), _ip_addr(config.get_host()), _port(config.get_port())
 {
     _address = sock.address();
     _addrlen = sock.addrlen(); // To check later if the size change and must

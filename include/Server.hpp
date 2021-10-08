@@ -11,12 +11,12 @@ class Server
 {
   private:
     Socket             sock;
+    Config             _config;
     struct sockaddr_in _address;
     int                _addrlen;
     std::string        _ip_addr;
     int                _port;
     int                _sock_fd;
-    Config             _config;
 
     Server();
 
