@@ -130,7 +130,7 @@ std::vector<Config> parse_config(const char* config)
     std::ifstream config_open;
     config_open.open(config);
     if (!config_open)
-        throw std::string("Error: Config don't open");
+        throw std::string("Error: Config doesn't open");
 
     // read the file
     std::stringstream config_read;
@@ -138,7 +138,7 @@ std::vector<Config> parse_config(const char* config)
     config_read << config_open.rdbuf();
     config_final = config_read.str();
     if (config_final.empty())
-        throw std::string("Error: Config empty");
+        throw std::string("Error: Config is empty");
 
     // Transform characters and erase duplicate space
     transform_config(config_final);
@@ -147,13 +147,13 @@ std::vector<Config> parse_config(const char* config)
 
     // check error
     if (config_error(config_final) == 1)
-        throw std::string("Error: number of brackets");
+        throw std::string("Error: Number of brackets");
 
     std::vector<Config> configs;
     std::vector<size_t> block;
     block = recup_server(config_final);
     if (block.empty() == true)
-        throw std::string("Error: no server find");
+        throw std::string("Error: No server found");
     while (block.empty() == false)
     {
         // Create a object Config

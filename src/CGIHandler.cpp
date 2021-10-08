@@ -12,24 +12,24 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     // variables["SERVER_NAME"] = config.get_host();
 
     // Setting up CGI variables as envp
+    variables["PHP_SELF"] = request["URI"]; // Dangerous?
+    variables["REDIRECT_STATUS"] = "200";   // Should the status change,?
+
+    // Request variables
+    variables["REQUEST_URI"] = request["URI"];
+    variables["SCRIPT_NAME"] = request["URI"];
     variables["PATH_INFO"] = ""; // Testing, should not use relative path
     // variables["PATH_TRANSLATED"] = "";
     variables["QUERY_STRING"] = "";
-    variables["REQUEST_URI"] = request["URI"];
-    variables["SCRIPT_NAME"] = request["URI"];
-    variables["PHP_SELF"] = request["URI"]; // Dangerous?
-    variables["REDIRECT_STATUS"] = "200";   // Should the status change,
-                                            // we don't know if it is a redirect
-    variables["CONTENT_LENGTH"] = "";       // Only if body in request
-    variables["CONTENT_TYPE"] = ""; // Only if there is a Content-Type in the
-    // request
+    variables["AUTH_PATH"] = request["Authorization"];
+    variables["CONTENT_LENGTH"] = ""; // Only if body in request
+    variables["CONTENT_TYPE"] = "";   // Only if there is a Content-Type in the
 
     // Server variables
     variables["SERVER_PROTOCOL"] = request["Protocol"];
     variables["SERVER_ADDR"] = "127.0.0.1";
     variables["SERVER_PORT"] = ft::to_string(config.get_port());
     variables["DOCUMENT_ROOT"] = config.get_root();
-    variables["AUTH_PATH"] = request["Authorization"];
 
     // Client variables
     variables["REMOTE_ADDR"] = "127.0.0.1";
@@ -57,7 +57,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();
-    std::string path_info("cgi-bin/php-cgi");
+    std::string path_info("cgi-bin/php-cgi"); // Need fastcgi_pass in config
     std::string script_filename("html" + request["URI"]);
 
     cgi_argv[0] = new char[path_info.length() + 1]();
