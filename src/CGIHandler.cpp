@@ -5,21 +5,27 @@
 
 CGIHandler::CGIHandler(Config const& config, Request const& request)
 {
+    // Variables that block the input file as a parameter
+    // variables["GATEWAY_INTERFACE"] = "CGI/1.1";
+    // variables["REQUEST_METHOD"] = request["Method"];
+    // variables["SERVER_SOFTWARE"] = "Webserv";
+    // variables["SERVER_NAME"] = config.get_host();
+
     // Setting up CGI variables as envp
-    variables["GATEWAY_INTERFACE"] = "CGI/1.1";
-    variables["PATH_INFO"] = "/"; // Testing, should not use relative path
-    variables["REQUEST_METHOD"] = request["Method"];
+    variables["PATH_INFO"] = ""; // Testing, should not use relative path
+    // variables["PATH_TRANSLATED"] = "";
+    variables["QUERY_STRING"] = "";
     variables["REQUEST_URI"] = request["URI"];
     variables["SCRIPT_NAME"] = request["URI"];
-    variables["PHP_SELF"] = request["URI"];
-    variables["REDIRECT_STATUS"] = "200"; // Should the status change,
-                                          // we don't know if it is a redirect
-    variables["CONTENT_LENGTH"] = "";
-    variables["CONTENT_TYPE"] = "";
+    variables["PHP_SELF"] = request["URI"]; // Dangerous?
+    variables["REDIRECT_STATUS"] = "200";   // Should the status change,
+                                            // we don't know if it is a redirect
+    variables["CONTENT_LENGTH"] = "";       // Only if body in request
+    variables["CONTENT_TYPE"] = ""; // Only if there is a Content-Type in the
+    // request
+
     // Server variables
     variables["SERVER_PROTOCOL"] = request["Protocol"];
-    variables["SERVER_SOFTWARE"] = "Webserv";
-    variables["SERVER_NAME"] = config.get_host();
     variables["SERVER_ADDR"] = "127.0.0.1";
     variables["SERVER_PORT"] = ft::to_string(config.get_port());
     variables["DOCUMENT_ROOT"] = config.get_root();
@@ -52,7 +58,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();
     std::string path_info("cgi-bin/php-cgi");
-    std::string script_filename(request["URI"]);
+    std::string script_filename("html" + request["URI"]);
 
     cgi_argv[0] = new char[path_info.length() + 1]();
     memcpy(cgi_argv[0], path_info.c_str(), path_info.length());
