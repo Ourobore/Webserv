@@ -1,28 +1,58 @@
 #include "CGIHandler.hpp"
 #include "Config.hpp"
 #include "Request.hpp"
+#include "utilities.hpp"
 
-CGIHandler::CGIHandler(Request request)
+CGIHandler::CGIHandler(Config const& config, Request const& request)
 {
     // Setting up CGI variables as envp
     variables["GATEWAY_INTERFACE"] = "CGI/1.1";
-    variables["SERVER_PROTOCOL"] = request["Protocol"];
-    variables["SERVER_SOFTWARE"] = "Webserv";
-    // variables["SERVER_ADDR"] = config.get_host();
     variables["PATH_INFO"] = "/"; // Testing, should not use relative path
     variables["REQUEST_METHOD"] = request["Method"];
     variables["REQUEST_URI"] = request["URI"];
-    // variables["SCRIPT_FILENAME"] = "html" + request["URI"];
+    variables["SCRIPT_NAME"] = request["URI"];
     variables["PHP_SELF"] = request["URI"];
     variables["REDIRECT_STATUS"] = "200"; // Should the status change,
                                           // we don't know if it is a redirect
+    variables["CONTENT_LENGTH"] = "";
+    variables["CONTENT_TYPE"] = "";
+    // Server variables
+    variables["SERVER_PROTOCOL"] = request["Protocol"];
+    variables["SERVER_SOFTWARE"] = "Webserv";
+    variables["SERVER_NAME"] = config.get_host();
+    variables["SERVER_ADDR"] = "127.0.0.1";
+    variables["SERVER_PORT"] = ft::to_string(config.get_port());
+    variables["DOCUMENT_ROOT"] = config.get_root();
+    variables["AUTH_PATH"] = request["Authorization"];
+
+    // Client variables
+    variables["REMOTE_ADDR"] = "127.0.0.1";
+    variables["REMOTE_PORT"] = ft::to_string(config.get_port());
+    variables["REMOTE_HOST"] = "localhost";
+
+    // HTTP variables
+    variables["HTTP_ACCEPT"] = request["Accept"];
+    variables["HTTP_ACCECPT_ENCODING"] = request["Accept-Encoding"];
+    variables["HTTP_ACCECPT_LANGUAGE"] = request["Accept-Language"];
+    variables["HTTP_CONNECTION"] = request["Connection"];
+    variables["HTTP_HOST"] = request["Host"];
+    variables["HTTP_USER_AGENT"] = request["User-Agent"];
+    variables["HTTPS"] = ""; // Really needed?
 
     env_array = CGIHandler::get_env_array();
+
+    // Debug. Printing env_array
+    std::cout << "========================" << std::endl;
+    std::map<std::string, std::string>::iterator it;
+    int                                          i = 0;
+    for (it = variables.begin(); it != variables.end(); ++it, ++i)
+        std::cout << env_array[i] << std::endl;
+    std::cout << "========================" << std::endl;
 
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();
     std::string path_info("cgi-bin/php-cgi");
-    std::string script_filename("./html" + request["URI"]);
+    std::string script_filename(request["URI"]);
 
     cgi_argv[0] = new char[path_info.length() + 1]();
     memcpy(cgi_argv[0], path_info.c_str(), path_info.length());

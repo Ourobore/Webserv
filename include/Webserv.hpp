@@ -31,7 +31,7 @@ class Webserv
 
     // Handling request
     void        request_handler(int socket_fd);
-    std::string handle_cgi(Request const& req);
+    std::string handle_cgi(Config const& config, Request const& request);
     int         file_to_string(const char* path, std::string& string_buffer);
     void        respond(int socket_fd, int code, std::string content);
 

@@ -40,7 +40,7 @@ void Webserv::request_handler(int socket_fd)
     if (!req["URI"].empty() &&
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
-        content = handle_cgi(req);
+        content = handle_cgi(config, req);
         code = 200;
     }
     // Simple resource request is valid
@@ -69,12 +69,12 @@ void Webserv::request_handler(int socket_fd)
     respond(socket_fd, code, content);
 }
 
-std::string Webserv::handle_cgi(Request const& req)
+std::string Webserv::handle_cgi(Config const& config, Request const& req)
 {
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
     std::cout << "It's a PHP file!" << std::endl; // To remove
-    CGIHandler handler(req);
+    CGIHandler handler(config, req);
     handler.execute(buffer);
 
     // To do: get Content-type

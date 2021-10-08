@@ -27,7 +27,7 @@ class Request
     Request(char* bytes);
     std::map<std::string, std::string> tokens;
 
-    std::string operator[](const std::string key);
+    std::string operator[](const std::string& key) const;
 };
 
 #endif

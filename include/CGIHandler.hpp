@@ -26,7 +26,7 @@ class CGIHandler
     char** get_env_array();
 
   public:
-    CGIHandler(Request request);
+    CGIHandler(Config const& config, Request const& request);
     ~CGIHandler();
 
     void execute(char buffer[30000]);

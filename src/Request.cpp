@@ -126,9 +126,9 @@ int Request::parse_first_header()
     return 0;
 }
 
-std::string Request::operator[](const std::string key)
+std::string Request::operator[](const std::string& key) const
 {
-    std::map<std::string, std::string>::iterator it;
+    std::map<std::string, std::string>::const_iterator it;
 
     it = tokens.find(key);
     if (it == tokens.end())
