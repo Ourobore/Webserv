@@ -19,7 +19,7 @@ Server::Server(Config& config)
     Socket::check_error(ret, "server socket bind failed");
 
     // Let binded socket listen for requests
-    ret = listen(_sock_fd, _config.get_client_max());
+    ret = listen(_sock_fd, 10);
     Socket::check_error(ret, "already listening");
 }
 
