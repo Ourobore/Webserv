@@ -98,7 +98,7 @@ void Webserv::start()
     }
 }
 
-void Webserv::create_server(Config config)
+void Webserv::create_server(Config& config)
 {
     servers.push_back(Server(config));
     struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
@@ -110,10 +110,10 @@ Server& Webserv::get_server_from_client(int client_fd)
 {
     // Get client address from it's file descriptor
     struct sockaddr_in client_address;
-    socklen_t          address_length = sizeof(client_address);
+    socklen_t          client_address_length = sizeof(client_address);
 
     if (getsockname(client_fd, reinterpret_cast<sockaddr*>(&client_address),
-                    &address_length) == -1)
+                    &client_address_length) == -1)
     {
         perror("Error: getsockname()");
         exit(EXIT_FAILURE);

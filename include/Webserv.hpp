@@ -12,7 +12,6 @@
 #include <sstream>
 #include <vector>
 
-
 const int BUFFER_SIZE = 30000;
 
 class Webserv
@@ -47,7 +46,7 @@ class Webserv
     void start();
     // void create_server(int domain, int type, int protocol, int port,
     //                    u_long interface);
-    void create_server(Config config);
+    void create_server(Config& config);
 };
 
 #endif

@@ -21,8 +21,9 @@ void Webserv::request_handler(int socket_fd)
     // get server config
     std::cout << buffer << std::endl;
 
-    // Server& server = get_server_from_client(socket_fd);
-    // Config& config = server.config();
+    Server& server = get_server_from_client(socket_fd);
+    Config& config = server.config();
+    std::cout << "PORT: " << config.get_port() << std::endl;
     Request req = Request(buffer);
     std::memset(buffer, 0, BUFFER_SIZE);
 
