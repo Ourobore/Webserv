@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <string>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -23,7 +24,12 @@ class CGIHandler
     char**                             env_array;
     char**                             cgi_argv;
 
+    std::string cgi_path;
+    std::string script_name;
+    std::string root_directory;
+
     char** get_env_array();
+    void   DEBUG_print_env_array() const;
 
   public:
     CGIHandler(Config const& config, Request const& request);

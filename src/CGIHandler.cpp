@@ -2,9 +2,12 @@
 #include "Config.hpp"
 #include "Request.hpp"
 #include "utilities.hpp"
+#include <string>
+#include <unistd.h>
 
 CGIHandler::CGIHandler(Config const& config, Request const& request)
 {
+
     // Variables that block the input file as a parameter
     // variables["GATEWAY_INTERFACE"] = "CGI/1.1";
     // variables["REQUEST_METHOD"] = request["Method"];
@@ -15,16 +18,6 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     variables["PHP_SELF"] = request["URI"]; // Dangerous?
     variables["REDIRECT_STATUS"] = "200";
     // ^ Does the status change? Take from fastcgi_param ^
-
-    // Request variables
-    variables["REQUEST_URI"] = request["URI"];
-    variables["SCRIPT_NAME"] = request["URI"];
-    variables["PATH_INFO"] = "/"; // Testing, should not use relative path
-    // variables["PATH_TRANSLATED"] = "";
-    variables["QUERY_STRING"] = "";
-    variables["AUTH_PATH"] = request["Authorization"];
-    variables["CONTENT_TYPE"] = request["Content-Type"];
-    variables["CONTENT_LENGTH"] = request["Content-Length"];
 
     // Server variables
     variables["DOCUMENT_ROOT"] = config.get_root();
@@ -37,6 +30,18 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     variables["REMOTE_ADDR"] = "127.0.0.1";
     variables["REMOTE_PORT"] = ft::to_string(config.get_port());
 
+    // Request variables
+    variables["REQUEST_URI"] = request["URI"];
+    variables["SCRIPT_NAME"] = request["URI"];
+    variables["PATH_INFO"] = "/"; // Testing, should not use relative path
+    // variables["PATH_TRANSLATED"] = "";
+    // SCRIPT_FILENAME == pwd + variables["DOCUMENT_ROOT"] +
+    // variables["SCRIPT_NAME"];
+    variables["QUERY_STRING"] = "";
+    variables["AUTH_PATH"] = request["Authorization"];
+    variables["CONTENT_TYPE"] = request["Content-Type"];
+    variables["CONTENT_LENGTH"] = request["Content-Length"];
+
     // HTTP variables
     variables["HTTP_HOST"] = request["Host"];
     variables["HTTP_ACCEPT"] = request["Accept"];
@@ -48,26 +53,27 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     env_array = CGIHandler::get_env_array();
 
-    // Debug. Printing env_array
-    std::cout << "========================" << std::endl;
-    std::map<std::string, std::string>::iterator it;
-    int                                          i = 0;
-    for (it = variables.begin(); it != variables.end(); ++it, ++i)
-        std::cout << env_array[i] << std::endl;
-    std::cout << "========================" << std::endl;
+    // Setting CGI binary and script paths
+    char* buf = NULL;
+    buf = getcwd(buf, sizeof(buf));
+    std::string pwd = buf;
+    delete buf; // Problem?
+
+    cgi_path = pwd + "/cgi-bin/php-cgi-osx"; // Need fastcgi_pass in config
+    script_name = variables["SCRIPT_NAME"].erase(0, 1);
+    root_directory = pwd + variables["DOCUMENT_ROOT"];
+
+    // Debug: Printing env_array
+    DEBUG_print_env_array();
 
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();
-    std::string path_info("cgi-bin/php-cgi-osx"); // Need fastcgi_pass in config
-    std::string script_filename("html" + request["URI"]);
 
-    cgi_argv[0] = new char[path_info.length() + 1]();
-    memcpy(cgi_argv[0], path_info.c_str(), path_info.length());
+    cgi_argv[0] = new char[cgi_path.length() + 1]();
+    memcpy(cgi_argv[0], cgi_path.c_str(), cgi_path.length());
 
-    cgi_argv[1] = new char[script_filename.length() + 1]();
-    memcpy(cgi_argv[1], script_filename.c_str(), script_filename.length());
-
-    // Need cgi_argv[2] = NULL ?
+    cgi_argv[1] = new char[script_name.length() + 1]();
+    memcpy(cgi_argv[1], script_name.c_str(), script_name.length());
 }
 
 CGIHandler::~CGIHandler()
@@ -103,7 +109,8 @@ void CGIHandler::execute(char buffer[30000]) // Need changes i think
     {
         dup2(pipefd[PIPEWRITE], STDOUT);
         close(pipefd[PIPEREAD]);
-        execve(cgi_argv[0], cgi_argv, env_array);
+        chdir(root_directory.c_str());
+        execve(cgi_path.c_str(), cgi_argv, env_array);
         perror("Error: CGI execution failed\n");
         exit(EXIT_FAILURE);
     }
@@ -132,4 +139,17 @@ char** CGIHandler::get_env_array()
         memcpy(env_array[i], pair.c_str(), pair.length());
     }
     return (env_array);
+}
+
+// Debug. Printing env_array containing CGI environment variables
+void CGIHandler::DEBUG_print_env_array() const
+{
+    std::cout << "========== Start ENV_ARRAY ==========" << std::endl;
+
+    std::map<std::string, std::string>::const_iterator it;
+    int                                                i = 0;
+    for (it = variables.begin(); it != variables.end(); ++it, ++i)
+        std::cout << env_array[i] << std::endl;
+
+    std::cout << "========== End ENV_ARRAY ==========" << std::endl;
 }
