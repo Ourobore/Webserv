@@ -58,7 +58,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();
-    std::string path_info("cgi-bin/php-cgi"); // Need fastcgi_pass in config
+    std::string path_info("cgi-bin/php-cgi-osx"); // Need fastcgi_pass in config
     std::string script_filename("html" + request["URI"]);
 
     cgi_argv[0] = new char[path_info.length() + 1]();
