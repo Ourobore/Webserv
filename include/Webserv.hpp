@@ -21,6 +21,13 @@ class Webserv
     std::vector<struct pollfd> pfds;
     std::map<int, std::string> res_status;
 
+    typedef struct Response
+    {
+        std::string content;
+        std::string content_type;
+        int         code;
+    } Response;
+
     char buffer[BUFFER_SIZE];
 
     // Polling
@@ -32,9 +39,10 @@ class Webserv
     // Handling request
     void        request_handler(int socket_fd);
     std::string handle_cgi(Config const& config, Request const& request);
-    std::string handle_uri(Config const& config, Request const& req, int& code);
+    std::string handle_uri(Config const& config, Request const& req,
+                           Response& res);
     int         file_to_string(const char* path, std::string& string_buffer);
-    void        respond(int socket_fd, int code, std::string content);
+    void        respond(int socket_fd, Request& req, Response& res);
 
     // Utilities
     Server& get_server_from_client(int client_fd);
