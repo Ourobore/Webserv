@@ -45,6 +45,14 @@ void Webserv::request_handler(int socket_fd)
         res.content = handle_cgi(config, req);
         res.code = 200;
     }
+    if (!req["URI"].empty() &&
+        req["URI"].find(".py", req["URI"].size() - 3) != std::string::npos)
+    {
+        // TODO: Try to handle a POST request through the form in
+        // html/index.html
+        res.content = "<p>It's a python script !</p>";
+        res.code = 200;
+    }
     // Simple resource request is valid
     else if (!req["URI"].empty())
         res.content = handle_uri(config, req, res);
@@ -61,9 +69,7 @@ std::string Webserv::handle_cgi(Config const& config, Request const& request)
 {
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
-    std::cout << "It's a PHP file!" << std::endl; // To remove
     CGIHandler handler(config, request);
-    handler.execute(buffer);
 
     // To do: get Content-type
 
@@ -71,6 +77,8 @@ std::string Webserv::handle_cgi(Config const& config, Request const& request)
     std::string string_buffer(buffer);
     int         pos = string_buffer.find("\r\n\r\n");
     string_buffer.erase(0, pos + 3);
+
+    handler.execute(buffer);
 
     return (string_buffer);
 }
