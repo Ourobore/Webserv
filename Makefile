@@ -18,6 +18,7 @@ SRC			=	Socket.cpp \
 				Config.cpp \
 				parsing_config.cpp \
 				CGIHandler.cpp \
+				utilities.cpp \
 
 # *.o files
 OBJDIR = obj/

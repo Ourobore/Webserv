@@ -1,13 +1,6 @@
 #include "CGIHandler.hpp"
 #include "Webserv.hpp"
 
-std::string strtrim(std::string str, const std::string charset)
-{
-    str.erase(0, str.find_first_not_of(charset));
-    str.erase(str.find_last_not_of(charset) + 1);
-    return str;
-}
-
 int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
     std::ifstream     ifs(path);
@@ -90,8 +83,8 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
                                 Response& res)
 {
     std::string content;
-    std::string uri = strtrim(req["URI"], "/");
-    std::string root = strtrim(config.get_root(), "/"); // root location
+    std::string uri = ft::strtrim(req["URI"], "/");
+    std::string root = ft::strtrim(config.get_root(), "/"); // root location
 
     if (req["URI"] == "/") // Resolve root index
     {

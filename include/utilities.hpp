@@ -28,6 +28,10 @@ namespace ft
             return (T(0));
         return (n);
     }
+
+    /* Returns a string.
+        Trims after 1st occurence to last occurence of char in charset */
+    std::string strtrim(std::string str, const std::string charset);
 } // namespace ft
 
 #endif
