@@ -1,6 +1,13 @@
 #include "CGIHandler.hpp"
 #include "Webserv.hpp"
 
+std::string strtrim(std::string str, const std::string charset)
+{
+    str.erase(0, str.find_first_not_of(charset));
+    str.erase(str.find_last_not_of(charset) + 1);
+    return str;
+}
+
 int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
     std::ifstream     ifs(path);
@@ -33,7 +40,6 @@ void Webserv::request_handler(int socket_fd)
 
     // Start to build the response
     std::string content = "";
-    std::string uri = "";
     int         code = 400;
 
     // CGI request
@@ -45,23 +51,8 @@ void Webserv::request_handler(int socket_fd)
     }
     // Simple resource request is valid
     else if (!req["URI"].empty())
-    {
-        // TODO: Get root location
-        if (req["URI"] == "/")
-            uri = "/index.html";
-        else
-            uri = req["URI"];
+        content = handle_uri(config, req, code);
 
-        // 200 OK
-        if (file_to_string(("html" + uri).c_str(), content))
-            code = 200;
-        // 404 Not Found
-        else
-        {
-            file_to_string("html/404.html", content);
-            code = 404;
-        }
-    }
     // 400 Bad Request
     else if (req["URI"].empty() || req["Method"].empty())
         file_to_string("html/400.html", content);
@@ -85,6 +76,44 @@ std::string Webserv::handle_cgi(Config const& config, Request const& request)
     string_buffer.erase(0, pos + 3);
 
     return (string_buffer);
+}
+
+/*
+** Handle most of simple requests (non-CGI)
+*/
+std::string Webserv::handle_uri(Config const& config, Request const& req,
+                                int& code)
+{
+    std::string content;
+    std::string uri = strtrim(req["URI"], "/");
+    std::string root = strtrim(config.get_root(), "/"); // root location
+
+    // Resolve root index
+    if (req["URI"] == "/")
+    {
+        std::vector<std::string>           indexes = config.get_index();
+        std::vector<std::string>::iterator it;
+        for (it = indexes.begin(); it != indexes.end(); ++it)
+        {
+            uri = *it;
+            if (file_to_string((root + "/" + uri).c_str(), content))
+            {
+                code = 200;
+                return content;
+            }
+        }
+    }
+
+    // 200 OK
+    if (file_to_string((root + "/" + uri).c_str(), content))
+        code = 200;
+    // 404 Not Found
+    else
+    {
+        file_to_string("html/404.html", content);
+        code = 404;
+    }
+    return content;
 }
 
 void Webserv::respond(int socket_fd, int code, std::string content)
