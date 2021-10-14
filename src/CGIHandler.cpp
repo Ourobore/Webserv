@@ -55,11 +55,11 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     // Setting CGI binary and script paths
     char* buf = NULL;
-    buf = getcwd(buf, sizeof(buf));
-    std::string pwd = buf;
+    buf = getcwd(NULL, 0);
+    std::string pwd(buf);
     delete buf; // Problem?
 
-    cgi_path = pwd + "/cgi-bin/php-cgi-osx"; // Need fastcgi_pass in config
+    cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     root_directory = pwd + variables["DOCUMENT_ROOT"];
 
