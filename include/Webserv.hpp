@@ -4,6 +4,8 @@
 #include "Config.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
+#include "Socket.hpp"
+
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -38,7 +40,8 @@ class Webserv
 
     // Handling request
     void        request_handler(int socket_fd);
-    std::string handle_cgi(Config const& config, Request const& request);
+    std::string handle_cgi(Config const& config, Request const& request,
+                           int client_fd);
     std::string handle_uri(Config const& config, Request const& req,
                            Response& res);
     int         file_to_string(const char* path, std::string& string_buffer);

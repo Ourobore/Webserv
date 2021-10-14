@@ -3,6 +3,7 @@
 #include "Webserv.hpp"
 #include "parsing_config.hpp"
 #include "utilities.hpp"
+#include <sys/socket.h>
 #include <sys/types.h>
 
 int main(int argc, char** argv)

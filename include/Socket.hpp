@@ -10,7 +10,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-
 #include "utilities.hpp"
 
 class Socket
@@ -36,6 +35,11 @@ class Socket
     int          addrlen() const;
     std::string  ip_addr() const;
     int          port() const;
+
+    static struct sockaddr_in get_socket_address(int socket_fd);
+    static std::string
+               get_socket_ip_address(struct sockaddr_in const& socket_address);
+    static int get_socket_port(struct sockaddr_in const& socket_address);
 };
 
 #endif
