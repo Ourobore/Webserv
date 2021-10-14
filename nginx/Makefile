@@ -1,6 +1,6 @@
 IMAGE_NAME = nginx\:webserv
 CONTAINER_NAME = nginx_webserv
-PORT = 8080
+PORT = 8081
 
 help:
 		@echo "Little nginx docker config to make some tests"	
