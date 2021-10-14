@@ -11,6 +11,8 @@
 
 #include "Config.hpp"
 #include "Request.hpp"
+#include "Socket.hpp"
+#include "utilities.hpp"
 
 #define PIPEREAD 0
 #define PIPEWRITE 1
@@ -33,7 +35,7 @@ class CGIHandler
     std::string getOsName();
 
   public:
-    CGIHandler(Config const& config, Request const& request);
+    CGIHandler(Config const& config, Request const& request, int client_fd);
     ~CGIHandler();
 
     void execute(char buffer[30000]);

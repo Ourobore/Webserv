@@ -108,20 +108,10 @@ void Webserv::create_server(Config& config)
 /* Return the server from which the client is connected */
 Server& Webserv::get_server_from_client(int client_fd)
 {
-    // Get client address from it's file descriptor
-    struct sockaddr_in client_address;
-    socklen_t          client_address_length = sizeof(client_address);
-
-    if (getsockname(client_fd, reinterpret_cast<sockaddr*>(&client_address),
-                    &client_address_length) == -1)
-    {
-        perror("Error: getsockname()");
-        exit(EXIT_FAILURE);
-    }
-
-    // Get client port and client IP address (in in_addr_t type)
-    int       client_port = ntohs(client_address.sin_port);
-    in_addr_t client_ip_addr = client_address.sin_addr.s_addr;
+    // Get client port and client IP address from it's fd (in in_addr_t type)
+    struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
+    int                client_port = ntohs(client_address.sin_port);
+    in_addr_t          client_ip_addr = client_address.sin_addr.s_addr;
 
     // For each server, check if server port and server IP address correspond to
     // the ones of the client

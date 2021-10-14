@@ -1,4 +1,7 @@
-<?php echo "Hello PHP World!"?>
+<html>
+<body>
+
+<?php /*phpinfo()*/ echo "Hello PHP World!" ?>
 
 <?php 
 /*
@@ -9,3 +12,6 @@
     }
 */
 ?>
+
+</body>
+</html>

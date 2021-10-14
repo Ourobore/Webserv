@@ -1,12 +1,10 @@
 #include "CGIHandler.hpp"
-#include "Config.hpp"
-#include "Request.hpp"
-#include "utilities.hpp"
-#include <string>
-#include <unistd.h>
+#include <netinet/in.h>
 
-CGIHandler::CGIHandler(Config const& config, Request const& request)
+CGIHandler::CGIHandler(Config const& config, Request const& request,
+                       int client_fd)
 {
+    struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
 
     // Variables that block the input file as a parameter
     // variables["GATEWAY_INTERFACE"] = "CGI/1.1";
@@ -27,8 +25,9 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
 
     // Client variables. May need to take informations from client socket?
     variables["REMOTE_HOST"] = "localhost";
-    variables["REMOTE_ADDR"] = "127.0.0.1";
-    variables["REMOTE_PORT"] = ft::to_string(config.get_port());
+    variables["REMOTE_ADDR"] = Socket::get_socket_ip_address(client_address);
+    variables["REMOTE_PORT"] =
+        ft::to_string(Socket::get_socket_port(client_address));
 
     // Request variables
     variables["REQUEST_URI"] = request["URI"];
@@ -54,10 +53,9 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     env_array = CGIHandler::get_env_array();
 
     // Setting CGI binary and script paths
-    char* buf = NULL;
-    buf = getcwd(NULL, 0);
+    char*       buf = getcwd(NULL, 0);
     std::string pwd(buf);
-    delete buf; // Problem?
+    free(buf);
 
     if (getOsName() == "Mac OSX")
     {

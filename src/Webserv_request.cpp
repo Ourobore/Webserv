@@ -35,7 +35,7 @@ void Webserv::request_handler(int socket_fd)
     if (!req["URI"].empty() &&
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
-        res.content = handle_cgi(config, req);
+        res.content = handle_cgi(config, req, socket_fd);
         res.content_type = "text/html";
         res.code = 200;
     }
@@ -59,12 +59,14 @@ void Webserv::request_handler(int socket_fd)
     respond(socket_fd, req, res);
 }
 
-std::string Webserv::handle_cgi(Config const& config, Request const& request)
+std::string Webserv::handle_cgi(Config const& config, Request const& request,
+                                int client_fd)
 {
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
-    CGIHandler handler(config, request);
+    CGIHandler handler(config, request, client_fd);
     handler.execute(buffer);
+
     // To do: get Content-type
 
     // Isolate body from CGI response
