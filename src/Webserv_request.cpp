@@ -36,10 +36,11 @@ void Webserv::request_handler(int socket_fd)
         req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
     {
         res.content = handle_cgi(config, req);
+        res.content_type = "text/html";
         res.code = 200;
     }
-    if (!req["URI"].empty() &&
-        req["URI"].find(".py", req["URI"].size() - 3) != std::string::npos)
+    else if (!req["URI"].empty() &&
+             req["URI"].find(".py", req["URI"].size() - 3) != std::string::npos)
     {
         // TODO: Try to handle a POST request through the form in
         // html/index.html
@@ -63,15 +64,13 @@ std::string Webserv::handle_cgi(Config const& config, Request const& request)
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
     CGIHandler handler(config, request);
-
+    handler.execute(buffer);
     // To do: get Content-type
 
     // Isolate body from CGI response
     std::string string_buffer(buffer);
     int         pos = string_buffer.find("\r\n\r\n");
     string_buffer.erase(0, pos + 3);
-
-    handler.execute(buffer);
 
     return (string_buffer);
 }
