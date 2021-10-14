@@ -21,7 +21,8 @@
           "src/Webserv_request.cpp",
           "src/Config.cpp",
           "src/parsing_config.cpp",
-          "src/CGIHandler.cpp"
+          "src/CGIHandler.cpp",
+          "src/utilities.cpp"
         ],
         "group": {
           "kind": "build",
