@@ -28,8 +28,9 @@ class CGIHandler
     std::string script_name;
     std::string root_directory;
 
-    char** get_env_array();
-    void   DEBUG_print_env_array() const;
+    char**      get_env_array();
+    void        DEBUG_print_env_array() const;
+    std::string getOsName();
 
   public:
     CGIHandler(Config const& config, Request const& request);

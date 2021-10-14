@@ -59,7 +59,14 @@ CGIHandler::CGIHandler(Config const& config, Request const& request)
     std::string pwd(buf);
     delete buf; // Problem?
 
-    cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
+    if (getOsName() == "Mac OSX")
+    {
+        cgi_path = pwd + "/cgi-bin/php-cgi-osx";
+    }
+    else
+    {
+        cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
+    }
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     root_directory = pwd + variables["DOCUMENT_ROOT"];
 
@@ -152,4 +159,23 @@ void CGIHandler::DEBUG_print_env_array() const
         std::cout << env_array[i] << std::endl;
 
     std::cout << "========== End ENV_ARRAY ==========" << std::endl;
+}
+
+std::string CGIHandler::getOsName()
+{
+#ifdef _WIN32
+    return "Windows 32-bit";
+#elif _WIN64
+    return "Windows 64-bit";
+#elif __APPLE__ || __MACH__
+    return "Mac OSX";
+#elif __linux__
+    return "Linux";
+#elif __FreeBSD__
+    return "FreeBSD";
+#elif __unix || __unix__
+    return "Unix";
+#else
+    return "Other";
+#endif
 }
