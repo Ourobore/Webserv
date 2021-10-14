@@ -7,6 +7,14 @@
   </head>
   <body>
     <h1>42 Webserv</h1>
+    <p>42 logo : SVG file</p>
+    <p>C++ logo : PNG file</p>
+    <img
+      style="height: 100"
+      src="https://upload.wikimedia.org/wikipedia/commons/8/8d/42_Logo.svg"
+      alt="42-logo"
+    />
+    <img style="height: 100" src="cplusplus_logo.png" alt="42-logo" />
     <p>This page is served from html/index.html</p>
     <ul>
       <li><a href="/about.html">About</a></li>
@@ -15,7 +23,7 @@
     </ul>
 
     <h2>Post request form</h2>
-    <p>Send a POST request to /html/hello_cgi.py</p>
+    <p>Send a POST request to cgi-bin/hello_cgi.py</p>
     <form action="/cgi-bin/hello_cgi.py" method="POST">
       <div>
         <label for="name">Name</label>
