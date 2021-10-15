@@ -2,6 +2,7 @@
 #define FILEHANDLER_HPP
 
 #include <cstdio>
+#include <exception>
 #include <iostream>
 #include <string>
 
@@ -36,12 +37,32 @@ class FileHandler
 
     // Reading
     std::string read_all();
+    int         read_all(std::string& string_buffer);
 
     // Accessors
     FILE* stream();
     int   fd() const;
     int   dest_fd() const;
     char* buffer();
+
+    // Exceptions
+    class OpenError : public std::exception
+    {
+      public:
+        virtual const char* what() const throw()
+        {
+            return ("Could not open file");
+        }
+    };
+
+    class ReadError : public std::exception
+    {
+      public:
+        virtual const char* what() const throw()
+        {
+            return ("Read error");
+        }
+    };
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "CGIHandler.hpp"
+#include "FileHandler.hpp"
 #include "Webserv.hpp"
+#include <exception>
 
 int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
@@ -52,7 +54,10 @@ void Webserv::request_handler(int socket_fd)
 
     // 400 Bad Request
     else if (req["URI"].empty() || req["Method"].empty())
-        file_to_string("html/400.html", res.content);
+    {
+        FileHandler error_404("html/400.html");
+        error_404.read_all(res.content);
+    }
 
     // Send the response in a struct with headers infos
     respond(socket_fd, req, res);
@@ -93,20 +98,37 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         for (it = indexes.begin(); it != indexes.end(); ++it)
         {
             uri = *it;
-            if (file_to_string((root + "/" + uri).c_str(), content))
+            try
             {
-                res.code = 200;
-                return content;
+                FileHandler index(std::string(root + "/" + uri));
+                if (index.read_all(content))
+                {
+                    res.code = 200;
+                    return content;
+                }
+            }
+            catch (std::exception& e)
+            {
             }
         }
     }
-    if (file_to_string((root + "/" + uri).c_str(), content)) // 200 OK
-        res.code = 200;
-    else // 404 Not Found
+    // Get page if we can open it, else '404 Not found'.
+    // Or '500 Internal Server Error' if file opening failed ?
+    try
     {
-        file_to_string("html/404.html", content);
-        res.code = 404;
+        FileHandler uri_file(std::string(root + "/" + uri));
+        if (uri_file.read_all(content)) // 200 OK
+            res.code = 200;
     }
+    catch (std::exception& e)
+    {
+        // FileHandler error_500("html/500.html");
+        // error_500.read_all(content);
+        FileHandler error_404("html/404.html");
+        if (error_404.read_all(content))
+            res.code = 404;
+    }
+
     return content;
 }
 

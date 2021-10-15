@@ -5,7 +5,7 @@ FileHandler::FileHandler(std::string filename)
 {
     // Opening file stream
     if (!(_stream = fopen(filename.c_str(), "r")))
-        std::cout << "fopen()" << std::endl; // Must throw error later
+        throw FileHandler::OpenError();
 
     // Getting file descriptor for poll()
     _fd = fileno(_stream);
@@ -18,7 +18,7 @@ FileHandler::FileHandler(int file_descriptor) : _fd(file_descriptor)
 {
     // Getting file stream from file descriptor
     if (!(_stream = fdopen(file_descriptor, "r")))
-        std::cout << "fdopen()" << std::endl; // Must throw error later
+        throw FileHandler::OpenError();
 
     // Initializing file dedicated buffer
     _buffer = new char[BUF_SIZE + 1]();
@@ -39,12 +39,9 @@ std::string FileHandler::read_all()
     // errors with functions, not return values
     while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
     {
-        // If there is a read error, break
+        // If there is a read error, throw error
         if (ferror(_stream))
-        {
-            std::cout << "fread()" << std::endl; // Must throw error later
-            break;
-        }
+            throw FileHandler::ReadError();
 
         // Concatenate read buffer with total output
         string_buffer += _buffer;
@@ -54,6 +51,26 @@ std::string FileHandler::read_all()
             break;
     }
     return (string_buffer);
+}
+
+int FileHandler::read_all(std::string& string_buffer)
+{
+    // Perhaps there is a better syntax, but man page says to catch EOF and
+    // errors with functions, not return values
+    while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
+    {
+        // If there is a read error, return error
+        if (ferror(_stream))
+            return (0);
+
+        // Concatenate read buffer with total output
+        string_buffer += _buffer;
+
+        // If it is EOF, then break
+        if (feof(_stream))
+            break;
+    }
+    return (1);
 }
 
 // Accessors
