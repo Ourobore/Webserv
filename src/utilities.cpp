@@ -6,3 +6,22 @@ std::string ft::strtrim(std::string str, const std::string charset)
     str.erase(str.find_last_not_of(charset) + 1);
     return str;
 }
+
+std::string ft::transform_localhost(std::string host)
+{
+    if (host == "localhost")
+        return ("127.0.0.1");
+    else
+        return (host);
+}
+
+std::string ft::getOsName()
+{
+#ifdef __linux__
+    return "Linux";
+#elif __APPLE__ || __MACH__
+    return "Mac OSX";
+#else
+    return "Other";
+#endif
+}

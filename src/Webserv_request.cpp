@@ -1,5 +1,7 @@
 #include "CGIHandler.hpp"
+#include "FileHandler.hpp"
 #include "Webserv.hpp"
+#include <exception>
 
 int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
@@ -53,7 +55,11 @@ void Webserv::request_handler(int socket_fd)
 
     // 400 Bad Request
     else if (req["URI"].empty() || req["Method"].empty())
-        file_to_string("html/400.html", res.content);
+    {
+        FileHandler error_404 = open_file_stream("html/400.html");
+        if (error_404.stream())
+            error_404.read_all(res.content);
+    }
 
     // Send the response in a struct with headers infos
     respond(socket_fd, req, res);
@@ -94,19 +100,46 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         for (it = indexes.begin(); it != indexes.end(); ++it)
         {
             uri = *it;
-            if (file_to_string((root + "/" + uri).c_str(), content))
+            FileHandler index = open_file_stream(root + "/" + uri);
+            if (index.stream() && index.read_all(content))
             {
                 res.code = 200;
                 return content;
             }
         }
     }
-    if (file_to_string((root + "/" + uri).c_str(), content)) // 200 OK
-        res.code = 200;
-    else // 404 Not Found
+
+    // Get page if we can open it, else '404 Not found'.
+    // Or '500 Internal Server Error' if file opening failed ?
+    FileHandler uri_file = open_file_stream(root + "/" + uri);
+    if (uri_file.stream() && uri_file.read_all(content)) // 200 OK
     {
-        file_to_string("html/404.html", content);
-        res.code = 404;
+        if (req["URI"].find(".svg", req["URI"].size() - 4) != std::string::npos)
+            res.content_type = "image/svg+xml";
+        else if (req["URI"].find(".png", req["URI"].size() - 4) !=
+                 std::string::npos)
+            res.content_type = "image/png";
+        res.code = 200;
+    }
+    switch (uri_file.status())
+    {
+        case 404:
+        {
+            // If opening fails here, should we try to open 500.html,
+            // which can fail too. Non ending loop
+            FileHandler error_404 = open_file_stream("html/404.html");
+            if (error_404.stream() && error_404.read_all(content))
+                res.code = 404;
+            break;
+        }
+        case 500:
+        {
+            // Same here
+            FileHandler error_500 = open_file_stream("html/500.html");
+            if (error_500.stream() && error_500.read_all(content))
+                res.code = 505;
+            break;
+        }
     }
     return content;
 }

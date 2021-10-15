@@ -15,9 +15,11 @@ SRC			=	Socket.cpp \
 				Request.cpp \
 				Webserv_connection.cpp \
 				Webserv_request.cpp \
+				Webserv_file.cpp \
 				Config.cpp \
 				parsing_config.cpp \
 				CGIHandler.cpp \
+				FileHandler.cpp \
 				utilities.cpp \
 
 # *.o files

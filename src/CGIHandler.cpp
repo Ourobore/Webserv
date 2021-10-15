@@ -1,4 +1,5 @@
 #include "CGIHandler.hpp"
+#include "utilities.hpp"
 #include <netinet/in.h>
 
 CGIHandler::CGIHandler(Config const& config, Request const& request,
@@ -10,7 +11,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     // variables["GATEWAY_INTERFACE"] = "CGI/1.1";
     // variables["REQUEST_METHOD"] = request["Method"];
     // variables["SERVER_SOFTWARE"] = "Webserv";
-    // variables["SERVER_NAME"] = config.get_host();
+    // variables["SERVER_NAME"] = ft::transform_localhost(config.get_host());
 
     // Setting up CGI variables as envp
     variables["PHP_SELF"] = request["URI"]; // Dangerous?
@@ -20,7 +21,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     // Server variables
     variables["DOCUMENT_ROOT"] = config.get_root();
     variables["SERVER_PROTOCOL"] = request["Protocol"];
-    variables["SERVER_ADDR"] = "127.0.0.1";
+    variables["SERVER_ADDR"] = ft::transform_localhost(config.get_host());
     variables["SERVER_PORT"] = ft::to_string(config.get_port());
 
     // Client variables. May need to take informations from client socket?
@@ -57,14 +58,10 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     std::string pwd(buf);
     free(buf);
 
-    if (getOsName() == "Mac OSX")
-    {
+    if (ft::getOsName() == "Mac OSX")
         cgi_path = pwd + "/cgi-bin/php-cgi-osx";
-    }
     else
-    {
         cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
-    }
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     root_directory = pwd + variables["DOCUMENT_ROOT"];
 
