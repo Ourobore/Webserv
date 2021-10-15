@@ -2,14 +2,16 @@
 #define WEBSERV_HPP
 
 #include "Config.hpp"
+#include "FileHandler.hpp"
 #include "Request.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
-
+#include "utilities.hpp"
 
 #include <arpa/inet.h>
 #include <cstring>
 #include <fstream>
+#include <netinet/in.h>
 #include <poll.h>
 #include <sstream>
 #include <vector>
@@ -46,6 +48,10 @@ class Webserv
                            Response& res);
     int         file_to_string(const char* path, std::string& string_buffer);
     void        respond(int socket_fd, Request& req, Response& res);
+
+    // Files handling
+    FileHandler open_file_stream(std::string filename);
+    FileHandler open_file_stream(int file_descriptor);
 
     // Utilities
     Server& get_server_from_client(int client_fd);

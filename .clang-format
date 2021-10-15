@@ -9,3 +9,4 @@ NamespaceIndentation: All
 AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes
+IndentCaseLabels: true

@@ -12,7 +12,7 @@ static int BUF_SIZE = 1024;
 /*
 Used to open a file, or an already opened file descriptor, and read data from
 it. Extracts file descriptor from stream to use it in poll(), or stream to read
-data stream from a file descriptor. Destination file descriptor can be defined
+data from a file descriptor. Destination file descriptor can be defined
 if necessary to specifiy to which file descriptor the data must be sent to.
 Returns a std::string.
 */
@@ -26,17 +26,17 @@ class FileHandler
     int   _fd;
     int   _dest_fd;
     char* _buffer;
-
-    FileHandler();
+    int   _status;
 
   public:
-    // Constructors and destructors
-    FileHandler(std::string filename);
-    FileHandler(int file_descriptor);
+    // Constructors and destructor
+    FileHandler();
+    FileHandler(std::string filename); // Throws
+    FileHandler(int file_descriptor);  // Throws
     ~FileHandler();
 
     // Reading
-    std::string read_all();
+    std::string read_all(); // Throws
     int         read_all(std::string& string_buffer);
 
     // Accessors
@@ -44,6 +44,8 @@ class FileHandler
     int   fd() const;
     int   dest_fd() const;
     char* buffer();
+    int   status() const;
+    void  set_status(int status);
 
     // Exceptions
     class OpenError : public std::exception
@@ -60,7 +62,16 @@ class FileHandler
       public:
         virtual const char* what() const throw()
         {
-            return ("Read error");
+            return ("File reading error");
+        }
+    };
+
+    class NoFile : public std::exception
+    {
+      public:
+        virtual const char* what() const throw()
+        {
+            return ("File doesn't exists");
         }
     };
 };

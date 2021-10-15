@@ -55,8 +55,9 @@ void Webserv::request_handler(int socket_fd)
     // 400 Bad Request
     else if (req["URI"].empty() || req["Method"].empty())
     {
-        FileHandler error_404("html/400.html");
-        error_404.read_all(res.content);
+        FileHandler error_404 = open_file_stream("html/400.html");
+        if (error_404.stream())
+            error_404.read_all(res.content);
     }
 
     // Send the response in a struct with headers infos
@@ -98,37 +99,40 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         for (it = indexes.begin(); it != indexes.end(); ++it)
         {
             uri = *it;
-            try
+            FileHandler index = open_file_stream(root + "/" + uri);
+            if (index.stream() && index.read_all(content))
             {
-                FileHandler index(std::string(root + "/" + uri));
-                if (index.read_all(content))
-                {
-                    res.code = 200;
-                    return content;
-                }
-            }
-            catch (std::exception& e)
-            {
+                res.code = 200;
+                return content;
             }
         }
     }
+
     // Get page if we can open it, else '404 Not found'.
     // Or '500 Internal Server Error' if file opening failed ?
-    try
+    FileHandler uri_file = open_file_stream(root + "/" + uri);
+    if (uri_file.stream() && uri_file.read_all(content)) // 200 OK
+        res.code = 200;
+    switch (uri_file.status())
     {
-        FileHandler uri_file(std::string(root + "/" + uri));
-        if (uri_file.read_all(content)) // 200 OK
-            res.code = 200;
+        case 404:
+        {
+            // If opening fails here, should we try to open 500.html,
+            // which can fail too. Non ending loop
+            FileHandler error_404 = open_file_stream("html/404.html");
+            if (error_404.stream() && error_404.read_all(content))
+                res.code = 404;
+            break;
+        }
+        case 500:
+        {
+            // Same here
+            FileHandler error_500 = open_file_stream("html/500.html");
+            if (error_500.stream() && error_500.read_all(content))
+                res.code = 505;
+            break;
+        }
     }
-    catch (std::exception& e)
-    {
-        // FileHandler error_500("html/500.html");
-        // error_500.read_all(content);
-        FileHandler error_404("html/404.html");
-        if (error_404.read_all(content))
-            res.code = 404;
-    }
-
     return content;
 }
 

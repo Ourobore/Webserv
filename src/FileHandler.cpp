@@ -1,11 +1,27 @@
 #include "FileHandler.hpp"
+#include <asm-generic/errno-base.h>
+#include <cerrno>
 
 // Constructors and destructors
+FileHandler::FileHandler()
+{
+    _stream = NULL;
+    _fd = -1;
+    _dest_fd = -1;
+    _buffer = NULL;
+    _status = -1;
+}
+
 FileHandler::FileHandler(std::string filename)
 {
     // Opening file stream
     if (!(_stream = fopen(filename.c_str(), "r")))
-        throw FileHandler::OpenError();
+    {
+        if (errno == ENOENT)
+            throw FileHandler::NoFile();
+        else
+            throw FileHandler::OpenError();
+    }
 
     // Getting file descriptor for poll()
     _fd = fileno(_stream);
@@ -18,7 +34,12 @@ FileHandler::FileHandler(int file_descriptor) : _fd(file_descriptor)
 {
     // Getting file stream from file descriptor
     if (!(_stream = fdopen(file_descriptor, "r")))
-        throw FileHandler::OpenError();
+    {
+        if (errno == ENOENT)
+            throw FileHandler::NoFile();
+        else
+            throw FileHandler::OpenError();
+    }
 
     // Initializing file dedicated buffer
     _buffer = new char[BUF_SIZE + 1]();
@@ -26,8 +47,10 @@ FileHandler::FileHandler(int file_descriptor) : _fd(file_descriptor)
 
 FileHandler::~FileHandler()
 {
-    fclose(_stream);
-    delete[] _buffer;
+    if (_stream)
+        fclose(_stream);
+    if (_buffer)
+        delete[] _buffer;
 }
 
 // Reading
@@ -78,15 +101,28 @@ FILE* FileHandler::stream()
 {
     return (_stream);
 }
+
 int FileHandler::fd() const
 {
     return (_fd);
 }
+
 int FileHandler::dest_fd() const
 {
     return (_dest_fd);
 }
+
 char* FileHandler::buffer()
 {
     return (_buffer);
+}
+
+int FileHandler::status() const
+{
+    return (_status);
+}
+
+void FileHandler::set_status(int status)
+{
+    _status = status;
 }
