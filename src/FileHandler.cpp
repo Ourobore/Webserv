@@ -1,6 +1,7 @@
 #include "FileHandler.hpp"
 #include <asm-generic/errno-base.h>
 #include <cerrno>
+#include <cstring>
 
 // Constructors and destructors
 FileHandler::FileHandler()
@@ -68,6 +69,7 @@ std::string FileHandler::read_all()
 
         // Concatenate read buffer with total output
         string_buffer += _buffer;
+        std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))
@@ -88,6 +90,7 @@ int FileHandler::read_all(std::string& string_buffer)
 
         // Concatenate read buffer with total output
         string_buffer += _buffer;
+        std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))

@@ -14,3 +14,14 @@ std::string ft::transform_localhost(std::string host)
     else
         return (host);
 }
+
+std::string ft::getOsName()
+{
+#ifdef __linux__
+    return "Linux";
+#elif __APPLE__ || __MACH__
+    return "Mac OSX";
+#else
+    return "Other";
+#endif
+}

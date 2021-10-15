@@ -58,7 +58,10 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     std::string pwd(buf);
     free(buf);
 
-    cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
+    if (ft::getOsName() == "Mac OSX")
+        cgi_path = pwd + "/cgi-bin/php-cgi-osx";
+    else
+        cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     root_directory = pwd + variables["DOCUMENT_ROOT"];
 

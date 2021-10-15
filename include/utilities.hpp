@@ -31,12 +31,16 @@ namespace ft
     }
 
     /* Returns a string.
-        Trims after 1st occurence to last occurence of char in charset */
+        Trims from beginning to 1st occurence of charset and from last occurence
+       to end */
     std::string strtrim(std::string str, const std::string charset);
 
     /* If the host is 'localhost', return '127.0.0.1' to be usable by some
       functions. Else return host untouched */
     std::string transform_localhost(std::string host);
+
+    /* Get OS name "Mac OSX" or "Linux" */
+    std::string getOsName();
 } // namespace ft
 
 #endif

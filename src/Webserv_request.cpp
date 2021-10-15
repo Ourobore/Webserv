@@ -112,7 +112,14 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
     // Or '500 Internal Server Error' if file opening failed ?
     FileHandler uri_file = open_file_stream(root + "/" + uri);
     if (uri_file.stream() && uri_file.read_all(content)) // 200 OK
+    {
+        if (req["URI"].find(".svg", req["URI"].size() - 4) != std::string::npos)
+            res.content_type = "image/svg+xml";
+        else if (req["URI"].find(".png", req["URI"].size() - 4) !=
+                 std::string::npos)
+            res.content_type = "image/png";
         res.code = 200;
+    }
     switch (uri_file.status())
     {
         case 404:
