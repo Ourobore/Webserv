@@ -118,7 +118,11 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
             res.content_type = "image/svg+xml";
         else if (req["URI"].find(".png", req["URI"].size() - 4) !=
                  std::string::npos)
+        {
+            content = "";
+            file_to_string((root + "/" + uri).c_str(), content);
             res.content_type = "image/png";
+        }
         res.code = 200;
     }
     switch (uri_file.status())
