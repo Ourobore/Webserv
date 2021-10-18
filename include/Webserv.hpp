@@ -17,6 +17,7 @@
 #include <vector>
 
 const int BUFFER_SIZE = 30000;
+const int CHUNK_SIZE = 64;
 
 class Webserv
 {
@@ -32,7 +33,10 @@ class Webserv
         int         code;
     } Response;
 
-    char buffer[BUFFER_SIZE];
+    // buffer[BUFFER_SIZE] should be replace by recv_data. Seems ok for simple
+    // requests
+    char        buffer[BUFFER_SIZE];
+    std::string recv_data;
 
     // Polling
     void poll_events();

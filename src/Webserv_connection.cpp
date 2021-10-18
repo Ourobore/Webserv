@@ -67,16 +67,24 @@ void Webserv::poll_events()
             // Or if this is a client
             else
             {
-                int bytes_received = recv(pfds[i].fd, buffer, BUFFER_SIZE, 0);
-                // If no bytes received, then close connection
-                if (bytes_received <= 0)
-                    close_connection(bytes_received, i);
-                // Or receive data from client
-                else
+                char chunk[CHUNK_SIZE] = {0};
+                int  bytes_received = 0;
+                recv_data = "";
+                while ((bytes_received = recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
+                                              MSG_DONTWAIT)) > 0)
                 {
-                    request_handler(pfds[i].fd);
-                    // send a response to client with socket at i
+                    recv_data += std::string(chunk);
+                    memset(chunk, 0, CHUNK_SIZE);
                 }
+                if (bytes_received == 0)
+                {
+                    close(pfds[i].fd);
+                    pfds.erase(pfds.begin() + i);
+                    std::cout
+                        << "No bytes to read. Client disconnected from socket"
+                        << std::endl;
+                }
+                request_handler(pfds[i].fd);
             }
         }
     }

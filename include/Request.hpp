@@ -24,7 +24,7 @@ class Request
     void                     parse_body();
 
   public:
-    Request(char* bytes);
+    Request(const char* bytes);
     std::map<std::string, std::string> tokens;
 
     std::string operator[](const std::string& key) const;
