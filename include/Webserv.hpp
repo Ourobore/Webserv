@@ -16,7 +16,7 @@
 #include <sstream>
 #include <vector>
 
-const int BUFFER_SIZE = 30000;
+// const int BUFFER_SIZE = 30000;
 const int CHUNK_SIZE = 64;
 
 class Webserv
@@ -35,7 +35,7 @@ class Webserv
 
     // buffer[BUFFER_SIZE] should be replace by recv_data. Seems ok for simple
     // requests
-    char        buffer[BUFFER_SIZE];
+    // char        buffer[BUFFER_SIZE];
     std::string recv_data;
 
     // Polling
@@ -53,10 +53,6 @@ class Webserv
     int         file_to_string(const char* path, std::string& string_buffer);
     void        respond(int socket_fd, Request& req, Response& res);
 
-    // Files handling
-    FileHandler open_file_stream(std::string filename);
-    FileHandler open_file_stream(int file_descriptor);
-
     // Utilities
     Server& get_server_from_client(int client_fd);
     Server& get_server(int server_fd);
@@ -69,6 +65,10 @@ class Webserv
     // void create_server(int domain, int type, int protocol, int port,
     //                    u_long interface);
     void create_server(Config& config);
+
+    // Files handling
+    static FileHandler open_file_stream(std::string filename);
+    static FileHandler open_file_stream(int file_descriptor);
 };
 
 #endif

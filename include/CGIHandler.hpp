@@ -12,6 +12,7 @@
 #include "Config.hpp"
 #include "Request.hpp"
 #include "Socket.hpp"
+#include "Webserv.hpp"
 #include "utilities.hpp"
 
 #define PIPEREAD 0
@@ -38,7 +39,7 @@ class CGIHandler
     CGIHandler(Config const& config, Request const& request, int client_fd);
     ~CGIHandler();
 
-    void execute(char buffer[30000]);
+    std::string execute();
 };
 
 #endif
