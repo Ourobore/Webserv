@@ -3,7 +3,7 @@
 Webserv::Webserv()
 {
     // Init buffer. TODO: try to allocate dynamically ?
-    std::memset(buffer, 0, BUFFER_SIZE);
+    // std::memset(buffer, 0, BUFFER_SIZE);
 
     // Init status code for server response
     res_status[200] = "OK";

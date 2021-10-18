@@ -28,7 +28,7 @@ void Webserv::request_handler(int socket_fd)
 
     // Parsing Request + rest read buffer
     Request req = Request(recv_data.c_str());
-    std::memset(buffer, 0, BUFFER_SIZE);
+    // std::memset(buffer, 0, BUFFER_SIZE);
 
     // Start to build the Response { content; content_type; code }
     struct Response res = {"", "", 400};
@@ -70,17 +70,17 @@ std::string Webserv::handle_cgi(Config const& config, Request const& request,
 {
     // Just a CGI test here, need more verifications. For exemple if we are in a
     // location
-    CGIHandler handler(config, request, client_fd);
-    handler.execute(buffer);
+    CGIHandler  handler(config, request, client_fd);
+    std::string cgi_output = handler.execute();
 
     // To do: get Content-type
 
     // Isolate body from CGI response
-    std::string string_buffer(buffer);
-    int         pos = string_buffer.find("\r\n\r\n");
-    string_buffer.erase(0, pos + 3);
+    std::string body(cgi_output);
+    int         pos = cgi_output.find("\r\n\r\n");
+    body.erase(0, pos + 3);
 
-    return (string_buffer);
+    return (body);
 }
 
 /*

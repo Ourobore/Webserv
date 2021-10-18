@@ -89,10 +89,11 @@ CGIHandler::~CGIHandler()
     delete[] cgi_argv;
 }
 
-void CGIHandler::execute(char buffer[30000]) // Need changes i think
+std::string CGIHandler::execute() // Need changes i think
 {
-    int pipefd[2];
-    int childpid = 0;
+    int         pipefd[2];
+    int         childpid = 0;
+    std::string cgi_output("");
 
     if (pipe(pipefd) == -1)
     {
@@ -120,10 +121,13 @@ void CGIHandler::execute(char buffer[30000]) // Need changes i think
     {
         waitpid(childpid, NULL, 0);
         close(pipefd[PIPEWRITE]);
-        read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
+        FileHandler cgi_stream = Webserv::open_file_stream(pipefd[PIPEREAD]);
+        if (cgi_stream.stream())
+            cgi_output = cgi_stream.read_all();
+        // read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
         close(pipefd[PIPEREAD]);
-        return;
     }
+    return (cgi_output);
 }
 
 char** CGIHandler::get_env_array()
