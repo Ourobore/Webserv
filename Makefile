@@ -21,6 +21,7 @@ SRC			=	Socket.cpp \
 				CGIHandler.cpp \
 				FileHandler.cpp \
 				utilities.cpp \
+				Location.cpp
 
 # *.o files
 OBJDIR = obj/
