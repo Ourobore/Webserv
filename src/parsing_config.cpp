@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -56,7 +57,8 @@ int config_error(std::string config_final)
     return (0);
 }
 
-void verif_semicolon(std::string& config_final, size_t i, int nbline)
+void verif_semicolon(std::string& config_final, size_t i, int nbline,
+                     bool line_location)
 {
     size_t j;
     size_t server_pos;
@@ -73,7 +75,7 @@ void verif_semicolon(std::string& config_final, size_t i, int nbline)
                           config_final[j] == '{' || config_final[j] == '}'))
             j--;
         if (config_final[j] != '\n' && config_final[j] != ' ' &&
-            config_final[j] != '\t')
+            config_final[j] != '\t' && line_location == false)
             throw std::string("Error (line " + ft::to_string(nbline) +
                               "): Problem endline");
         return;
@@ -92,10 +94,16 @@ void transform_config(std::string& config_final)
 {
     std::size_t doubleSpace;
     int         nbline;
+    size_t      location;
+    bool        line_location;
 
     nbline = 1;
+    line_location = false;
     for (size_t i = 0; i < config_final.size(); i++)
     {
+        location = config_final.find("location", i);
+        if (i == location)
+            line_location = true;
         if (config_final[i] == ';' && config_final[i + 1] != '\n')
             throw std::string("Error (line " + ft::to_string(nbline) +
                               "): semicolon is not end character");
@@ -106,8 +114,9 @@ void transform_config(std::string& config_final)
                                   "): Space or tab before semicolon");
         if (config_final[i] == '\n')
         {
-            verif_semicolon(config_final, i, nbline);
+            verif_semicolon(config_final, i, nbline, line_location);
             nbline++;
+            line_location = false;
         }
     }
     for (size_t i = 0; i < config_final.size(); i++)
