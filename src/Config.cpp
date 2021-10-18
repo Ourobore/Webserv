@@ -1,6 +1,8 @@
 #include "Config.hpp"
+#include <cstddef>
 #include <iostream>
 #include <string>
+#include <vector>
 
 Config::Config(std::string config)
 {
@@ -10,6 +12,7 @@ Config::Config(std::string config)
     set_client_max(search_config(config, "client_max_body_size"));
     set_root(search_config(config, "root"));
     set_index(search_config(config, "index"));
+    set_location(config);
 }
 
 Config::Config(Config const& src)
@@ -23,21 +26,72 @@ Config::~Config()
 
 std::string Config::search_config(std::string config, std::string key)
 {
-    size_t      begin;
-    size_t      end;
-    std::string line;
+    size_t              begin;
+    size_t              end;
+    size_t              doublon;
+    std::string         line;
+    std::vector<size_t> locations;
+    int                 i = 0;
 
     begin = config.find(key);
+    while (config[begin - 2] != ';' && config[begin - 2] != '{' &&
+           config[begin - 2] != '}' && begin != std::string::npos)
+    {
+        begin = config.find(key, begin + 1);
+    }
     if (begin == std::string::npos)
         return ("");
     if (config[begin + key.size()] != ' ')
         throw std::string("Error: Missing space for " + key);
     end = config.find(";", begin);
-    if (config.find(key, end + 1) != std::string::npos)
-        throw std::string("Error: Double " + key);
+    doublon = end;
+    locations = search_location(config);
+    while ((doublon = config.find(key, doublon + 1)) != std::string::npos)
+    {
+        for (std::vector<size_t>::iterator it = locations.begin();
+             it != locations.end(); ++it)
+        {
+            if (doublon > *it && doublon < *(it + 1) && config[*it] != '}')
+            {
+                i = 0;
+                break;
+            }
+            i++;
+        }
+        if ((config[doublon - 2] == ';' || config[doublon - 2] == '}') &&
+            i != 0)
+            throw std::string("Error: Double " + key);
+        i = 0;
+    }
     line = config.substr(begin, (end - begin));
-
     return (line);
+}
+
+std::vector<size_t> Config::search_location(std::string config)
+{
+    std::vector<size_t> locations;
+    size_t              pos = 0;
+    size_t              space = 0;
+    size_t              end = 0;
+    size_t              another = 0;
+    int                 i = 0;
+
+    while ((pos = config.find("location", pos + 1)) != std::string::npos)
+    {
+        if (config[pos + 8] != ' ')
+            throw std::string("Error: Missing space for location");
+        space = config.find(" ", pos + 9);
+        if (config[space + 1] != '{')
+            throw std::string("Error: No { for location");
+        end = config.find("}", space);
+        another = config.find("location", pos + 1);
+        if (another != std::string::npos && end > another)
+            throw std::string("Error: Another location in location");
+        locations.push_back(pos + 9);
+        locations.push_back(end);
+        i = i + 2;
+    }
+    return (locations);
 }
 
 void Config::set_host_port(std::string line)
@@ -164,6 +218,23 @@ void Config::set_index(std::string line)
     }
 }
 
+void Config::set_location(std::string config)
+{
+    std::vector<size_t>           tmp;
+    std::string                   block;
+    std::vector<size_t>::iterator it;
+
+    tmp = search_location(config);
+    while (!tmp.empty())
+    {
+        it = tmp.begin();
+        block = config.substr(tmp[0], (tmp[1] - tmp[0]));
+        Location new_location(block);
+        this->location.push_back(new_location);
+        tmp.erase(tmp.begin(), tmp.begin() + 2);
+    }
+}
+
 std::string Config::get_host() const
 {
     return (this->host);
@@ -199,6 +270,11 @@ std::vector<std::string> Config::get_index() const
     return (this->index);
 }
 
+std::vector<Location> Config::get_locations() const
+{
+    return (this->location);
+}
+
 std::ostream& operator<<(std::ostream& os, Config const& src)
 {
     os << std::endl << "////Configuration////" << std::endl << std::endl;
@@ -209,14 +285,14 @@ std::ostream& operator<<(std::ostream& os, Config const& src)
     for (std::vector<std::string>::iterator it = names.begin();
          it != names.end(); ++it)
         os << "\t-" << *it << std::endl;
-    std::map<std::string, std::string> error_pages = src.get_error_pages();
     os << "Error pages:" << std::endl;
+    std::map<std::string, std::string> error_pages = src.get_error_pages();
     if (error_pages.empty() == false)
     {
         for (std::map<std::string, std::string>::const_iterator it =
                  error_pages.begin();
              it != error_pages.end(); ++it)
-            std::cout << "\t-" << it->first << " " << it->second << std::endl;
+            os << "\t-" << it->first << " " << it->second << std::endl;
     }
     os << "Client_max: " << src.get_client_max() << std::endl;
     os << "Root: " << src.get_root() << std::endl;
@@ -225,6 +301,11 @@ std::ostream& operator<<(std::ostream& os, Config const& src)
     for (std::vector<std::string>::iterator it = index.begin();
          it != index.end(); ++it)
         os << "\t-" << *it << std::endl;
+    os << "Location:" << std::endl;
+    std::vector<Location> location = src.get_locations();
+    for (std::vector<Location>::iterator it = location.begin();
+         it != location.end(); ++it)
+        os << "-" << *it << std::endl;
     os << std::endl;
     return (os);
 }
