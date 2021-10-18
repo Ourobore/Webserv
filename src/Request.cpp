@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request(char* bytes)
+Request::Request(const char* bytes)
 {
 
     req_str = std::string(bytes);

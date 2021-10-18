@@ -13,16 +13,7 @@
           "-Wextra",
           "-Werror",
           "-Iinclude",
-          "src/main.cpp",
-          "src/Socket.cpp",
-          "src/Server.cpp",
-          "src/Request.cpp",
-          "src/Webserv_connection.cpp",
-          "src/Webserv_request.cpp",
-          "src/Config.cpp",
-          "src/parsing_config.cpp",
-          "src/CGIHandler.cpp",
-          "src/utilities.cpp"
+          "src/*.cpp"
         ],
         "group": {
           "kind": "build",

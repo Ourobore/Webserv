@@ -20,14 +20,14 @@ int Webserv::file_to_string(const char* path, std::string& string_buffer)
 void Webserv::request_handler(int socket_fd)
 {
     // Print request from client [Debug]
-    std::cout << buffer << std::endl;
+    std::cout << recv_data << std::endl;
 
     // Get server config
     Server& server = get_server_from_client(socket_fd);
     Config& config = server.config();
 
     // Parsing Request + rest read buffer
-    Request req = Request(buffer);
+    Request req = Request(recv_data.c_str());
     std::memset(buffer, 0, BUFFER_SIZE);
 
     // Start to build the Response { content; content_type; code }
@@ -118,7 +118,11 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
             res.content_type = "image/svg+xml";
         else if (req["URI"].find(".png", req["URI"].size() - 4) !=
                  std::string::npos)
+        {
+            content = "";
+            file_to_string((root + "/" + uri).c_str(), content);
             res.content_type = "image/png";
+        }
         res.code = 200;
     }
     switch (uri_file.status())
