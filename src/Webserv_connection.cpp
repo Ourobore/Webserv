@@ -84,7 +84,8 @@ void Webserv::poll_events()
                         << "No bytes to read. Client disconnected from socket"
                         << std::endl;
                 }
-                request_handler(pfds[i].fd);
+                else
+                    request_handler(pfds[i].fd);
             }
         }
     }

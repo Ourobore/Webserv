@@ -66,7 +66,7 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     root_directory = pwd + variables["DOCUMENT_ROOT"];
 
     // Debug: Printing env_array
-    DEBUG_print_env_array();
+    // DEBUG_print_env_array();
 
     // Setting CGI arguments for execve()
     cgi_argv = new char*[3]();

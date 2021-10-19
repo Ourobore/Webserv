@@ -2,6 +2,7 @@
 #include <asm-generic/errno-base.h>
 #include <cerrno>
 #include <cstring>
+#include <string>
 
 // Constructors and destructors
 FileHandler::FileHandler()
@@ -13,10 +14,10 @@ FileHandler::FileHandler()
     _status = -1;
 }
 
-FileHandler::FileHandler(std::string filename)
+FileHandler::FileHandler(std::string filename, std::string mode)
 {
     // Opening file stream
-    if (!(_stream = fopen(filename.c_str(), "r")))
+    if (!(_stream = fopen(filename.c_str(), mode.c_str())))
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();
@@ -31,10 +32,11 @@ FileHandler::FileHandler(std::string filename)
     _buffer = new char[BUF_SIZE + 1]();
 }
 
-FileHandler::FileHandler(int file_descriptor) : _fd(file_descriptor)
+FileHandler::FileHandler(int file_descriptor, std::string mode)
+    : _fd(file_descriptor)
 {
     // Getting file stream from file descriptor
-    if (!(_stream = fdopen(file_descriptor, "r")))
+    if (!(_stream = fdopen(file_descriptor, mode.c_str())))
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();

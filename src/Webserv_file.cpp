@@ -2,11 +2,11 @@
 #include "Webserv.hpp"
 
 /* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(std::string filename)
+FileHandler Webserv::open_file_stream(std::string filename, std::string mode)
 {
     try
     {
-        FileHandler file(filename);
+        FileHandler file(filename, mode);
         file.set_status(200);
         return (file);
     }
@@ -27,11 +27,11 @@ FileHandler Webserv::open_file_stream(std::string filename)
 }
 
 /* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(int file_descriptor)
+FileHandler Webserv::open_file_stream(int file_descriptor, std::string mode)
 {
     try
     {
-        FileHandler file(file_descriptor);
+        FileHandler file(file_descriptor, mode);
         file.set_status(200);
         return (file);
     }
