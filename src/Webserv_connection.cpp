@@ -1,10 +1,8 @@
+#include "FileHandler.hpp"
 #include "Webserv.hpp"
 
 Webserv::Webserv()
 {
-    // Init buffer. TODO: try to allocate dynamically ?
-    // std::memset(buffer, 0, BUFFER_SIZE);
-
     // Init status code for server response
     res_status[200] = "OK";
     res_status[400] = "Bad Request";
@@ -59,33 +57,60 @@ void Webserv::poll_events()
     for (size_t i = 0; i < pfds.size(); i++)
     {
         // Check if someone has something to read
-        if (pfds[i].revents & POLLIN)
+        if ((is_file_fd(pfds[i].fd)) != files.end())
         {
-            // If this is a server, handle connection
-            if (is_server_socket(pfds[i].fd))
-                accept_connection(pfds[i].fd);
-            // Or if this is a client
-            else
+
+            std::vector<FileHandler>::iterator file_it;
+            file_it = is_file_fd(pfds[i].fd);
+            /* Read the file, close the fd and remove it, set POLLOUT for client
+             */
+            if (pfds[i].revents & POLLIN)
             {
-                char chunk[CHUNK_SIZE] = {0};
-                int  bytes_received = 0;
-                recv_data = "";
-                while ((bytes_received = recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
-                                              MSG_DONTWAIT)) > 0)
-                {
-                    recv_data += std::string(chunk);
-                    memset(chunk, 0, CHUNK_SIZE);
-                }
-                if (bytes_received == 0)
-                {
-                    close(pfds[i].fd);
-                    pfds.erase(pfds.begin() + i);
-                    std::cout
-                        << "No bytes to read. Client disconnected from socket"
-                        << std::endl;
-                }
+                std::string file_output = file_it->read_all();
+                int         client_index = get_poll_index(file_it->fd());
+                pfds[i].events = POLLOUT;
+            }
+            // if (pfds[i].revents & POLLOUT) ?
+        }
+        else
+        {
+            if (pfds[i].revents & POLLIN)
+            {
+                // If this is a server, handle connection
+                if (is_server_socket(pfds[i].fd))
+                    accept_connection(pfds[i].fd);
+                // Or if this is a client
                 else
-                    request_handler(pfds[i].fd);
+                {
+                    char chunk[CHUNK_SIZE] = {0};
+                    int  bytes_received = 0;
+                    recv_data = "";
+                    while ((bytes_received =
+                                recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
+                                     MSG_DONTWAIT)) > 0)
+                    {
+                        recv_data += std::string(chunk);
+                        memset(chunk, 0, CHUNK_SIZE);
+                    }
+                    if (bytes_received == 0)
+                    {
+                        close(pfds[i].fd);
+                        pfds.erase(pfds.begin() + i);
+                        std::cout << "No bytes to read. Client disconnected "
+                                     "from socket"
+                                  << std::endl;
+                    }
+                    else
+                        request_handler(pfds[i].fd);
+                }
+            }
+            /* If fd is ready to write, write response, then set events to
+               POLLIN again to be ready to read*/
+            else if (pfds[i].revents & POLLOUT)
+            {
+                FileHandler& file = *get_file_from_client(pfds[i].fd);
+                // Ou est stocké l'output du fichier?! On a besoin de séparer
+                // lecture de la requete et sa réponse!
             }
         }
     }

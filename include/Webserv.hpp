@@ -24,6 +24,7 @@ class Webserv
   private:
     std::vector<Server>        servers;
     std::vector<struct pollfd> pfds;
+    std::vector<FileHandler>   files;
     std::map<int, std::string> res_status;
 
     typedef struct Response
@@ -33,9 +34,6 @@ class Webserv
         int         code;
     } Response;
 
-    // buffer[BUFFER_SIZE] should be replace by recv_data. Seems ok for simple
-    // requests
-    // char        buffer[BUFFER_SIZE];
     std::string recv_data;
 
     // Polling
@@ -56,14 +54,16 @@ class Webserv
     // Utilities
     Server& get_server_from_client(int client_fd);
     Server& get_server(int server_fd);
+    int     get_poll_index(int file_descriptor);
+
+    std::vector<FileHandler>::iterator is_file_fd(int file_descriptor);
+    std::vector<FileHandler>::iterator get_file_from_client(int dest_fd);
 
   public:
     Webserv();
     ~Webserv();
 
     void start();
-    // void create_server(int domain, int type, int protocol, int port,
-    //                    u_long interface);
     void create_server(Config& config);
 
     // Files handling
