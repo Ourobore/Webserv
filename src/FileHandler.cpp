@@ -2,7 +2,6 @@
 #include <asm-generic/errno-base.h>
 #include <cerrno>
 #include <cstring>
-#include <sstream>
 
 // Constructors and destructors
 FileHandler::FileHandler()
@@ -59,47 +58,48 @@ FileHandler::~FileHandler()
 // Reading
 std::string FileHandler::read_all()
 {
-    std::stringstream stream;
+    std::string string_buffer("");
+    size_t      nb_elem_read = 0;
 
     // Perhaps there is a better syntax, but man page says to
     // catch EOF and errors with functions, not return values
-    while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
+    while ((nb_elem_read = fread(_buffer, sizeof(char), BUF_SIZE, _stream)))
     {
         // If there is a read error, throw error
         if (ferror(_stream))
             throw FileHandler::ReadError();
 
         // Concatenate read buffer with total output
-        stream << _buffer;
+        string_buffer.append(_buffer, nb_elem_read);
         std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))
             break;
     }
-    return (stream.str());
+    return (string_buffer);
 }
 
 int FileHandler::read_all(std::string& string_buffer)
 {
     // Perhaps there is a better syntax, but man page says to catch EOF and
     // errors with functions, not return values
-    std::stringstream stream;
-    while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
+    size_t nb_elem_read = 0;
+
+    while ((nb_elem_read = fread(_buffer, sizeof(char), BUF_SIZE, _stream)))
     {
         // If there is a read error, return error
         if (ferror(_stream))
             return (0);
 
         // Concatenate read buffer with total output
-        stream << _buffer;
+        string_buffer.append(_buffer, nb_elem_read);
         std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))
             break;
     }
-    string_buffer = stream.str();
     return (1);
 }
 
