@@ -23,12 +23,14 @@ void Webserv::request_handler(int socket_fd)
     std::cout << recv_data << std::endl;
 
     // Get server config
-    Server& server = get_server_from_client(socket_fd);
-    Config& config = server.config();
+    Server&        server = get_server_from_client(socket_fd);
+    Config&        config = server.config();
+    ClientHandler& client = get_client(socket_fd);
 
-    // Parsing Request + rest read buffer
+    // Parsing Request + add request to ClientHandler object
     Request req = Request(recv_data.c_str());
-    // std::memset(buffer, 0, BUFFER_SIZE);
+    client.requests().push_back(req); // Will need to delete when executed,
+                                      // surely will be front() request
 
     // Start to build the Response { content; content_type; code }
     struct Response res = {"", "", 400};
