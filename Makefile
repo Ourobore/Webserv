@@ -20,6 +20,7 @@ SRC			=	Socket.cpp \
 				parsing_config.cpp \
 				CGIHandler.cpp \
 				FileHandler.cpp \
+				ClientHandler.cpp \
 				utilities.cpp \
 				Location.cpp
 

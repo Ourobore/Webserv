@@ -57,17 +57,16 @@ void Webserv::poll_events()
     for (size_t i = 0; i < pfds.size(); i++)
     {
         // Check if someone has something to read
-        if ((is_file_fd(pfds[i].fd)) != files.end())
+        if (is_file_fd(pfds[i].fd))
         {
 
-            std::vector<FileHandler>::iterator file_it;
-            file_it = is_file_fd(pfds[i].fd);
+            FileHandler* file = is_file_fd(pfds[i].fd);
             /* Read the file, close the fd and remove it, set POLLOUT for client
              */
             if (pfds[i].revents & POLLIN)
             {
-                std::string file_output = file_it->read_all();
-                int         client_index = get_poll_index(file_it->fd());
+                std::string file_output = file->read_all();
+                int         client_index = get_poll_index(file->fd());
                 (void)client_index;
                 pfds[i].events = POLLOUT;
             }
@@ -169,12 +168,26 @@ Server& Webserv::get_server_from_client(int client_fd)
 
 Server& Webserv::get_server(int server_fd)
 {
-    for (std::vector<Server>::iterator it = servers.begin();
-         it != servers.end(); ++it)
+    std::vector<Server>::iterator it;
+
+    for (it = servers.begin(); it != servers.end(); ++it)
     {
         if (it->sockfd() == server_fd)
             return (*it);
     }
     return (*servers.end()); // Be careful, for now it must be undefined if
                              // server_fd is not really a server
+}
+
+ClientHandler& Webserv::get_client(int client_fd)
+{
+    std::vector<ClientHandler>::iterator it;
+
+    for (it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->fd() == client_fd)
+            return (*it);
+    }
+    return (*clients.end()); // Be careful, for now it must be undefined if
+                             // client_fd is not really a client
 }

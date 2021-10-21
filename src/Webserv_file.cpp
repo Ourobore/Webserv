@@ -53,27 +53,28 @@ FileHandler Webserv::open_file_stream(int file_descriptor, std::string mode)
 
 /* If the file descriptor corresponds to a file, return an iterator to the
    FileHandler equivalent to this file. If not, return an end() iterator */
-std::vector<FileHandler>::iterator Webserv::is_file_fd(int file_descriptor)
+FileHandler* Webserv::is_file_fd(int file_descriptor)
 {
-    std::vector<FileHandler>::iterator it;
+    std::vector<ClientHandler>::iterator client_it;
 
-    for (it = files.begin(); it != files.end(); ++it)
-        if (it->fd() == file_descriptor)
-            return (it);
-    return (files.end());
+    for (client_it = clients.begin(); client_it != clients.end(); ++client_it)
+    {
+        std::vector<FileHandler>::iterator file_it;
+        for (file_it = client_it->files().begin();
+             file_it != client_it->files().end(); ++file_it)
+            if (file_it->fd() == file_descriptor)
+                return (&(*file_it));
+    }
+    return (NULL);
 }
 
-/* If the destination file descriptor corresponds to a file destination fd,
-   return an iterator to the FileHandler equivalent to this file. If not,
-   return an end() iterator */
+/* If the destination file descriptor corresponds to a Client file descriptor,
+   returns the first FileHandler of the Client*/
 std::vector<FileHandler>::iterator Webserv::get_file_from_client(int dest_fd)
 {
-    std::vector<FileHandler>::iterator it;
+    ClientHandler& client = get_client(dest_fd);
 
-    for (it = files.begin(); it != files.end(); ++it)
-        if (it->dest_fd() == dest_fd)
-            return (it);
-    return (files.end());
+    return (client.files().begin());
 }
 
 /* Get the index that corresponds to file descriptor in the pollfd structure */

@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include "ClientHandler.hpp"
 #include "Config.hpp"
 #include "FileHandler.hpp"
 #include "Request.hpp"
@@ -18,25 +19,18 @@
 
 const int CHUNK_SIZE = 64;
 
-class ClientRequest
-{
-    // int                      fd; // pollfd client socket
-    std::vector<Request>     reqs;
-    std::vector<FileHandler> filehandlers;
-};
-
 class Webserv
 {
   private:
     std::vector<Server>        servers;
+    std::vector<ClientHandler> clients;
     std::vector<struct pollfd> pfds;
-    std::vector<FileHandler>   files; // Can be in ClientRequest
+
     std::map<int, std::string> res_status;
-    std::vector<ClientRequest> clients;
 
     typedef struct Response
     {
-        std::string content;
+        std::string content; // rename to body?
         std::string content_type;
         int         code;
     } Response;
@@ -59,11 +53,12 @@ class Webserv
     void        respond(int socket_fd, Request& req, Response& res);
 
     // Utilities
-    Server& get_server_from_client(int client_fd);
-    Server& get_server(int server_fd);
-    int     get_poll_index(int file_descriptor);
+    Server&        get_server_from_client(int client_fd);
+    Server&        get_server(int server_fd);
+    ClientHandler& get_client(int client_fd);
+    int            get_poll_index(int file_descriptor);
+    FileHandler*   is_file_fd(int file_descriptor);
 
-    std::vector<FileHandler>::iterator is_file_fd(int file_descriptor);
     std::vector<FileHandler>::iterator get_file_from_client(int dest_fd);
 
   public:
