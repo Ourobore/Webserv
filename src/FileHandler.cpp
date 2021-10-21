@@ -2,6 +2,7 @@
 #include <asm-generic/errno-base.h>
 #include <cerrno>
 #include <cstring>
+#include <sstream>
 
 // Constructors and destructors
 FileHandler::FileHandler()
@@ -13,10 +14,10 @@ FileHandler::FileHandler()
     _status = -1;
 }
 
-FileHandler::FileHandler(std::string filename)
+FileHandler::FileHandler(std::string filename, std::string mode)
 {
     // Opening file stream
-    if (!(_stream = fopen(filename.c_str(), "r")))
+    if (!(_stream = fopen(filename.c_str(), mode.c_str())))
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();
@@ -31,10 +32,11 @@ FileHandler::FileHandler(std::string filename)
     _buffer = new char[BUF_SIZE + 1]();
 }
 
-FileHandler::FileHandler(int file_descriptor) : _fd(file_descriptor)
+FileHandler::FileHandler(int file_descriptor, std::string mode)
+    : _fd(file_descriptor)
 {
     // Getting file stream from file descriptor
-    if (!(_stream = fdopen(file_descriptor, "r")))
+    if (!(_stream = fdopen(file_descriptor, mode.c_str())))
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();
@@ -57,10 +59,10 @@ FileHandler::~FileHandler()
 // Reading
 std::string FileHandler::read_all()
 {
-    std::string string_buffer("");
+    std::stringstream stream;
 
-    // Perhaps there is a better syntax, but man page says to catch EOF and
-    // errors with functions, not return values
+    // Perhaps there is a better syntax, but man page says to
+    // catch EOF and errors with functions, not return values
     while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
     {
         // If there is a read error, throw error
@@ -68,20 +70,21 @@ std::string FileHandler::read_all()
             throw FileHandler::ReadError();
 
         // Concatenate read buffer with total output
-        string_buffer += _buffer;
+        stream << _buffer;
         std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))
             break;
     }
-    return (string_buffer);
+    return (stream.str());
 }
 
 int FileHandler::read_all(std::string& string_buffer)
 {
     // Perhaps there is a better syntax, but man page says to catch EOF and
     // errors with functions, not return values
+    std::stringstream stream;
     while (fread(_buffer, sizeof(char), BUF_SIZE, _stream))
     {
         // If there is a read error, return error
@@ -89,13 +92,14 @@ int FileHandler::read_all(std::string& string_buffer)
             return (0);
 
         // Concatenate read buffer with total output
-        string_buffer += _buffer;
+        stream << _buffer;
         std::memset(_buffer, 0, BUF_SIZE + 1);
 
         // If it is EOF, then break
         if (feof(_stream))
             break;
     }
+    string_buffer = stream.str();
     return (1);
 }
 

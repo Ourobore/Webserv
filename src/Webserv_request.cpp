@@ -100,7 +100,7 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         for (it = indexes.begin(); it != indexes.end(); ++it)
         {
             uri = *it;
-            FileHandler index = open_file_stream(root + "/" + uri);
+            FileHandler index = open_file_stream(root + "/" + uri, "rb");
             if (index.stream() && index.read_all(content))
             {
                 res.code = 200;
@@ -119,8 +119,8 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         else if (req["URI"].find(".png", req["URI"].size() - 4) !=
                  std::string::npos)
         {
-            content = "";
-            file_to_string((root + "/" + uri).c_str(), content);
+            // content = "";
+            // file_to_string((root + "/" + uri).c_str(), content);
             res.content_type = "image/png";
         }
         res.code = 200;

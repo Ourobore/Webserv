@@ -31,8 +31,8 @@ class FileHandler
   public:
     // Constructors and destructor
     FileHandler();
-    FileHandler(std::string filename); // Throws
-    FileHandler(int file_descriptor);  // Throws
+    FileHandler(std::string filename, std::string mode); // Throws
+    FileHandler(int file_descriptor, std::string mode);  // Throws
     ~FileHandler();
 
     // Reading

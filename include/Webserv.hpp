@@ -54,8 +54,8 @@ class Webserv
     void        respond(int socket_fd, Request& req, Response& res);
 
     // Files handling
-    FileHandler open_file_stream(std::string filename);
-    FileHandler open_file_stream(int file_descriptor);
+    FileHandler open_file_stream(std::string filename, std::string mode = "r");
+    FileHandler open_file_stream(int file_descriptor, std::string mode = "r");
 
     // Utilities
     Server& get_server_from_client(int client_fd);
