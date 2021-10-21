@@ -115,8 +115,15 @@ int Request::parse_first_header()
         if (tokens["Method"].empty())
             return 0;
 
-        tokens["URI"] = words[1];
+        // URI: "/dossier1/dossier2/filename/{pathinfo}?querystring"
+        // 1. /dossier1/dossier2
+        // 2. /dossier1
+        // 3. /
+        // 4. root + filename
+        // 5. pathinfo
+        // 6. querystring
 
+        tokens["URI"] = words[1];
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
 

@@ -16,16 +16,23 @@
 #include <sstream>
 #include <vector>
 
-// const int BUFFER_SIZE = 30000;
 const int CHUNK_SIZE = 64;
+
+class ClientRequest
+{
+    // int                      fd; // pollfd client socket
+    std::vector<Request>     reqs;
+    std::vector<FileHandler> filehandlers;
+};
 
 class Webserv
 {
   private:
     std::vector<Server>        servers;
     std::vector<struct pollfd> pfds;
-    std::vector<FileHandler>   files;
+    std::vector<FileHandler>   files; // Can be in ClientRequest
     std::map<int, std::string> res_status;
+    std::vector<ClientRequest> clients;
 
     typedef struct Response
     {

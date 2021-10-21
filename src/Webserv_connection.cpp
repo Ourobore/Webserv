@@ -68,6 +68,7 @@ void Webserv::poll_events()
             {
                 std::string file_output = file_it->read_all();
                 int         client_index = get_poll_index(file_it->fd());
+                (void)client_index;
                 pfds[i].events = POLLOUT;
             }
             // if (pfds[i].revents & POLLOUT) ?
@@ -111,6 +112,7 @@ void Webserv::poll_events()
                 FileHandler& file = *get_file_from_client(pfds[i].fd);
                 // Ou est stocké l'output du fichier?! On a besoin de séparer
                 // lecture de la requete et sa réponse!
+                (void)file;
             }
         }
     }
@@ -133,8 +135,9 @@ void Webserv::start()
 void Webserv::create_server(Config& config)
 {
     servers.push_back(Server(config));
-    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    pfds.push_back(pfd);
+    // struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+    // clients.push_back(ClientRequest(servers.back().sockfd(), 0, 0))
+    // pfds.push_back(pfd);
 }
 
 /* Return the server from which the client is connected */
