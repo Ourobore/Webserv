@@ -53,13 +53,16 @@ class Webserv
     void        respond(int socket_fd, Request& req, Response& res);
 
     // Utilities
-    Server&        get_server_from_client(int client_fd);
-    Server&        get_server(int server_fd);
-    ClientHandler& get_client(int client_fd);
-    int            get_poll_index(int file_descriptor);
-    FileHandler*   is_file_fd(int file_descriptor);
-
+    Server&                            get_server_from_client(int client_fd);
+    int                                get_poll_index(int file_descriptor);
+    FileHandler*                       is_file_fd(int file_descriptor);
     std::vector<FileHandler>::iterator get_file_from_client(int dest_fd);
+
+    // Accessors
+    Server&                              get_server(int server_fd);
+    ClientHandler&                       get_client(int client_fd);
+    std::vector<Server>::iterator        get_server_ite(int server_fd);
+    std::vector<ClientHandler>::iterator get_client_ite(int client_fd);
 
   public:
     Webserv();

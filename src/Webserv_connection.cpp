@@ -36,9 +36,11 @@ void Webserv::accept_connection(int server_fd)
 
     std::cout << "New connection from client on socket " << accept_fd
               << std::endl;
+
     // Add new client socket to the struct pollfd
     struct pollfd new_sock = {accept_fd, POLLIN, 0};
     pfds.push_back(new_sock);
+    clients.push_back(ClientHandler(accept_fd));
 }
 
 void Webserv::close_connection(int bytes_received, int client_index)
@@ -50,6 +52,7 @@ void Webserv::close_connection(int bytes_received, int client_index)
         std::cout << "recv() error" << std::endl;
     close(pfds[client_index].fd);
     pfds.erase(pfds.begin() + client_index);
+    clients.erase(get_client_ite(pfds[client_index].fd));
 }
 
 void Webserv::poll_events()
@@ -134,9 +137,8 @@ void Webserv::start()
 void Webserv::create_server(Config& config)
 {
     servers.push_back(Server(config));
-    // struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    // clients.push_back(ClientRequest(servers.back().sockfd(), 0, 0))
-    // pfds.push_back(pfd);
+    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+    pfds.push_back(pfd);
 }
 
 /* Return the server from which the client is connected */
@@ -190,4 +192,28 @@ ClientHandler& Webserv::get_client(int client_fd)
     }
     return (*clients.end()); // Be careful, for now it must be undefined if
                              // client_fd is not really a client
+}
+
+std::vector<Server>::iterator Webserv::get_server_ite(int server_fd)
+{
+    std::vector<Server>::iterator it;
+
+    for (it = servers.begin(); it != servers.end(); ++it)
+    {
+        if (it->sockfd() == server_fd)
+            return (it);
+    }
+    return (servers.end());
+}
+
+std::vector<ClientHandler>::iterator Webserv::get_client_ite(int client_fd)
+{
+    std::vector<ClientHandler>::iterator it;
+
+    for (it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->fd() == client_fd)
+            return (it);
+    }
+    return (clients.end());
 }
