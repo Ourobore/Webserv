@@ -34,14 +34,6 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         ft::strtrim(server_config.get_root(), "/"); // root location
     FileHandler file = open_file_stream("html/index.html");
 
-    /********** DEBUG ********************************************************/
-    char buffer[30000];
-    int  bytes;
-
-    bytes = fread(buffer, sizeof(char), 30000, file.stream());
-    std::cout << "buffer: " << buffer << std::endl;
-    /********** DEBUG END ****************************************************/
-
     client.files().push_back(file);
     struct pollfd file_poll = {file.fd(), 1, 0};
     pfds.push_back(file_poll);

@@ -64,7 +64,6 @@ void Webserv::poll_events()
         // Check if someone has something to read
         if (is_file_fd(pfds[i].fd))
         {
-            std::cout << "In file reading" << std::endl;
             FileHandler* file = is_file_fd(pfds[i].fd);
             /* Read the file, close the fd and remove it, set POLLOUT for client
              */
@@ -73,6 +72,7 @@ void Webserv::poll_events()
                 file->read_all();
                 pfds[get_poll_index(client.fd())].events = POLLOUT;
                 pfds.erase(pfds.begin() + i);
+                fclose(file->stream());
                 // change i to client index
                 // DEBUG: delete filefd from pfds
             }
@@ -119,15 +119,10 @@ void Webserv::poll_events()
                POLLIN again to be ready to read*/
             else if (pfds[i].revents & POLLOUT)
             {
-                std::cout << "In response" << std::endl;
-                // FileHandler& file = *get_file_from_client(pfds[i].fd);
-                // Ou est stocké l'output du fichier?! On a besoin de séparer
-                // lecture de la requete et sa réponse!
                 response_handler(client);
                 client.requests().erase(client.requests().begin());
                 client.files().erase(client.files().begin());
                 pfds[i].events = POLLIN;
-                //(void)file;
             }
         }
     }
