@@ -16,6 +16,7 @@ class Request
     Request();
     std::string              req_str;
     std::vector<std::string> req_lines;
+    std::string              file_output;
 
     void                     split_lines();
     std::vector<std::string> split_tokens(std::string line);

@@ -1,4 +1,5 @@
 #include "CGIHandler.hpp"
+#include "ClientHandler.hpp"
 #include "FileHandler.hpp"
 #include "Webserv.hpp"
 #include <exception>
@@ -17,54 +18,22 @@ int Webserv::file_to_string(const char* path, std::string& string_buffer)
 }
 
 // Handle clients requests
-void Webserv::request_handler(int socket_fd)
+void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
     // Print request from client [Debug]
     std::cout << recv_data << std::endl;
 
-    // Get server config
-    Server&        server = get_server_from_client(socket_fd);
-    Config&        config = server.config();
-    ClientHandler& client = get_client(socket_fd);
-
     // Parsing Request + add request to ClientHandler object
     Request req = Request(recv_data.c_str());
+
     client.requests().push_back(req); // Will need to delete when executed,
                                       // surely will be front() request
 
-    // Start to build the Response { content; content_type; code }
-    struct Response res = {"", "", 400};
-
-    // CGI request
-    if (!req["URI"].empty() &&
-        req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
-    {
-        res.content = handle_cgi(config, req, socket_fd);
-        res.content_type = "text/html";
-        res.code = 200;
-    }
-    else if (!req["URI"].empty() &&
-             req["URI"].find(".py", req["URI"].size() - 3) != std::string::npos)
-    {
-        // TODO: Try to handle a POST request through the form in
-        // html/index.html
-        res.content = "<p>It's a python script !</p>";
-        res.code = 200;
-    }
-    // Simple resource request is valid
-    else if (!req["URI"].empty())
-        res.content = handle_uri(config, req, res);
-
-    // 400 Bad Request
-    else if (req["URI"].empty() || req["Method"].empty())
-    {
-        FileHandler error_404 = open_file_stream("html/400.html");
-        if (error_404.stream())
-            error_404.read_all(res.content);
-    }
-
-    // Send the response in a struct with headers infos
-    respond(socket_fd, req, res);
+    std::string uri = ft::strtrim(req["URI"], "/");
+    std::string root =
+        ft::strtrim(server_config.get_root(), "/"); // root location
+    FileHandler file = open_file_stream(root + "/" + uri);
+    client.files().push_back(file);
 }
 
 std::string Webserv::handle_cgi(Config const& config, Request const& request,
@@ -150,9 +119,51 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
     return content;
 }
 
+void Webserv::response_handler(ClientHandler& client)
+{
+    // Get server config
+    Server& server = get_server_from_client(client.fd());
+    Config& config = server.config();
+
+    // Start to build the Response { content; content_type; code }
+    Request&        req = client.requests().front();
+    struct Response res = {"", "", 400};
+
+    // CGI request
+    if (!req["URI"].empty() &&
+        req["URI"].find(".php", req["URI"].size() - 4) != std::string::npos)
+    {
+        res.content = handle_cgi(config, req, client.fd());
+        res.content_type = "text/html";
+        res.code = 200;
+    }
+    else if (!req["URI"].empty() &&
+             req["URI"].find(".py", req["URI"].size() - 3) != std::string::npos)
+    {
+        // TODO: Try to handle a POST request through the form in
+        // html/index.html
+        res.content = "<p>It's a python script !</p>";
+        res.code = 200;
+    }
+    // Simple resource request is valid
+    else if (!req["URI"].empty())
+        res.content = handle_uri(config, req, res);
+
+    // 400 Bad Request
+    else if (req["URI"].empty() || req["Method"].empty())
+    {
+        FileHandler error_404 = open_file_stream("html/400.html");
+        if (error_404.stream())
+            error_404.read_all(res.content);
+    }
+
+    // Send the response in a struct with headers infos
+    respond(client.fd(), req, res);
+}
+
 void Webserv::respond(int socket_fd, Request& req, Response& res)
 {
-    (void)req;
+    (void)req; // Maybe remove, useful ?
     std::string connection = "close";
     if (res.code == 200)
         connection = "keep-alive";

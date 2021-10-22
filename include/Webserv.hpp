@@ -44,7 +44,8 @@ class Webserv
     void close_connection(int bytes_received, int client_index);
 
     // Handling request
-    void        request_handler(int socket_fd);
+    void        request_handler(ClientHandler& client, Config& server_config);
+    void        response_handler(ClientHandler& client);
     std::string handle_cgi(Config const& config, Request const& request,
                            int client_fd);
     std::string handle_uri(Config const& config, Request const& req,

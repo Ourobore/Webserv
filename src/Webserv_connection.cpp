@@ -1,3 +1,4 @@
+#include "ClientHandler.hpp"
 #include "FileHandler.hpp"
 #include "Webserv.hpp"
 
@@ -59,18 +60,18 @@ void Webserv::poll_events()
 {
     for (size_t i = 0; i < pfds.size(); i++)
     {
+        ClientHandler& client = get_client(pfds[i].fd);
         // Check if someone has something to read
         if (is_file_fd(pfds[i].fd))
         {
-
+            std::cout << "In file reading" << std::endl;
             FileHandler* file = is_file_fd(pfds[i].fd);
             /* Read the file, close the fd and remove it, set POLLOUT for client
              */
             if (pfds[i].revents & POLLIN)
             {
-                std::string file_output = file->read_all();
-                int         client_index = get_poll_index(file->fd());
-                pfds[client_index].events = POLLOUT;
+                file->read_all();
+                pfds[i].events = POLLOUT;
             }
             // if (pfds[i].revents & POLLOUT) ?
         }
@@ -103,17 +104,24 @@ void Webserv::poll_events()
                                   << std::endl;
                     }
                     else
-                        request_handler(pfds[i].fd);
+                        request_handler(
+                            client,
+                            get_server_from_client(client.fd()).config());
                 }
             }
             /* If fd is ready to write, write response, then set events to
                POLLIN again to be ready to read*/
             else if (pfds[i].revents & POLLOUT)
             {
-                FileHandler& file = *get_file_from_client(pfds[i].fd);
+                std::cout << "In response" << std::endl;
+                // FileHandler& file = *get_file_from_client(pfds[i].fd);
                 // Ou est stocké l'output du fichier?! On a besoin de séparer
                 // lecture de la requete et sa réponse!
-                (void)file;
+                response_handler(client);
+                client.requests().erase(client.requests().begin());
+                client.files().erase(client.files().begin());
+                pfds[i].events = POLLIN;
+                //(void)file;
             }
         }
     }
