@@ -9,6 +9,17 @@ ClientHandler::~ClientHandler()
 {
 }
 
+// Operator overload
+bool ClientHandler::operator==(ClientHandler const& rhs) const
+{
+    return (_fd == rhs.fd());
+}
+
+bool ClientHandler::operator!=(ClientHandler const& rhs) const
+{
+    return !(*this == rhs);
+}
+
 // Accessors
 int ClientHandler::fd() const
 {

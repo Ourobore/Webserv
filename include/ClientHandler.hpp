@@ -18,6 +18,10 @@ class ClientHandler
     ClientHandler(int client_fd);
     ~ClientHandler();
 
+    // Operator overloads
+    bool operator==(ClientHandler const& rhs) const;
+    bool operator!=(ClientHandler const& rhs) const;
+
     // Accessors
     int                       fd() const;
     std::vector<Request>&     requests();

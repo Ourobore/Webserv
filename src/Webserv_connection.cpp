@@ -70,8 +70,7 @@ void Webserv::poll_events()
             {
                 std::string file_output = file->read_all();
                 int         client_index = get_poll_index(file->fd());
-                (void)client_index;
-                pfds[i].events = POLLOUT;
+                pfds[client_index].events = POLLOUT;
             }
             // if (pfds[i].revents & POLLOUT) ?
         }
