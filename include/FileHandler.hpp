@@ -24,7 +24,6 @@ class FileHandler
   private:
     FILE*       _stream;
     int         _fd;
-    int         _dest_fd;
     int         _status;
     std::string _string_output;
 
@@ -42,7 +41,6 @@ class FileHandler
     // Accessors
     FILE*       stream();
     int         fd() const;
-    int         dest_fd() const;
     int         status() const;
     std::string string_output() const;
     void        set_status(int status);

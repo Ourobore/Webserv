@@ -1,3 +1,4 @@
+#include "ClientHandler.hpp"
 #include "FileHandler.hpp"
 #include "Webserv.hpp"
 
@@ -68,20 +69,17 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
     return (NULL);
 }
 
-/* If the destination file descriptor corresponds to a Client file descriptor,
-   returns the first FileHandler of the Client*/
-std::vector<FileHandler>::iterator Webserv::get_file_from_client(int dest_fd)
+ClientHandler& Webserv::get_client_from_file(int file_descriptor)
 {
-    ClientHandler& client = get_client(dest_fd);
+    std::vector<ClientHandler>::iterator client_it;
 
-    return (client.files().begin());
-}
-
-/* Get the index that corresponds to file descriptor in the pollfd structure */
-int Webserv::get_poll_index(int file_descriptor)
-{
-    for (size_t i = 0; i < pfds.size(); ++i)
-        if (pfds[i].fd == file_descriptor)
-            return (i);
-    return (-1);
+    for (client_it = clients.begin(); client_it != clients.end(); ++client_it)
+    {
+        std::vector<FileHandler>::iterator file_it;
+        for (file_it = client_it->files().begin();
+             file_it != client_it->files().end(); ++file_it)
+            if (file_it->fd() == file_descriptor)
+                return (*client_it);
+    }
+    return (*clients.end());
 }

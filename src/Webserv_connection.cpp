@@ -71,7 +71,8 @@ void Webserv::poll_events()
             if (pfds[i].revents & POLLIN)
             {
                 file->read_all();
-                pfds[i].events = POLLOUT;
+                pfds[get_poll_index(client.fd())].events = POLLOUT;
+                pfds.erase(pfds.begin() + i);
                 // change i to client index
                 // DEBUG: delete filefd from pfds
             }
@@ -197,6 +198,9 @@ ClientHandler& Webserv::get_client(int client_fd)
 {
     std::vector<ClientHandler>::iterator it;
 
+    if (is_file_fd(client_fd))
+        return (get_client_from_file(client_fd));
+
     for (it = clients.begin(); it != clients.end(); ++it)
     {
         if (it->fd() == client_fd)
@@ -228,4 +232,13 @@ std::vector<ClientHandler>::iterator Webserv::get_client_ite(int client_fd)
             return (it);
     }
     return (clients.end());
+}
+
+/* Get the index that corresponds to file descriptor in the pollfd structure */
+int Webserv::get_poll_index(int file_descriptor)
+{
+    for (size_t i = 0; i < pfds.size(); ++i)
+        if (pfds[i].fd == file_descriptor)
+            return (i);
+    return (-1);
 }

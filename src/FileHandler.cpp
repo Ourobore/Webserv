@@ -7,7 +7,6 @@ FileHandler::FileHandler()
 {
     _stream = NULL;
     _fd = -1;
-    _dest_fd = -1;
     _status = -1;
     _string_output = "";
 }
@@ -104,11 +103,6 @@ FILE* FileHandler::stream()
 int FileHandler::fd() const
 {
     return (_fd);
-}
-
-int FileHandler::dest_fd() const
-{
-    return (_dest_fd);
 }
 
 int FileHandler::status() const
