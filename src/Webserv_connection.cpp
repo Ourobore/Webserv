@@ -88,11 +88,14 @@ void Webserv::poll_events()
                     char chunk[CHUNK_SIZE] = {0};
                     int  bytes_received = 0;
                     recv_data = "";
-                    while ((bytes_received =
-                                recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
-                                     MSG_DONTWAIT)) > 0)
+                    int recv_ret = 0;
+
+                    // DEBUG: check loop condition
+                    while ((recv_ret = recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
+                                            MSG_DONTWAIT)) > 0)
                     {
                         recv_data += std::string(chunk);
+                        bytes_received += recv_ret;
                         memset(chunk, 0, CHUNK_SIZE);
                     }
                     if (bytes_received == 0)

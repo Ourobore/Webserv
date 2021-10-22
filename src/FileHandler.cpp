@@ -1,5 +1,4 @@
 #include "FileHandler.hpp"
-#include <asm-generic/errno-base.h>
 #include <cerrno>
 #include <cstring>
 

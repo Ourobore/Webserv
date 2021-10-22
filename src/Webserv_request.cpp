@@ -32,8 +32,19 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::string uri = ft::strtrim(req["URI"], "/");
     std::string root =
         ft::strtrim(server_config.get_root(), "/"); // root location
-    FileHandler file = open_file_stream(root + "/" + uri);
+    FileHandler file = open_file_stream("html/index.html");
+
+    /********** DEBUG ********************************************************/
+    char buffer[30000];
+    int  bytes;
+
+    bytes = fread(buffer, sizeof(char), 30000, file.stream());
+    std::cout << "buffer: " << buffer << std::endl;
+    /********** DEBUG END ****************************************************/
+
     client.files().push_back(file);
+    struct pollfd file_poll = {file.fd(), 1, 0};
+    pfds.push_back(file_poll);
 }
 
 std::string Webserv::handle_cgi(Config const& config, Request const& request,
