@@ -72,6 +72,7 @@ void Webserv::poll_events()
             {
                 file->read_all();
                 pfds[i].events = POLLOUT;
+                // change i to client index
                 // DEBUG: delete filefd from pfds
             }
             // if (pfds[i].revents & POLLOUT) ?
