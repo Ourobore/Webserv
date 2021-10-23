@@ -34,7 +34,7 @@ std::string Location::search_config(std::string config, std::string key)
     size_t      doublon;
     std::string line;
 
-    begin = config.find(key);
+    begin = config.find(key, 2);
     while (config[begin - 2] != ';' && config[begin - 2] != '{' &&
            config[begin - 2] != '}' && begin != std::string::npos)
         begin = config.find(key, begin + 1);
