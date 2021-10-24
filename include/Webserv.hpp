@@ -39,8 +39,8 @@ class Webserv
 
     // Polling
     void poll_events();
-    void poll_file(ClientHandler& client, int poll_index);
-    void poll_response(ClientHandler& client, int poll_index);
+    void poll_file(ClientHandler& client, int file_index);
+    void poll_response(ClientHandler& client, int client_index);
 
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);

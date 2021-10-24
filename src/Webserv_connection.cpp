@@ -62,8 +62,8 @@ void Webserv::close_connection(int bytes_received, int client_index)
     else
         std::cout << "recv() error" << std::endl;
     close(pfds[client_index].fd);
-    pfds.erase(pfds.begin() + client_index);
     clients.erase(get_client_ite(pfds[client_index].fd));
+    pfds.erase(pfds.begin() + client_index);
 }
 
 /* Return the server from which the client is connected */
