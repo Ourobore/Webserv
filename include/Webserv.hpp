@@ -30,7 +30,7 @@ class Webserv
 
     typedef struct Response
     {
-        std::string content; // rename to body?
+        std::string content;
         std::string content_type;
         int         code;
     } Response;
@@ -39,9 +39,13 @@ class Webserv
 
     // Polling
     void poll_events();
+    void poll_file(ClientHandler& client, int poll_index);
+    void poll_response(ClientHandler& client, int poll_index);
+
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
+    int  recv_all(int file_descriptor, std::string& recv_output, int flags = 0);
 
     // Handling request
     void        request_handler(ClientHandler& client, Config& server_config);
@@ -50,8 +54,8 @@ class Webserv
                            int client_fd);
     std::string handle_uri(Config const& config, Request const& req,
                            Response& res);
-    int         file_to_string(const char* path, std::string& string_buffer);
-    void        respond(int socket_fd, Request& req, Response& res);
+    // int  file_to_string(const char* path, std::string& string_buffer);
+    void respond(int socket_fd, Request& req, Response& res);
 
     // Utilities
     Server&        get_server_from_client(int client_fd);

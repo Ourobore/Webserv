@@ -14,15 +14,25 @@ Webserv::~Webserv()
 {
 }
 
-bool Webserv::is_server_socket(int socket_fd)
+void Webserv::start()
 {
-    for (std::vector<Server>::iterator it = servers.begin();
-         it != servers.end(); ++it)
+    while (true)
     {
-        if (it->sockfd() == socket_fd)
-            return (true);
+        std::cout << "=== Waiting... ===" << std::endl;
+        // Convert vector to simple array
+        struct pollfd* pfds_array = &(pfds[0]);
+
+        int poll_count = poll(pfds_array, pfds.size(), -1);
+        Socket::check_error(poll_count, "poll()");
+        poll_events();
     }
-    return (false);
+}
+
+void Webserv::create_server(Config& config)
+{
+    servers.push_back(Server(config));
+    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+    pfds.push_back(pfd);
 }
 
 void Webserv::accept_connection(int server_fd)
@@ -54,99 +64,6 @@ void Webserv::close_connection(int bytes_received, int client_index)
     close(pfds[client_index].fd);
     pfds.erase(pfds.begin() + client_index);
     clients.erase(get_client_ite(pfds[client_index].fd));
-}
-
-void Webserv::poll_events()
-{
-    for (size_t i = 0; i < pfds.size(); i++)
-    {
-        ClientHandler& client = get_client(pfds[i].fd);
-        // Check if someone has something to read
-        if (is_file_fd(pfds[i].fd))
-        {
-            FileHandler* file = is_file_fd(pfds[i].fd);
-            /* Read the file, close the fd and remove it, set POLLOUT for client
-             */
-            if (pfds[i].revents & POLLIN)
-            {
-                file->read_all();
-                pfds[get_poll_index(client.fd())].events = POLLOUT;
-                pfds.erase(pfds.begin() + i);
-                fclose(file->stream());
-                // change i to client index
-                // DEBUG: delete filefd from pfds
-            }
-            // if (pfds[i].revents & POLLOUT) ?
-        }
-        else
-        {
-            if (pfds[i].revents & POLLIN)
-            {
-                // If this is a server, handle connection
-                if (is_server_socket(pfds[i].fd))
-                    accept_connection(pfds[i].fd);
-                // Or if this is a client
-                else
-                {
-                    char chunk[CHUNK_SIZE] = {0};
-                    int  bytes_received = 0;
-                    recv_data = "";
-                    int recv_ret = 0;
-
-                    // DEBUG: check loop condition
-                    while ((recv_ret = recv(pfds[i].fd, chunk, CHUNK_SIZE - 1,
-                                            MSG_DONTWAIT)) > 0)
-                    {
-                        recv_data += std::string(chunk);
-                        bytes_received += recv_ret;
-                        memset(chunk, 0, CHUNK_SIZE);
-                    }
-                    if (bytes_received == 0)
-                    {
-                        close(pfds[i].fd);
-                        pfds.erase(pfds.begin() + i);
-                        std::cout << "No bytes to read. Client disconnected "
-                                     "from socket"
-                                  << std::endl;
-                    }
-                    else
-                        request_handler(
-                            client,
-                            get_server_from_client(client.fd()).config());
-                }
-            }
-            /* If fd is ready to write, write response, then set events to
-               POLLIN again to be ready to read*/
-            else if (pfds[i].revents & POLLOUT)
-            {
-                response_handler(client);
-                client.requests().erase(client.requests().begin());
-                client.files().erase(client.files().begin());
-                pfds[i].events = POLLIN;
-            }
-        }
-    }
-}
-
-void Webserv::start()
-{
-    while (true)
-    {
-        std::cout << "=== Waiting... ===" << std::endl;
-        // Convert vector to simple array
-        struct pollfd* pfds_array = &(pfds[0]);
-
-        int poll_count = poll(pfds_array, pfds.size(), -1);
-        Socket::check_error(poll_count, "poll()");
-        poll_events();
-    }
-}
-
-void Webserv::create_server(Config& config)
-{
-    servers.push_back(Server(config));
-    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    pfds.push_back(pfd);
 }
 
 /* Return the server from which the client is connected */
@@ -227,13 +144,4 @@ std::vector<ClientHandler>::iterator Webserv::get_client_ite(int client_fd)
             return (it);
     }
     return (clients.end());
-}
-
-/* Get the index that corresponds to file descriptor in the pollfd structure */
-int Webserv::get_poll_index(int file_descriptor)
-{
-    for (size_t i = 0; i < pfds.size(); ++i)
-        if (pfds[i].fd == file_descriptor)
-            return (i);
-    return (-1);
 }

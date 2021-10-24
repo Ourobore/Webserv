@@ -4,6 +4,7 @@
 #include "Webserv.hpp"
 #include <exception>
 
+/*
 int Webserv::file_to_string(const char* path, std::string& string_buffer)
 {
     std::ifstream     ifs(path);
@@ -16,6 +17,7 @@ int Webserv::file_to_string(const char* path, std::string& string_buffer)
     }
     return 0;
 }
+*/
 
 // Handle clients requests
 void Webserv::request_handler(ClientHandler& client, Config& server_config)

@@ -16,6 +16,7 @@ SRC			=	Socket.cpp \
 				Webserv_connection.cpp \
 				Webserv_request.cpp \
 				Webserv_file.cpp \
+				Webserv_poll.cpp \
 				Config.cpp \
 				parsing_config.cpp \
 				CGIHandler.cpp \
