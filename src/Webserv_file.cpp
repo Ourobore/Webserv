@@ -3,51 +3,51 @@
 #include "Webserv.hpp"
 
 /* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(std::string filename, std::string mode)
+FileHandler* Webserv::open_file_stream(std::string filename, std::string mode)
 {
     try
     {
-        FileHandler file(filename, mode);
-        file.set_status(200);
+        FileHandler* file = new FileHandler(filename, mode);
+        file->set_status(200);
         return (file);
     }
     catch (FileHandler::NoFile exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_404;
-        error_404.set_status(404);
+        FileHandler* error_404;
+        error_404->set_status(404);
         return (error_404);
     }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_500;
-        error_500.set_status(500);
+        FileHandler* error_500;
+        error_500->set_status(500);
         return (error_500);
     }
 }
 
 /* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(int file_descriptor, std::string mode)
+FileHandler* Webserv::open_file_stream(int file_descriptor, std::string mode)
 {
     try
     {
-        FileHandler file(file_descriptor, mode);
-        file.set_status(200);
+        FileHandler* file = new FileHandler(file_descriptor, mode);
+        file->set_status(200);
         return (file);
     }
     catch (FileHandler::NoFile exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_404;
-        error_404.set_status(404);
+        FileHandler* error_404;
+        error_404->set_status(404);
         return (error_404);
     }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_500;
-        error_500.set_status(500);
+        FileHandler* error_500;
+        error_500->set_status(500);
         return (error_500);
     }
 }

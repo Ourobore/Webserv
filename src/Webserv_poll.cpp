@@ -13,7 +13,6 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
         file->read_all();
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
-        fclose(file->stream());
     }
     // if (pfds[i].revents & POLLOUT) ?
 }

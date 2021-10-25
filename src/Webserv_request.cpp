@@ -34,11 +34,11 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::string uri = ft::strtrim(req["URI"], "/");
     std::string root =
         ft::strtrim(server_config.get_root(), "/"); // root location
-    FileHandler file = open_file_stream(root + "/" + uri);
+    FileHandler* file = open_file_stream(root + "/" + uri);
 
-    struct pollfd file_poll = {file.fd(), 1, 0};
+    client.files().push_back(*file);
+    struct pollfd file_poll = {file->fd(), 1, 0};
     pfds.push_back(file_poll);
-    client.files().push_back(file);
 }
 
 std::string Webserv::handle_cgi(Config const& config, Request const& request,
@@ -76,11 +76,10 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         for (it = indexes.begin(); it != indexes.end(); ++it)
         {
             uri = *it;
-            FileHandler index = open_file_stream(root + "/" + uri, "rb");
+            FileHandler index = *open_file_stream(root + "/" + uri, "rb");
             if (index.stream() && index.read_all(content))
             {
                 res.code = 200;
-                fclose(index.stream());
                 return content;
             }
         }
@@ -88,7 +87,7 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
 
     // Get page if we can open it, else '404 Not found'.
     // Or '500 Internal Server Error' if file opening failed ?
-    FileHandler uri_file = open_file_stream(root + "/" + uri);
+    FileHandler uri_file = *open_file_stream(root + "/" + uri);
     if (uri_file.stream() && uri_file.read_all(content)) // 200 OK
     {
         if (req["URI"].find(".svg", req["URI"].size() - 4) != std::string::npos)
@@ -108,27 +107,20 @@ std::string Webserv::handle_uri(Config const& config, Request const& req,
         {
             // If opening fails here, should we try to open 500.html,
             // which can fail too. Non ending loop
-            FileHandler error_404 = open_file_stream("html/404.html");
+            FileHandler error_404 = *open_file_stream("html/404.html");
             if (error_404.stream() && error_404.read_all(content))
-            {
-                fclose(error_404.stream());
                 res.code = 404;
-            }
             break;
         }
         case 500:
         {
             // Same here
-            FileHandler error_500 = open_file_stream("html/500.html");
+            FileHandler error_500 = *open_file_stream("html/500.html");
             if (error_500.stream() && error_500.read_all(content))
-            {
                 res.code = 505;
-                fclose(error_500.stream());
-            }
             break;
         }
     }
-    fclose(uri_file.stream());
     return content;
 }
 
@@ -165,12 +157,9 @@ void Webserv::response_handler(ClientHandler& client)
     // 400 Bad Request
     else if (req["URI"].empty() || req["Method"].empty())
     {
-        FileHandler error_404 = open_file_stream("html/400.html");
+        FileHandler error_404 = *open_file_stream("html/400.html");
         if (error_404.stream())
-        {
             error_404.read_all(res.content);
-            fclose(error_404.stream());
-        }
     }
 
     // Send the response in a struct with headers infos

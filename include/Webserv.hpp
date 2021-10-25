@@ -77,10 +77,10 @@ class Webserv
     void create_server(Config& config);
 
     // Files handling
-    static FileHandler open_file_stream(std::string filename,
-                                        std::string mode = "r");
-    static FileHandler open_file_stream(int         file_descriptor,
-                                        std::string mode = "r");
+    static FileHandler* open_file_stream(std::string filename,
+                                         std::string mode = "r");
+    static FileHandler* open_file_stream(int         file_descriptor,
+                                         std::string mode = "r");
 };
 
 #endif
