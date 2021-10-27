@@ -15,7 +15,7 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
         pfds.erase(pfds.begin() + file_index);
         client.response().content = file->string_output();
         client.response().code = file->status();
-        // fclose(file->stream);
+        fclose(file->stream());
         client.files().erase(client.files().begin());
     }
     // if (pfds[i].revents & POLLOUT) ?

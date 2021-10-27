@@ -41,8 +41,8 @@ FileHandler::FileHandler(int file_descriptor, std::string mode)
 
 FileHandler::~FileHandler()
 {
-    if (_stream)
-        fclose(_stream);
+    // if (_stream)
+    //    fclose(_stream);
 }
 
 // Reading
