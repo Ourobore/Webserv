@@ -35,3 +35,8 @@ std::vector<FileHandler>& ClientHandler::files()
 {
     return (_files);
 }
+
+ClientHandler::Response& ClientHandler::response()
+{
+    return (_response);
+}

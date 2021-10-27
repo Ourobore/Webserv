@@ -13,19 +13,12 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
         file->read_all();
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
+        client.response().content = file->string_output();
+        client.response().code = file->status();
+        // fclose(file->stream);
+        client.files().erase(client.files().begin());
     }
     // if (pfds[i].revents & POLLOUT) ?
-}
-
-/* Write response to server, then erase the request and the file associated from
-   the client. Lastly sets the client events bit mask back to POLLIN to be ready
-   to read the next request */
-void Webserv::poll_response(ClientHandler& client, int client_index)
-{
-    response_handler(client);
-    client.requests().erase(client.requests().begin());
-    client.files().erase(client.files().begin());
-    pfds[client_index].events = POLLIN;
 }
 
 void Webserv::poll_events()
@@ -63,7 +56,7 @@ void Webserv::poll_events()
             /* Else if fd is ready to write, write response, then set events to
                POLLIN again to be ready to read next time */
             else if (pfds[i].revents & POLLOUT)
-                poll_response(client, i);
+                response_handler(client, i);
         }
     }
 }

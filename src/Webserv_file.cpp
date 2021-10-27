@@ -8,7 +8,10 @@ FileHandler* Webserv::open_file_stream(std::string filename, std::string mode)
     try
     {
         FileHandler* file = new FileHandler(filename, mode);
-        file->set_status(200);
+        if (file->stream())
+            file->set_status(200);
+        else
+            file->set_status(404);
         return (file);
     }
     catch (FileHandler::NoFile exception)

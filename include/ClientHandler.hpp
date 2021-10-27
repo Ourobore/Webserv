@@ -6,10 +6,19 @@
 
 class ClientHandler
 {
+  public:
+    typedef struct Response
+    {
+        std::string content;
+        std::string content_type;
+        int         code;
+    } Response;
+
   private:
     int                      _fd;
     std::vector<Request>     _requests;
     std::vector<FileHandler> _files;
+    Response                 _response;
 
     ClientHandler();
 
@@ -26,6 +35,7 @@ class ClientHandler
     int                       fd() const;
     std::vector<Request>&     requests();
     std::vector<FileHandler>& files();
+    Response&                 response();
 };
 
 #endif

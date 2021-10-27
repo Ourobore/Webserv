@@ -40,22 +40,18 @@ class Webserv
     // Polling
     void poll_events();
     void poll_file(ClientHandler& client, int file_index);
-    void poll_response(ClientHandler& client, int client_index);
 
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
     int  recv_all(int file_descriptor, std::string& recv_output, int flags = 0);
 
-    // Handling request
+    // Handling requests and responses
     void        request_handler(ClientHandler& client, Config& server_config);
-    void        response_handler(ClientHandler& client);
+    void        response_handler(ClientHandler& client, int client_index);
     std::string handle_cgi(Config const& config, Request const& request,
                            int client_fd);
-    std::string handle_uri(Config const& config, Request const& req,
-                           Response& res);
-    // int  file_to_string(const char* path, std::string& string_buffer);
-    void respond(int socket_fd, Request& req, Response& res);
+    void respond(int socket_fd, Request& req, ClientHandler::Response& res);
 
     // Utilities
     Server&        get_server_from_client(int client_fd);
