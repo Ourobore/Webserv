@@ -19,7 +19,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // Need parsing req["Root"] and req["URI"]
     FileHandler file;
     std::string uri_path = req["URI"];
-    file = open_file_stream(uri_path);
+    file = open_file_stream(uri_path, server_config, "r");
+
+    std::cout << file.read_all() << std::endl;
+
     if (file.stream())
     {
         client.files().push_back(file);
@@ -33,7 +36,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             for (size_t i = 0; i < req.index_names().size(); i++)
             {
                 uri_path += req.index_names()[i];
-                file = open_file_stream(uri_path);
+                file = open_file_stream(uri_path, server_config, "r");
                 if (file.stream())
                 {
                     client.files().push_back(file);

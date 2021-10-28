@@ -121,9 +121,11 @@ std::string CGIHandler::execute() // Need changes i think
     {
         waitpid(childpid, NULL, 0);
         close(pipefd[PIPEWRITE]);
-        FileHandler cgi_stream = *Webserv::open_file_stream(pipefd[PIPEREAD]);
+        /*
+        FileHandler cgi_stream = Webserv::open_file_stream(pipefd[PIPEREAD]);
         if (cgi_stream.stream())
             cgi_output = cgi_stream.read_all();
+        */
         // read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
         close(pipefd[PIPEREAD]);
     }
