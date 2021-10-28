@@ -25,3 +25,15 @@ std::string ft::getOsName()
     return "Other";
 #endif
 }
+
+bool ft::is_dir(std::string uri_path)
+{
+    int fd;
+
+    if ((fd = open(uri_path.c_str(), O_DIRECTORY)) > 0)
+    {
+        close(fd);
+        return true;
+    }
+    return false;
+}

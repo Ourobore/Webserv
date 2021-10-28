@@ -1,9 +1,11 @@
 #ifndef UTILITIES_HPP
 #define UTILITIES_HPP
 
+#include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
 namespace ft
 {
@@ -41,6 +43,9 @@ namespace ft
 
     /* Get OS name "Mac OSX" or "Linux" */
     std::string getOsName();
+
+    bool is_dir(std::string uri_path);
+
 } // namespace ft
 
 #endif

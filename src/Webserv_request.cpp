@@ -18,31 +18,33 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
 
     // Need parsing req["Root"] and req["URI"]
     FileHandler file;
-    std::string uri_path = req["URI"];
-    file = open_file_stream(uri_path, server_config, "r");
+    std::string uri_path = ft::strtrim(req["URI"], "/");
 
-    std::cout << file.read_all() << std::endl;
-
-    if (file.stream())
+    if (!ft::is_dir(uri_path))
     {
-        client.files().push_back(file);
-        struct pollfd file_poll = {file.fd(), 1, 0};
-        pfds.push_back(file_poll);
+        file = open_file_stream(uri_path, server_config, "r");
+        if (file.stream())
+        {
+            client.files().push_back(file);
+            struct pollfd file_poll = {file.fd(), 1, 0};
+            pfds.push_back(file_poll);
+            return;
+        }
     }
-    else
+    else // It is a directory, try to append an index file to the path
     {
         if (req.index_names().size())
         {
             for (size_t i = 0; i < req.index_names().size(); i++)
             {
-                uri_path += req.index_names()[i];
+                uri_path = uri_path + "/" + req.index_names()[i];
                 file = open_file_stream(uri_path, server_config, "r");
                 if (file.stream())
                 {
                     client.files().push_back(file);
                     struct pollfd file_poll = {file.fd(), 1, 0};
                     pfds.push_back(file_poll);
-                    break;
+                    return;
                 }
             }
         }
