@@ -40,11 +40,21 @@ std::vector<size_t> recup_server(std::string config)
 int config_error(std::string config_final)
 {
     // check the number of brackets
-    int brackets;
+    int     brackets;
+    size_t  server_pos;
 
     brackets = 0;
+    server_pos = config_final.find("server");
     for (size_t i = 0; i < config_final.size(); i++)
     {
+        if (i == server_pos && server_pos != std::string::npos)
+        {
+            if (brackets != 0)
+                throw std::string("Error: server in server");
+            server_pos = config_final.find("server", server_pos + 1);
+            while (config_final[server_pos + 6] != ' ')
+                server_pos = config_final.find("server", server_pos + 1);
+        }
         if (config_final[i] == '{')
             brackets++;
         else if (config_final[i] == '}')

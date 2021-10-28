@@ -31,7 +31,7 @@ std::string Config::search_config(std::string config, std::string key)
     size_t              doublon;
     std::string         line;
     std::vector<size_t> locations;
-    int                 i = 0;
+    int                 i = 1;
 
     begin = config.find(key);
     while (config[begin - 2] != ';' && config[begin - 2] != '{' &&
@@ -61,7 +61,7 @@ std::string Config::search_config(std::string config, std::string key)
         if ((config[doublon - 2] == ';' || config[doublon - 2] == '}') &&
             i != 0)
             throw std::string("Error: Double " + key);
-        i = 0;
+        i = 1;
     }
     line = config.substr(begin, (end - begin));
     return (line);
