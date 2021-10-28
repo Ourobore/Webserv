@@ -2,12 +2,6 @@ IMAGE_NAME = nginx\:webserv
 CONTAINER_NAME = nginx_webserv
 PORT = 8081
 
-PWD = $(shell pwd)
-
-CONFIG_CONTAINER=type=bind,source=$(PWD)/conf,target=/conf
-CONTENT_CONTAINER=type=bind,source=$(PWD)/html,target=/html
-
-
 help:
 		@echo "Little nginx docker config to make some tests"	
 		@echo ""
@@ -24,8 +18,6 @@ help:
 		@echo ""
 		@echo "clean:		Remove $(CONTAINER_NAME) container"
 		@echo "iclean:		Remove $(IMAGE_NAME) and nginx images"
-		@echo "fclean:		Remove container, images and data directories"
-
 		@echo ""
 		@echo "'docker ps [-a]' to see running/all containers"
 		@echo "'docker images' to see all images"
@@ -37,8 +29,7 @@ build:
 		docker build . -t $(IMAGE_NAME)
 
 run:
-		mkdir -p conf html
-		docker run --name $(CONTAINER_NAME) -d -p $(PORT):80 --mount $(CONFIG_CONTAINER) --mount $(CONTENT_CONTAINER) $(IMAGE_NAME)
+		docker run --name $(CONTAINER_NAME) -d -p $(PORT):80 $(IMAGE_NAME)
 
 bash:
 		docker exec -it $(CONTAINER_NAME) bash
@@ -54,6 +45,3 @@ clean: stop
 
 iclean: clean
 		-docker rmi -f $(IMAGE_NAME) nginx
-
-fclean: clean iclean
-		-rm -rf conf html

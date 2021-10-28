@@ -39,7 +39,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             {
                 if (ft::is_regular_file(uri_path + "/" + req.index_names()[i]))
                 {
-                    uri_path + "/" + req.index_names()[i];
+                    uri_path = uri_path + "/" + req.index_names()[i];
                     break;
                 }
             }
