@@ -138,16 +138,32 @@ int Request::parse_first_header(Config& server_config)
 void Request::parse_uri(Config& server_config)
 {
     std::vector<Location> locations = server_config.get_locations();
-    std::vector<Location> parsed_locations;
-    std::string           req_uri = tokens["Request-URI"];
-    std::cout << "req_uri: " << req_uri << std::endl;
+    /**************************************** DEBUG *************************/
+    std::cout << "req_uri: " << tokens["Request-URI"] << std::endl;
+    /**************************************** DEBUG END **********************/
 
     for (size_t i = 0; i < locations.size(); i++)
     {
-        if (req_uri == locations[i].get_path())
+        if (tokens["Request-URI"] == locations[i].get_path())
         {
-            std::cout << "location " << i << ":" << locations[i].get_path()
-                      << std::endl;
+            // Concatenate root + client request uri
+            if (!locations[i].get_root().empty())
+                tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
+                                "/" + ft::strtrim(tokens["Request-URI"], "/");
+            else
+                tokens["URI"] = ft::strtrim(server_config.get_root(), "/") +
+                                "/" + ft::strtrim(tokens["Request-URI"], "/");
+
+            // Append location{index} list
+            std::vector<std::string> indexes = locations[i].get_index();
+            for (size_t j = 0; j < indexes.size(); j++)
+                _index_names.push_back(indexes[j]);
+
+            // Append server{index} list
+            indexes = server_config.get_index();
+            for (size_t j = 0; j < indexes.size(); j++)
+                _index_names.push_back(indexes[j]);
+            break;
         }
     }
     if (tokens["URI"].empty())
@@ -156,9 +172,12 @@ void Request::parse_uri(Config& server_config)
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
     }
-    std::cout << tokens["URI"] << std::endl;
+
+    /**************************************** DEBUG *************************/
+    std::cout << "tokens[\"URI\"]: " << tokens["URI"] << std::endl;
     for (size_t i = 0; i < _index_names.size(); i++)
-        std::cout << _index_names[i] << std::endl;
+        std::cout << "index " << i << ": " << _index_names[i] << std::endl;
+    /**************************************** DEBUG END **********************/
 }
 
 std::string Request::operator[](const std::string& key) const

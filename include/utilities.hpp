@@ -46,6 +46,8 @@ namespace ft
 
     bool is_dir(std::string uri_path);
 
+    bool is_regular_file(std::string uri_path);
+
 } // namespace ft
 
 #endif

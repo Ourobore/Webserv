@@ -37,15 +37,19 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         {
             for (size_t i = 0; i < req.index_names().size(); i++)
             {
-                uri_path = uri_path + "/" + req.index_names()[i];
-                file = open_file_stream(uri_path, server_config, "r");
-                if (file.stream())
+                if (ft::is_regular_file(uri_path + "/" + req.index_names()[i]))
                 {
-                    client.files().push_back(file);
-                    struct pollfd file_poll = {file.fd(), 1, 0};
-                    pfds.push_back(file_poll);
-                    return;
+                    uri_path + "/" + req.index_names()[i];
+                    break;
                 }
+            }
+            file = open_file_stream(uri_path, server_config, "r");
+            if (file.stream())
+            {
+                client.files().push_back(file);
+                struct pollfd file_poll = {file.fd(), 1, 0};
+                pfds.push_back(file_poll);
+                return;
             }
         }
     }

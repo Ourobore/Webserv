@@ -37,3 +37,18 @@ bool ft::is_dir(std::string uri_path)
     }
     return false;
 }
+
+bool ft::is_regular_file(std::string uri_path)
+{
+    int fd;
+
+    if (!ft::is_dir(uri_path))
+    {
+        if ((fd = open(uri_path.c_str(), O_RDONLY)) > 0)
+        {
+            close(fd);
+            return true;
+        }
+    }
+    return false;
+}
