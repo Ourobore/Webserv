@@ -11,7 +11,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::cout << recv_data << std::endl;
 
     // Parsing Request + add request to ClientHandler object
-    Request req = Request(recv_data.c_str());
+    Request req = Request(recv_data.c_str(), server_config);
 
     client.requests().push_back(req); // Will need to delete when executed,
                                       // surely will be front() request
@@ -21,11 +21,15 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         ft::strtrim(server_config.get_root(), "/"); // root location
 
     // Need parsing req["Root"] and req["URI"]
-    FileHandler file = open_file_stream(root + "/" + uri);
+    for (size_t i = 0; i < req.index_names.size(); i++)
+    {
+    }
+    // uri_path = req["URI"] + req.index[i];
+    // FileHandler file = open_file_stream();
 
-    client.files().push_back(file);
-    struct pollfd file_poll = {file.fd(), 1, 0};
-    pfds.push_back(file_poll);
+    // client.files().push_back(file);
+    // struct pollfd file_poll = {file.fd(), 1, 0};
+    // pfds.push_back(file_poll);
 }
 
 std::string Webserv::handle_cgi(Config const& config, Request const& request,

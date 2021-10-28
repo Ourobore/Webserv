@@ -40,8 +40,8 @@ std::vector<size_t> recup_server(std::string config)
 int config_error(std::string config_final)
 {
     // check the number of brackets
-    int     brackets;
-    size_t  server_pos;
+    int    brackets;
+    size_t server_pos;
 
     brackets = 0;
     server_pos = config_final.find("server");
@@ -192,7 +192,7 @@ std::vector<Config> main_parsing_config(int argc, char** argv)
     try
     {
         if (argc != 2)
-            configs = parse_config("conf/double.conf");
+            configs = parse_config("conf/default.conf");
         else
             configs = parse_config(argv[1]);
     }

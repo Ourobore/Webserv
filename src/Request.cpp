@@ -1,13 +1,14 @@
 #include "Request.hpp"
+#include "utilities.hpp"
 
-Request::Request(const char* bytes)
+Request::Request(const char* bytes, Config& server_config)
 {
 
     req_str = std::string(bytes);
     split_lines();
     if (!req_lines.empty())
     {
-        if (!parse_first_header())
+        if (!parse_first_header(server_config))
         {
             parse_body();
             return;
@@ -96,7 +97,7 @@ std::vector<std::string> Request::split_tokens(std::string line)
     return words;
 }
 
-int Request::parse_first_header()
+int Request::parse_first_header(Config& server_config)
 {
     static const std::string types[3] = {"GET", "POST", "DELETE"};
 
@@ -122,8 +123,9 @@ int Request::parse_first_header()
         // 4. root + filename
         // 5. pathinfo
         // 6. querystring
-
-        tokens["URI"] = words[1];
+        (void)server_config;
+        tokens["Request-URI"] = words[1];
+        parse_uri(server_config);
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
 
@@ -131,6 +133,32 @@ int Request::parse_first_header()
     }
 
     return 0;
+}
+
+void Request::parse_uri(Config& server_config)
+{
+    std::vector<Location> locations = server_config.get_locations();
+    std::vector<Location> parsed_locations;
+    std::string           req_uri = tokens["Request-URI"];
+    std::cout << "req_uri: " << req_uri << std::endl;
+
+    for (size_t i = 0; i < locations.size(); i++)
+    {
+        if (req_uri == locations[i].get_path())
+        {
+            std::cout << "location " << i << ":" << locations[i].get_path()
+                      << std::endl;
+        }
+    }
+    if (tokens["URI"].empty())
+    {
+        tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
+                        ft::strtrim(tokens["Request-URI"], "/");
+        index_names = server_config.get_index();
+    }
+    std::cout << tokens["URI"] << std::endl;
+    for (size_t i = 0; i < index_names.size(); i++)
+        std::cout << _index_names[i] << std::endl;
 }
 
 std::string Request::operator[](const std::string& key) const
