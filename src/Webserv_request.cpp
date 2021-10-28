@@ -16,27 +16,41 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     client.requests().push_back(req); // Will need to delete when executed,
                                       // surely will be front() request
 
-    std::string uri = ft::strtrim(req["URI"], "/");
-    std::string root =
-        ft::strtrim(server_config.get_root(), "/"); // root location
-
     // Need parsing req["Root"] and req["URI"]
-    for (size_t i = 0; i < req.index_names.size(); i++)
+    FileHandler file;
+    std::string uri_path = req["URI"];
+    file = open_file_stream(uri_path);
+    if (file.stream())
     {
+        client.files().push_back(file);
+        struct pollfd file_poll = {file.fd(), 1, 0};
+        pfds.push_back(file_poll);
     }
-    // uri_path = req["URI"] + req.index[i];
-    // FileHandler file = open_file_stream();
-
-    // client.files().push_back(file);
-    // struct pollfd file_poll = {file.fd(), 1, 0};
-    // pfds.push_back(file_poll);
+    else
+    {
+        if (req.index_names().size())
+        {
+            for (size_t i = 0; i < req.index_names().size(); i++)
+            {
+                uri_path += req.index_names()[i];
+                file = open_file_stream(uri_path);
+                if (file.stream())
+                {
+                    client.files().push_back(file);
+                    struct pollfd file_poll = {file.fd(), 1, 0};
+                    pfds.push_back(file_poll);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 std::string Webserv::handle_cgi(Config const& config, Request const& request,
                                 int client_fd)
 {
-    // Just a CGI test here, need more verifications. For exemple if we are in a
-    // location
+    // Just a CGI test here, need more verifications. For exemple if we are
+    // in a location
     CGIHandler  handler(config, request, client_fd);
     std::string cgi_output = handler.execute();
 

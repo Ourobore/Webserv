@@ -32,7 +32,7 @@ class Request
 
     std::string operator[](const std::string& key) const;
 
-    std::vector<std::string>& index_names
+    std::vector<std::string>& index_names();
 };
 
 #endif

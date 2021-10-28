@@ -1,7 +1,7 @@
 #include "Request.hpp"
 #include "utilities.hpp"
 
-Request::Request(const char* bytes, Config& server_config)
+Request::Request(const char* bytes, Config& server_config) : _index_names()
 {
 
     req_str = std::string(bytes);
@@ -154,10 +154,10 @@ void Request::parse_uri(Config& server_config)
     {
         tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
                         ft::strtrim(tokens["Request-URI"], "/");
-        index_names = server_config.get_index();
+        _index_names = server_config.get_index();
     }
     std::cout << tokens["URI"] << std::endl;
-    for (size_t i = 0; i < index_names.size(); i++)
+    for (size_t i = 0; i < _index_names.size(); i++)
         std::cout << _index_names[i] << std::endl;
 }
 
@@ -170,4 +170,9 @@ std::string Request::operator[](const std::string& key) const
         return ("");
     else
         return (it->second);
+}
+
+std::vector<std::string>& Request::index_names()
+{
+    return _index_names;
 }
