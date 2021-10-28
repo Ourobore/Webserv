@@ -21,7 +21,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         ft::strtrim(server_config.get_root(), "/"); // root location
 
     // Need parsing req["Root"] and req["URI"]
-    FileHandler file = open_file_stream(root + "/" + uri);
+    FileHandler file = open_file_stream(root + "/" + uri, server_config);
 
     client.files().push_back(file);
     struct pollfd file_poll = {file.fd(), 1, 0};

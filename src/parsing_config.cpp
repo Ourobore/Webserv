@@ -182,7 +182,7 @@ std::vector<Config> main_parsing_config(int argc, char** argv)
     try
     {
         if (argc != 2)
-            configs = parse_config("conf/double.conf");
+            configs = parse_config("conf/default.conf");
         else
             configs = parse_config(argv[1]);
     }
