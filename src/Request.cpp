@@ -138,10 +138,6 @@ int Request::parse_first_header(Config& server_config)
 void Request::parse_uri(Config& server_config)
 {
     std::vector<Location> locations = server_config.get_locations();
-    /**************************************** DEBUG *************************/
-    std::cout << "req_uri: " << tokens["Request-URI"] << std::endl;
-    /**************************************** DEBUG END **********************/
-
     for (size_t i = 0; i < locations.size(); i++)
     {
         if (tokens["Request-URI"] == locations[i].get_path())
@@ -172,12 +168,6 @@ void Request::parse_uri(Config& server_config)
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
     }
-
-    /**************************************** DEBUG *************************/
-    std::cout << "tokens[\"URI\"]: " << tokens["URI"] << std::endl;
-    for (size_t i = 0; i < _index_names.size(); i++)
-        std::cout << "index " << i << ": " << _index_names[i] << std::endl;
-    /**************************************** DEBUG END **********************/
 }
 
 std::string Request::operator[](const std::string& key) const
