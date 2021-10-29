@@ -21,8 +21,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::string uri_path = ft::strtrim(req["URI"], "/");
 
     // If must be handled with CGI
+    handle_cgi(server_config, req, client);
+
     if (CGIHandler::is_cgi_file(uri_path, req.location_index(), server_config))
-        handle_cgi(server_config, req, client);
+        (void)client; // handle_cgi(server_config, req, client);
     // Then if not
     else
     {
@@ -115,5 +117,5 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
     std::string response = headers_content.str() + res.content;
 
     // send to the client through his socket
-    send(socket_fd, response.c_str(), response.length(), 0);
+    send(socket_fd, response.c_str(), response.length(), MSG_DONTWAIT);
 }

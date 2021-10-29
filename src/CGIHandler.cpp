@@ -63,7 +63,9 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     else
         cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
     */
-    cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
+    // cgi_path =
+    // config.get_locations()[request.location_index()].get_cgi_pass();
+    cgi_path = "requirements/cgi-bin/php-cgi";
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
@@ -95,9 +97,8 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
                             std::vector<struct pollfd>& pfds,
                             Config&                     server_config)
 {
-    int         output_pipe[2];
-    int         childpid = 0;
-    std::string cgi_output(""); // Will be removed
+    int output_pipe[2];
+    int childpid = 0;
 
     if (pipe(output_pipe) == -1)
     {
@@ -123,12 +124,13 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
     if (childpid == 0)
     {
         dup2(output_pipe[PIPEWRITE], STDOUT);
-        close(output_pipe[PIPEREAD]);
+        // close(output_pipe[PIPEREAD]);
         chdir(root_directory.c_str());
         execve(cgi_path.c_str(), cgi_argv, env_array);
         perror("Error: CGI execution failed\n");
         exit(EXIT_FAILURE);
     }
+    // close(output_pipe[PIPEWRITE]);
     // Below, waiting for pipe fd in poll to be readable
     // else
     // {
