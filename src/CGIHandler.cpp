@@ -2,8 +2,7 @@
 #include "utilities.hpp"
 #include <netinet/in.h>
 
-CGIHandler::CGIHandler(Config const& config, Request const& request,
-                       int client_fd)
+CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 {
     struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
 
@@ -58,12 +57,15 @@ CGIHandler::CGIHandler(Config const& config, Request const& request,
     std::string pwd(buf);
     free(buf);
 
+    /*
     if (ft::getOsName() == "Mac OSX")
         cgi_path = pwd + "/cgi-bin/php-cgi-osx";
     else
         cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
+    */
+    cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
-    root_directory = pwd + variables["DOCUMENT_ROOT"];
+    // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
     // Debug: Printing env_array
     // DEBUG_print_env_array();
@@ -89,17 +91,27 @@ CGIHandler::~CGIHandler()
     delete[] cgi_argv;
 }
 
-std::string CGIHandler::execute() // Need changes i think
+void CGIHandler::launch_cgi(ClientHandler&              client,
+                            std::vector<struct pollfd>& pfds,
+                            Config&                     server_config)
 {
-    int         pipefd[2];
+    int         output_pipe[2];
     int         childpid = 0;
-    std::string cgi_output("");
+    std::string cgi_output(""); // Will be removed
 
-    if (pipe(pipefd) == -1)
+    if (pipe(output_pipe) == -1)
     {
         perror("Error: couldn't create pipe\n");
         exit(EXIT_FAILURE);
     }
+
+    // Must add pipe fd to files and pfds
+    FileHandler cgi_pipe_output =
+        Webserv::open_file_stream(output_pipe[PIPEREAD], server_config);
+    struct pollfd pfd = {cgi_pipe_output.fd(), POLLIN, 0};
+
+    client.files().push_back(cgi_pipe_output.fd());
+    pfds.push_back(pfd);
 
     childpid = fork();
     if (childpid == -1)
@@ -110,26 +122,42 @@ std::string CGIHandler::execute() // Need changes i think
 
     if (childpid == 0)
     {
-        dup2(pipefd[PIPEWRITE], STDOUT);
-        close(pipefd[PIPEREAD]);
+        dup2(output_pipe[PIPEWRITE], STDOUT);
+        close(output_pipe[PIPEREAD]);
         chdir(root_directory.c_str());
         execve(cgi_path.c_str(), cgi_argv, env_array);
         perror("Error: CGI execution failed\n");
         exit(EXIT_FAILURE);
     }
+    // Below, waiting for pipe fd in poll to be readable
+    // else
+    // {
+    //     waitpid(childpid, NULL, 0);
+    //     close(output_pipe[PIPEWRITE]);
+    //     /*
+    //     FileHandler cgi_stream = Webserv::open_file_stream(pipefd[PIPEREAD]);
+    //     if (cgi_stream.stream())
+    //         cgi_output = cgi_stream.read_all();
+    //     */
+    //     // read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
+    //     close(output_pipe[PIPEREAD]);
+    // }
+    // return (cgi_output);
+}
+
+bool CGIHandler::is_cgi_file(std::string filename, int location_index,
+                             Config& server_config)
+{
+    if (location_index == -1)
+        return (false);
+
+    Location location = server_config.get_locations()[location_index];
+
+    if (ft::file_extension(filename) == ".php" &&
+        location.get_cgi_extension() == ".php")
+        return (true);
     else
-    {
-        waitpid(childpid, NULL, 0);
-        close(pipefd[PIPEWRITE]);
-        /*
-        FileHandler cgi_stream = Webserv::open_file_stream(pipefd[PIPEREAD]);
-        if (cgi_stream.stream())
-            cgi_output = cgi_stream.read_all();
-        */
-        // read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
-        close(pipefd[PIPEREAD]);
-    }
-    return (cgi_output);
+        return (false);
 }
 
 char** CGIHandler::get_env_array()

@@ -26,6 +26,16 @@ std::string ft::getOsName()
 #endif
 }
 
+std::string ft::file_extension(std::string filename)
+{
+    const unsigned long extension_index = filename.find_last_of(".");
+
+    if (extension_index == std::string::npos)
+        return ("");
+    else
+        return (filename.substr(extension_index));
+}
+
 bool ft::is_dir(std::string uri_path)
 {
     int fd;

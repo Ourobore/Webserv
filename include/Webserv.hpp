@@ -49,8 +49,8 @@ class Webserv
     // Handling requests and responses
     void        request_handler(ClientHandler& client, Config& server_config);
     void        response_handler(ClientHandler& client, int client_index);
-    std::string handle_cgi(Config const& config, Request const& request,
-                           int client_fd);
+    std::string handle_cgi(Config& config, Request& request,
+                           ClientHandler& client);
     void respond(int socket_fd, Request& req, ClientHandler::Response& res);
 
     // Utilities

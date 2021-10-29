@@ -44,6 +44,10 @@ namespace ft
     /* Get OS name "Mac OSX" or "Linux" */
     std::string getOsName();
 
+    /* Return a string with the extension of the file (with leading '.'),
+        or an empty string if there is no extension */
+    std::string file_extension(std::string filename);
+
     bool is_dir(std::string uri_path);
 
     bool is_regular_file(std::string uri_path);

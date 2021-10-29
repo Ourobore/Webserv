@@ -20,29 +20,14 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     FileHandler file;
     std::string uri_path = ft::strtrim(req["URI"], "/");
 
-    if (!ft::is_dir(uri_path))
+    // If must be handled with CGI
+    if (CGIHandler::is_cgi_file(uri_path, req.location_index(), server_config))
+        handle_cgi(server_config, req, client);
+    // Then if not
+    else
     {
-        file = open_file_stream(uri_path, server_config, "r");
-        if (file.stream())
+        if (!ft::is_dir(uri_path))
         {
-            client.files().push_back(file);
-            struct pollfd file_poll = {file.fd(), 1, 0};
-            pfds.push_back(file_poll);
-            return;
-        }
-    }
-    else // It is a directory, try to append an index file to the path
-    {
-        if (req.index_names().size())
-        {
-            for (size_t i = 0; i < req.index_names().size(); i++)
-            {
-                if (ft::is_regular_file(uri_path + "/" + req.index_names()[i]))
-                {
-                    uri_path = uri_path + "/" + req.index_names()[i];
-                    break;
-                }
-            }
             file = open_file_stream(uri_path, server_config, "r");
             if (file.stream())
             {
@@ -52,23 +37,46 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                 return;
             }
         }
-    }
+        else // It is a directory, try to append an index file to the path
+        {
+            if (req.index_names().size())
+            {
+                for (size_t i = 0; i < req.index_names().size(); i++)
+                {
+                    if (ft::is_regular_file(uri_path + "/" +
+                                            req.index_names()[i]))
+                    {
+                        uri_path = uri_path + "/" + req.index_names()[i];
+                        break;
+                    }
+                }
+                file = open_file_stream(uri_path, server_config, "r");
+                if (file.stream())
+                {
+                    client.files().push_back(file);
+                    struct pollfd file_poll = {file.fd(), 1, 0};
+                    pfds.push_back(file_poll);
+                    return;
+                }
+            }
+        }
+    };
 }
 
-std::string Webserv::handle_cgi(Config const& config, Request const& request,
-                                int client_fd)
+std::string Webserv::handle_cgi(Config& config, Request& request,
+                                ClientHandler& client)
 {
     // Just a CGI test here, need more verifications. For exemple if we are
     // in a location
-    CGIHandler  handler(config, request, client_fd);
-    std::string cgi_output = handler.execute();
+    CGIHandler handler(config, request, client.fd());
+    handler.launch_cgi(client, pfds, config);
 
     // To do: get Content-type
 
     // Isolate body from CGI response
-    std::string body(cgi_output);
-    int         pos = cgi_output.find("\r\n\r\n");
-    body.erase(0, pos + 3);
+    std::string body;
+    // int         pos = cgi_output.find("\r\n\r\n");
+    // body.erase(0, pos + 3);
 
     return (body);
 }

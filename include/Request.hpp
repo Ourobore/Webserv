@@ -18,6 +18,7 @@ class Request
     std::string              req_str;
     std::vector<std::string> req_lines;
     std::vector<std::string> _index_names;
+    int                      _location_index;
 
     void                     split_lines();
     std::vector<std::string> split_tokens(std::string line);
@@ -30,8 +31,11 @@ class Request
     Request(const char* bytes, Config& server_config);
     std::map<std::string, std::string> tokens;
 
+    // Access request like a std::map
     std::string operator[](const std::string& key) const;
 
+    // Accessors
+    int                       location_index() const;
     std::vector<std::string>& index_names();
 };
 
