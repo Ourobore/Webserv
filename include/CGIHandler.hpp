@@ -15,11 +15,6 @@
 #include "Webserv.hpp"
 #include "utilities.hpp"
 
-#define PIPEREAD 0
-#define PIPEWRITE 1
-#define STDIN 0
-#define STDOUT 1
-
 class CGIHandler
 {
   private:

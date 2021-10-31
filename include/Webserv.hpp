@@ -17,6 +17,11 @@
 #include <sstream>
 #include <vector>
 
+#define PIPEREAD 0
+#define PIPEWRITE 1
+#define STDIN 0
+#define STDOUT 1
+
 const int CHUNK_SIZE = 64;
 
 class Webserv
