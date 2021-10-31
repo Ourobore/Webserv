@@ -57,15 +57,8 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     std::string pwd(buf);
     free(buf);
 
-    /*
-    if (ft::getOsName() == "Mac OSX")
-        cgi_path = pwd + "/cgi-bin/php-cgi-osx";
-    else
-        cgi_path = pwd + "/cgi-bin/php-cgi"; // Need fastcgi_pass in config
-    */
-    // cgi_path =
-    // config.get_locations()[request.location_index()].get_cgi_pass();
-    cgi_path = "requirements/cgi-bin/php-cgi";
+    cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
+    // cgi_path = "requirements/cgi-bin/php-cgi";
     script_name = variables["SCRIPT_NAME"].erase(0, 1);
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
@@ -111,7 +104,7 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
         Webserv::open_file_stream(output_pipe[PIPEREAD], server_config);
     struct pollfd pfd = {cgi_pipe_output.fd(), POLLIN, 0};
 
-    client.files().push_back(cgi_pipe_output.fd());
+    client.files().push_back(cgi_pipe_output);
     pfds.push_back(pfd);
 
     childpid = fork();
@@ -130,21 +123,6 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
         perror("Error: CGI execution failed\n");
         exit(EXIT_FAILURE);
     }
-    // close(output_pipe[PIPEWRITE]);
-    // Below, waiting for pipe fd in poll to be readable
-    // else
-    // {
-    //     waitpid(childpid, NULL, 0);
-    //     close(output_pipe[PIPEWRITE]);
-    //     /*
-    //     FileHandler cgi_stream = Webserv::open_file_stream(pipefd[PIPEREAD]);
-    //     if (cgi_stream.stream())
-    //         cgi_output = cgi_stream.read_all();
-    //     */
-    //     // read(pipefd[PIPEREAD], buffer, 30000); // Need changes i think
-    //     close(output_pipe[PIPEREAD]);
-    // }
-    // return (cgi_output);
 }
 
 bool CGIHandler::is_cgi_file(std::string filename, int location_index,

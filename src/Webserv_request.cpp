@@ -21,10 +21,11 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::string uri_path = ft::strtrim(req["URI"], "/");
 
     // If must be handled with CGI
-    handle_cgi(server_config, req, client);
+    // handle_cgi(server_config, req, client);
+    // return;
 
     if (CGIHandler::is_cgi_file(uri_path, req.location_index(), server_config))
-        (void)client; // handle_cgi(server_config, req, client);
+        handle_cgi(server_config, req, client);
     // Then if not
     else
     {
@@ -62,7 +63,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                 }
             }
         }
-    };
+    }
 }
 
 std::string Webserv::handle_cgi(Config& config, Request& request,
