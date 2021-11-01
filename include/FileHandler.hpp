@@ -72,6 +72,15 @@ class FileHandler
             return ("File doesn't exists");
         }
     };
+
+    class IsDir : public std::exception
+    {
+      public:
+        virtual const char* what() const throw()
+        {
+            return ("Cannot write on directory");
+        }
+    };
 };
 
 #endif

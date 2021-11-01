@@ -18,6 +18,8 @@ FileHandler::FileHandler(std::string filename, std::string mode)
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();
+        else if (errno == EISDIR)
+            throw FileHandler::IsDir();
         else
             throw FileHandler::OpenError();
     }
@@ -34,6 +36,8 @@ FileHandler::FileHandler(int file_descriptor, std::string mode)
     {
         if (errno == ENOENT)
             throw FileHandler::NoFile();
+        else if (errno == EISDIR)
+            throw FileHandler::IsDir();
         else
             throw FileHandler::OpenError();
     }

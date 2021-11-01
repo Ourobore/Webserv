@@ -43,7 +43,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                     break;
                 }
             }
-            file = open_file_stream(uri_path, server_config, "r");
+            file = open_file_stream(uri_path, server_config, "r+");
             if (file.stream())
             {
                 client.files().push_back(file);
