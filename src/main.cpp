@@ -15,14 +15,20 @@ int main(int argc, char** argv)
         return (-1);
 
     // MIME types
-    parsing_mimetypes("requirements/conf/mime.types");
+    std::map<std::string, std::string> mimetypes;
+    if (ConfParsing::parsing_mimetypes("requirements/conf/mime.types",
+                                       mimetypes) == -1)
+        return (-1);
 
     // Create a new server
     Webserv web;
 
     std::vector<Config>::iterator it;
     for (it = configs.begin(); it != configs.end(); ++it)
+    {
+        it->set_mimetypes(mimetypes);
         web.create_server(*it);
+    }
 
     web.start();
 

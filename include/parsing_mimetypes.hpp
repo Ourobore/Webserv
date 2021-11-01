@@ -1,10 +1,17 @@
 #ifndef PARSING_MIMETYPES
 #define PARSING_MIMETYPES
 
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <sstream>
+#include <vector>
 
-std::map<std::string, std::string> parsing_mimetypes(const char* filename);
+namespace ConfParsing
+{
+    int parsing_mimetypes(const char*                         filename,
+                          std::map<std::string, std::string>& mimetypes);
+}
 
 #endif

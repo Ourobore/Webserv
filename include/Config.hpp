@@ -26,6 +26,7 @@ class Config
     std::string                        root;
     std::vector<std::string>           index;
     std::vector<Location>              location;
+    std::map<std::string, std::string> _mimetypes;
 
     void set_host_port(std::string line);
     void set_server_name(std::string line);
@@ -51,6 +52,10 @@ class Config
     std::string                        get_root() const;
     std::vector<std::string>           get_index() const;
     std::vector<Location>              get_locations() const;
+
+    // MIME types
+    void set_mimetypes(std::map<std::string, std::string> mimetypes);
+    std::map<std::string, std::string> get_mimetypes() const;
 };
 
 std::ostream& operator<<(std::ostream& os, Config const& src);
