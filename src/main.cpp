@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include "Webserv.hpp"
 #include "parsing_config.hpp"
+#include "parsing_mimetypes.hpp"
 #include "utilities.hpp"
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -12,6 +13,9 @@ int main(int argc, char** argv)
     std::vector<Config> configs = main_parsing_config(argc, argv);
     if (configs.empty())
         return (-1);
+
+    // MIME types
+    parsing_mimetypes("requirements/conf/mime.types");
 
     // Create a new server
     Webserv web;
