@@ -21,16 +21,38 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::string uri_path = ft::strtrim(req["URI"], "/");
 
     // If must be handled with CGI
-    // handle_cgi(server_config, req, client);
-    // return;
+    handle_cgi(server_config, req, client);
+    return;
 
-    if (CGIHandler::is_cgi_file(uri_path, req.location_index(), server_config))
-        handle_cgi(server_config, req, client);
+    // if (CGIHandler::is_cgi_file(uri_path, req.location_index(),
+    // server_config))
+    //    handle_cgi(server_config, req, client);
     // Then if not
-    else
+    // else
+    //{
+    if (!ft::is_dir(uri_path))
     {
-        if (!ft::is_dir(uri_path))
+        file = open_file_stream(uri_path, server_config, "r");
+        if (file.stream())
         {
+            client.files().push_back(file);
+            struct pollfd file_poll = {file.fd(), 1, 0};
+            pfds.push_back(file_poll);
+            return;
+        }
+    }
+    else // It is a directory, try to append an index file to the path
+    {
+        if (req.index_names().size())
+        {
+            for (size_t i = 0; i < req.index_names().size(); i++)
+            {
+                if (ft::is_regular_file(uri_path + "/" + req.index_names()[i]))
+                {
+                    uri_path = uri_path + "/" + req.index_names()[i];
+                    break;
+                }
+            }
             file = open_file_stream(uri_path, server_config, "r");
             if (file.stream())
             {
@@ -40,30 +62,8 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                 return;
             }
         }
-        else // It is a directory, try to append an index file to the path
-        {
-            if (req.index_names().size())
-            {
-                for (size_t i = 0; i < req.index_names().size(); i++)
-                {
-                    if (ft::is_regular_file(uri_path + "/" +
-                                            req.index_names()[i]))
-                    {
-                        uri_path = uri_path + "/" + req.index_names()[i];
-                        break;
-                    }
-                }
-                file = open_file_stream(uri_path, server_config, "r");
-                if (file.stream())
-                {
-                    client.files().push_back(file);
-                    struct pollfd file_poll = {file.fd(), 1, 0};
-                    pfds.push_back(file_poll);
-                    return;
-                }
-            }
-        }
     }
+    //}
 }
 
 std::string Webserv::handle_cgi(Config& config, Request& request,

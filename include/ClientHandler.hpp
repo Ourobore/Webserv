@@ -36,6 +36,7 @@ class ClientHandler
     std::vector<Request>&     requests();
     std::vector<FileHandler>& files();
     Response&                 response();
+    int                       output_pipe[2];
 };
 
 #endif

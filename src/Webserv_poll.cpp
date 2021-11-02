@@ -10,14 +10,15 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
 
     if (pfds[file_index].revents & POLLIN)
     {
-        // close(output_pipe[PIPEWRITE]); Perhaps need that?
+        close(client.output_pipe[PIPEWRITE]);
         file->read_all();
-        // char buffer[30000]; // Just a fix for now. fread() is blocking
-        // int  size = read(file->fd(), buffer, 30000);
-        // client.response().content.append(buffer, size);
+        client.response().content = file->string_output();
+        int pos = client.response().content.find("\r\n\r\n");
+        client.response().content.erase(0, pos + 4); // +3 or +4 ?
+
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
-        client.response().content = file->string_output();
+        // client.response().content = file->string_output();
         client.response().code = file->status();
         fclose(file->stream());
         client.files().erase(client.files().begin());

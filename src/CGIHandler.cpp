@@ -54,9 +54,10 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // Setting CGI binary and script paths
 
-    cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
-    // cgi_path = "requirements/cgi-bin/php-cgi";
-    script_name = variables["SCRIPT_NAME"].erase(0, 1);
+    // cgi_path =
+    // config.get_locations()[request.location_index()].get_cgi_pass();
+    cgi_path = "requirements/cgi-bin/php-cgi";
+    script_name = variables["SCRIPT_NAME"];
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
     // Debug: Printing env_array
@@ -87,10 +88,10 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
                             std::vector<struct pollfd>& pfds,
                             Config&                     server_config)
 {
-    int output_pipe[2];
+    // int output_pipe[2];
     int childpid = 0;
 
-    if (pipe(output_pipe) == -1)
+    if (pipe(client.output_pipe) == -1)
     {
         perror("Error: couldn't create pipe\n");
         exit(EXIT_FAILURE);
@@ -98,7 +99,7 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
 
     // Must add pipe fd to files and pfds
     FileHandler cgi_pipe_output =
-        Webserv::open_file_stream(output_pipe[PIPEREAD], server_config);
+        Webserv::open_file_stream(client.output_pipe[PIPEREAD], server_config);
     struct pollfd pfd = {cgi_pipe_output.fd(), POLLIN, 0};
 
     client.files().push_back(cgi_pipe_output);
@@ -113,13 +114,20 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
 
     if (childpid == 0)
     {
-        dup2(output_pipe[PIPEWRITE], STDOUT);
-        close(output_pipe[PIPEREAD]);
+        dup2(client.output_pipe[PIPEWRITE], STDOUT);
+        close(client.output_pipe[PIPEREAD]);
         chdir(root_directory.c_str());
         execve(cgi_path.c_str(), cgi_argv, env_array);
         perror("Error: CGI execution failed\n");
         exit(EXIT_FAILURE);
     }
+    // else
+    // {
+    //     waitpid(childpid, NULL, 0);
+    //     char buffer[30000]; // Just a fix for now. fread() is blocking
+    //     read(client.output_pipe[PIPEREAD], buffer, 30000);
+    //     // std::cout << buffer << std::endl;
+    // }
 }
 
 bool CGIHandler::is_cgi_file(std::string filename, int location_index,
