@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
+#include "CGIHandler.hpp"
 #include "ClientHandler.hpp"
 #include "Config.hpp"
 #include "FileHandler.hpp"
@@ -52,10 +53,9 @@ class Webserv
     int  recv_all(int file_descriptor, std::string& recv_output, int flags = 0);
 
     // Handling requests and responses
-    void        request_handler(ClientHandler& client, Config& server_config);
-    void        response_handler(ClientHandler& client, int client_index);
-    std::string handle_cgi(Config& config, Request& request,
-                           ClientHandler& client);
+    void request_handler(ClientHandler& client, Config& server_config);
+    void response_handler(ClientHandler& client, int client_index);
+    void handle_cgi(Config& config, Request& request, ClientHandler& client);
     void respond(int socket_fd, Request& req, ClientHandler::Response& res);
 
     // Utilities
@@ -76,12 +76,6 @@ class Webserv
 
     void start();
     void create_server(Config& config);
-
-    // Files handling
-    static FileHandler open_file_stream(std::string filename, Config& config,
-                                        std::string mode = "r");
-    static FileHandler open_file_stream(int file_descriptor, Config& config,
-                                        std::string mode = "r");
 };
 
 #endif

@@ -5,15 +5,21 @@
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <poll.h>
 #include <string>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "ClientHandler.hpp"
 #include "Config.hpp"
 #include "Request.hpp"
 #include "Socket.hpp"
-#include "Webserv.hpp"
 #include "utilities.hpp"
+
+#define PIPEREAD 0
+#define PIPEWRITE 1
+#define STDIN 0
+#define STDOUT 1
 
 class CGIHandler
 {
@@ -40,6 +46,8 @@ class CGIHandler
 
     static bool is_cgi_file(std::string filename, int location_index,
                             Config& server_config);
+
+    int* output_pipe;
 };
 
 #endif

@@ -1,6 +1,9 @@
 #ifndef UTILITIES_HPP
 #define UTILITIES_HPP
 
+#include "Config.hpp"
+#include "FileHandler.hpp"
+
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
@@ -51,6 +54,12 @@ namespace ft
     bool is_dir(std::string uri_path);
 
     bool is_regular_file(std::string uri_path);
+
+    /* Just some wrapppers for file opening */
+    FileHandler open_file_stream(std::string filename, Config& config,
+                                 std::string mode = "r");
+    FileHandler open_file_stream(int file_descriptor, Config& config,
+                                 std::string mode = "r");
 
 } // namespace ft
 

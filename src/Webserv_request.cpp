@@ -32,7 +32,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     //{
     if (!ft::is_dir(uri_path))
     {
-        file = open_file_stream(uri_path, server_config, "r");
+        file = ft::open_file_stream(uri_path, server_config, "r");
         if (file.stream())
         {
             client.files().push_back(file);
@@ -53,7 +53,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                     break;
                 }
             }
-            file = open_file_stream(uri_path, server_config, "r");
+            file = ft::open_file_stream(uri_path, server_config, "r");
             if (file.stream())
             {
                 client.files().push_back(file);
@@ -66,22 +66,22 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     //}
 }
 
-std::string Webserv::handle_cgi(Config& config, Request& request,
-                                ClientHandler& client)
+void Webserv::handle_cgi(Config& config, Request& request,
+                         ClientHandler& client)
 {
     // Just a CGI test here, need more verifications. For exemple if we are
     // in a location
-    CGIHandler handler(config, request, client.fd());
-    handler.launch_cgi(client, pfds, config);
+    CGIHandler* handler = new CGIHandler(config, request, client.fd());
+    handler->launch_cgi(client, pfds, config);
 
     // To do: get Content-type
 
     // Isolate body from CGI response
-    std::string body;
+    // std::string body;
     // int         pos = cgi_output.find("\r\n\r\n");
     // body.erase(0, pos + 3);
 
-    return (body);
+    // return (body);
 }
 
 void Webserv::response_handler(ClientHandler& client, int client_index)

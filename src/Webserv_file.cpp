@@ -2,60 +2,6 @@
 #include "FileHandler.hpp"
 #include "Webserv.hpp"
 
-/* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(std::string filename, Config& config,
-                                      std::string mode)
-{
-    try
-    {
-        FileHandler file(filename, mode);
-        file.set_status(200);
-        return (file);
-    }
-    catch (FileHandler::NoFile exception)
-    {
-        // std::cout << exception.what() << std::endl;
-        FileHandler error_404(config.get_error_pages()["404"], mode);
-        // FileHandler error_404;
-        error_404.set_status(404);
-        return (error_404);
-    }
-    catch (FileHandler::OpenError exception)
-    {
-        // std::cout << exception.what() << std::endl;
-        FileHandler error_500(config.get_error_pages()["500"], mode);
-        // FileHandler error_500;
-        error_500.set_status(500);
-        return (error_500);
-    }
-}
-
-/* Just some wrappper for file opening. Useful? Avoid try catch */
-FileHandler Webserv::open_file_stream(int file_descriptor, Config& config,
-                                      std::string mode)
-{
-    try
-    {
-        FileHandler file(file_descriptor, mode);
-        file.set_status(200);
-        return (file);
-    }
-    catch (FileHandler::NoFile exception)
-    {
-        // std::cout << exception.what() << std::endl;
-        FileHandler error_404(config.get_error_pages()["404"], mode);
-        error_404.set_status(404);
-        return (error_404);
-    }
-    catch (FileHandler::OpenError exception)
-    {
-        // std::cout << exception.what() << std::endl;
-        FileHandler error_500(config.get_error_pages()["500"], mode);
-        error_500.set_status(500);
-        return (error_500);
-    }
-}
-
 /* If the file descriptor corresponds to a file, return an iterator to the
    FileHandler equivalent to this file. If not, return an end() iterator */
 FileHandler* Webserv::is_file_fd(int file_descriptor)
