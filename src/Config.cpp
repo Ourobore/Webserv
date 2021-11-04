@@ -309,3 +309,13 @@ std::ostream& operator<<(std::ostream& os, Config const& src)
     os << std::endl;
     return (os);
 }
+
+void Config::set_mimetypes(std::map<std::string, std::string> mimetypes)
+{
+    _mimetypes = mimetypes;
+}
+
+std::map<std::string, std::string> Config::get_mimetypes() const
+{
+    return _mimetypes;
+}

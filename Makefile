@@ -23,7 +23,8 @@ SRC			=	Socket.cpp \
 				FileHandler.cpp \
 				ClientHandler.cpp \
 				utilities.cpp \
-				Location.cpp
+				Location.cpp \
+				parsing_mimetypes.cpp
 
 # *.o files
 OBJDIR = obj/

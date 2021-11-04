@@ -16,7 +16,6 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     client.requests().push_back(req); // Will need to delete when executed,
                                       // surely will be front() request
 
-    // Need parsing req["Root"] and req["URI"]
     FileHandler file;
     std::string uri_path = ft::strtrim(req["URI"], "/");
 
@@ -25,6 +24,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         file = open_file_stream(uri_path, server_config, "r");
         if (file.stream())
         {
+            client.set_content_type(uri_path, server_config);
             client.files().push_back(file);
             struct pollfd file_poll = {file.fd(), 1, 0};
             pfds.push_back(file_poll);
@@ -43,9 +43,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                     break;
                 }
             }
-            file = open_file_stream(uri_path, server_config, "r");
+            file = open_file_stream(uri_path, server_config, "r+");
             if (file.stream())
             {
+                client.set_content_type(uri_path, server_config);
                 client.files().push_back(file);
                 struct pollfd file_poll = {file.fd(), 1, 0};
                 pfds.push_back(file_poll);

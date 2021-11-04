@@ -36,6 +36,8 @@ class ClientHandler
     std::vector<Request>&     requests();
     std::vector<FileHandler>& files();
     Response&                 response();
+
+    void set_content_type(std::string uri_path, Config& server_config);
 };
 
 #endif

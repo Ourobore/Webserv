@@ -20,6 +20,13 @@ FileHandler Webserv::open_file_stream(std::string filename, Config& config,
         error_404.set_status(404);
         return (error_404);
     }
+    catch (FileHandler::IsDir exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        error_404.set_status(404);
+        return (error_404);
+    }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
@@ -41,6 +48,13 @@ FileHandler Webserv::open_file_stream(int file_descriptor, Config& config,
         return (file);
     }
     catch (FileHandler::NoFile exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        error_404.set_status(404);
+        return (error_404);
+    }
+    catch (FileHandler::IsDir exception)
     {
         // std::cout << exception.what() << std::endl;
         FileHandler error_404(config.get_error_pages()["404"], mode);

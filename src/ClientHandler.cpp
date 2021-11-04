@@ -40,3 +40,11 @@ ClientHandler::Response& ClientHandler::response()
 {
     return (_response);
 }
+
+void ClientHandler::set_content_type(std::string uri_path,
+                                     Config&     server_config)
+{
+    std::string file_extension =
+        uri_path.substr(uri_path.find_last_of('.') + 1);
+    _response.content_type = server_config.get_mimetypes()[file_extension];
+}
