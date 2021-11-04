@@ -2,7 +2,7 @@
 #include "CGIHandler.hpp"
 
 // Constructor and destructor
-ClientHandler::ClientHandler(int client_fd) : _fd(client_fd)
+ClientHandler::ClientHandler(int client_fd) : _fd(client_fd), _cgi(NULL)
 {
 }
 

@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 
 CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
+    : output_pipe(NULL)
 {
     struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
 

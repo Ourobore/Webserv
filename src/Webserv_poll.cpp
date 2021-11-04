@@ -10,7 +10,7 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
 
     if (pfds[file_index].revents & POLLIN)
     {
-        if (client.cgi()->output_pipe)
+        if (client.cgi() && client.cgi()->output_pipe)
             close(client.cgi()->output_pipe[PIPEWRITE]);
         file->read_all();
 
