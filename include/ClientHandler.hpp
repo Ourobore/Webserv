@@ -4,6 +4,8 @@
 #include "FileHandler.hpp"
 #include "Request.hpp"
 
+class CGIHandler;
+
 class ClientHandler
 {
   public:
@@ -19,6 +21,7 @@ class ClientHandler
     std::vector<Request>     _requests;
     std::vector<FileHandler> _files;
     Response                 _response;
+    CGIHandler*              _cgi;
 
     ClientHandler();
 
@@ -37,7 +40,9 @@ class ClientHandler
     std::vector<FileHandler>& files();
     Response&                 response();
 
-    void set_content_type(std::string uri_path, Config& server_config);
+    void        set_content_type(std::string uri_path, Config& server_config);
+    CGIHandler* cgi();
+    void        set_cgi(CGIHandler* cgi);
 };
 
 #endif

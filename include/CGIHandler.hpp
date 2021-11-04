@@ -5,14 +5,15 @@
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <poll.h>
 #include <string>
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "ClientHandler.hpp"
 #include "Config.hpp"
 #include "Request.hpp"
 #include "Socket.hpp"
-#include "Webserv.hpp"
 #include "utilities.hpp"
 
 #define PIPEREAD 0
@@ -31,15 +32,22 @@ class CGIHandler
     std::string script_name;
     std::string root_directory;
 
-    char**      get_env_array();
+    char** get_env_array();
+
     void        DEBUG_print_env_array() const;
     std::string getOsName();
 
   public:
-    CGIHandler(Config const& config, Request const& request, int client_fd);
+    CGIHandler(Config& config, Request& request, int client_fd);
     ~CGIHandler();
 
-    std::string execute();
+    void launch_cgi(ClientHandler& client, std::vector<struct pollfd>& pfds,
+                    Config& server_config);
+
+    static bool is_cgi_file(std::string filename, int location_index,
+                            Config& server_config);
+
+    int* output_pipe;
 };
 
 #endif

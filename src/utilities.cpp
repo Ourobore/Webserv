@@ -26,6 +26,16 @@ std::string ft::getOsName()
 #endif
 }
 
+std::string ft::file_extension(std::string filename)
+{
+    const unsigned long extension_index = filename.find_last_of(".");
+
+    if (extension_index == std::string::npos)
+        return ("");
+    else
+        return (filename.substr(extension_index));
+}
+
 bool ft::is_dir(std::string uri_path)
 {
     int fd;
@@ -51,4 +61,58 @@ bool ft::is_regular_file(std::string uri_path)
         }
     }
     return false;
+}
+
+/* Just some wrappper for file opening. Useful? Avoid try catch */
+FileHandler ft::open_file_stream(std::string filename, Config& config,
+                                 std::string mode)
+{
+    try
+    {
+        FileHandler file(filename, mode);
+        file.set_status(200);
+        return (file);
+    }
+    catch (FileHandler::NoFile exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        // FileHandler error_404;
+        error_404.set_status(404);
+        return (error_404);
+    }
+    catch (FileHandler::OpenError exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_500(config.get_error_pages()["500"], mode);
+        // FileHandler error_500;
+        error_500.set_status(500);
+        return (error_500);
+    }
+}
+
+/* Just some wrappper for file opening. Useful? Avoid try catch */
+FileHandler ft::open_file_stream(int file_descriptor, Config& config,
+                                 std::string mode)
+{
+    try
+    {
+        FileHandler file(file_descriptor, mode);
+        file.set_status(200);
+        return (file);
+    }
+    catch (FileHandler::NoFile exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        error_404.set_status(404);
+        return (error_404);
+    }
+    catch (FileHandler::OpenError exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_500(config.get_error_pages()["500"], mode);
+        error_500.set_status(500);
+        return (error_500);
+    }
 }

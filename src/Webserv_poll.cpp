@@ -10,13 +10,32 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
 
     if (pfds[file_index].revents & POLLIN)
     {
+        if (client.cgi() && client.cgi()->output_pipe)
+            close(client.cgi()->output_pipe[PIPEWRITE]);
         file->read_all();
+
+        // Setting up client to POLLOUT and remove file fd from pfds
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
+
+        // Set content and status response
         client.response().content = file->string_output();
         client.response().code = file->status();
+
+        // FileHandler cleaning
         fclose(file->stream());
         client.files().erase(client.files().begin());
+
+        // If CGI, clean output from CGI header, then delete ClientHandler::_cgi
+        if (client.cgi())
+        {
+
+            int pos = client.response().content.find("\r\n\r\n");
+            client.response().content.erase(0, pos + 4); // +3 or +4 ?
+
+            delete client.cgi();
+            client.set_cgi(NULL);
+        }
     }
     // if (pfds[i].revents & POLLOUT) ?
 }
