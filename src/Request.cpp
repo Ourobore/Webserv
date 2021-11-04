@@ -3,7 +3,6 @@
 
 Request::Request(const char* bytes, Config& server_config) : _index_names()
 {
-
     req_str = std::string(bytes);
     split_lines();
     if (!req_lines.empty())
@@ -146,14 +145,14 @@ void Request::resolve_index()
 void Request::parse_uri(Config& server_config)
 {
     std::vector<Location> locations = server_config.get_locations();
-    /**************************************** DEBUG *************************/
-    std::cout << "req_uri: " << tokens["Request-URI"] << std::endl;
-    /**************************************** DEBUG END **********************/
+    _location_index = -1;
 
     for (size_t i = 0; i < locations.size(); i++)
     {
         if (tokens["Request-URI"] == locations[i].get_path())
         {
+            _location_index = i;
+
             // Concatenate root + client request uri
             if (!locations[i].get_root().empty())
                 tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
@@ -181,12 +180,6 @@ void Request::parse_uri(Config& server_config)
         _index_names = server_config.get_index();
     }
     resolve_index();
-
-    /**************************************** DEBUG *************************/
-    std::cout << "tokens[\"URI\"]: " << tokens["URI"] << std::endl;
-    for (size_t i = 0; i < _index_names.size(); i++)
-        std::cout << "index " << i << ": " << _index_names[i] << std::endl;
-    /**************************************** DEBUG END **********************/
 }
 
 std::string Request::operator[](const std::string& key) const
@@ -202,5 +195,10 @@ std::string Request::operator[](const std::string& key) const
 
 std::vector<std::string>& Request::index_names()
 {
-    return _index_names;
+    return (_index_names);
+}
+
+int Request::location_index() const
+{
+    return (_location_index);
 }
