@@ -25,6 +25,7 @@ class Request
     void                     parse_uri(Config& server_config);
     void                     parse_headers();
     void                     parse_body();
+    void                     resolve_index();
 
   public:
     Request(const char* bytes, Config& server_config);

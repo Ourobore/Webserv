@@ -17,42 +17,21 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                                       // surely will be front() request
 
     FileHandler file;
-    std::string uri_path = ft::strtrim(req["URI"], "/");
-
-    if (!ft::is_dir(uri_path))
+    if (!ft::is_dir(req["URI"]))
     {
-        file = open_file_stream(uri_path, server_config, "r");
+        file = open_file_stream(req["URI"], server_config, "r");
         if (file.stream())
         {
-            client.set_content_type(uri_path, server_config);
+            client.set_content_type(req["URI"], server_config);
             client.files().push_back(file);
-            struct pollfd file_poll = {file.fd(), 1, 0};
+            struct pollfd file_poll = {file.fd(), POLLIN, 0};
             pfds.push_back(file_poll);
             return;
         }
     }
-    else // It is a directory, try to append an index file to the path
+    else // It is a directory. TODO: check autoindex
     {
-        if (req.index_names().size())
-        {
-            for (size_t i = 0; i < req.index_names().size(); i++)
-            {
-                if (ft::is_regular_file(uri_path + "/" + req.index_names()[i]))
-                {
-                    uri_path = uri_path + "/" + req.index_names()[i];
-                    break;
-                }
-            }
-            file = open_file_stream(uri_path, server_config, "r+");
-            if (file.stream())
-            {
-                client.set_content_type(uri_path, server_config);
-                client.files().push_back(file);
-                struct pollfd file_poll = {file.fd(), 1, 0};
-                pfds.push_back(file_poll);
-                return;
-            }
-        }
+        file = open_file_stream(req["URI"], server_config, "r+");
     }
 }
 

@@ -116,16 +116,9 @@ int Request::parse_first_header(Config& server_config)
         if (tokens["Method"].empty())
             return 0;
 
-        // URI: "/dossier1/dossier2/filename/{pathinfo}?querystring"
-        // 1. /dossier1/dossier2
-        // 2. /dossier1
-        // 3. /
-        // 4. root + filename
-        // 5. pathinfo
-        // 6. querystring
-        (void)server_config;
         tokens["Request-URI"] = words[1];
         parse_uri(server_config);
+
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
 
@@ -133,6 +126,21 @@ int Request::parse_first_header(Config& server_config)
     }
 
     return 0;
+}
+
+void Request::resolve_index()
+{
+    std::string uri_path = ft::strtrim(tokens["URI"], "/");
+
+    for (size_t i = 0; i < _index_names.size(); i++)
+    {
+        if (ft::is_regular_file(tokens["URI"] + "/" + _index_names[i]))
+        {
+            uri_path = uri_path + "/" + _index_names[i];
+            tokens["URI"] = uri_path;
+            break;
+        }
+    }
 }
 
 void Request::parse_uri(Config& server_config)
@@ -172,6 +180,7 @@ void Request::parse_uri(Config& server_config)
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
     }
+    resolve_index();
 
     /**************************************** DEBUG *************************/
     std::cout << "tokens[\"URI\"]: " << tokens["URI"] << std::endl;
