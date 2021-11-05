@@ -8,37 +8,30 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
 
     // Variables that block the input file as a parameter
-    // variables["GATEWAY_INTERFACE"] = "CGI/1.1";
-    // variables["REQUEST_METHOD"] = request["Method"];
-    // variables["SERVER_SOFTWARE"] = "Webserv";
-    // variables["SERVER_NAME"] = ft::transform_localhost(config.get_host());
+    variables["GATEWAY_INTERFACE"] = "CGI/1.1";
+    variables["REQUEST_METHOD"] = request["Method"];
+    variables["SERVER_SOFTWARE"] = "Webserv";
+    variables["SERVER_NAME"] = ft::transform_localhost(config.get_host());
 
     // Setting up CGI variables as envp
-    variables["PHP_SELF"] = request["URI"]; // Dangerous?
     variables["REDIRECT_STATUS"] = "200";
-    // ^ Does the status change? Take from fastcgi_param ^
 
     // Server variables
-    variables["DOCUMENT_ROOT"] = config.get_root();
     variables["SERVER_PROTOCOL"] = request["Protocol"];
-    variables["SERVER_ADDR"] = ft::transform_localhost(config.get_host());
     variables["SERVER_PORT"] = ft::to_string(config.get_port());
 
     // Client variables. May need to take informations from client socket?
     variables["REMOTE_HOST"] = "localhost";
     variables["REMOTE_ADDR"] = Socket::get_socket_ip_address(client_address);
-    variables["REMOTE_PORT"] =
-        ft::to_string(Socket::get_socket_port(client_address));
+    variables["REMOTE_IDENT"];
+    variables["REMOTE_USER"];
 
     // Request variables
-    variables["REQUEST_URI"] = request["URI"];
     variables["SCRIPT_NAME"] = request["URI"];
     variables["PATH_INFO"] = "/"; // Testing, should not use relative path
     // variables["PATH_TRANSLATED"] = "";
-    // SCRIPT_FILENAME == pwd + variables["DOCUMENT_ROOT"] +
-    // variables["SCRIPT_NAME"];
     variables["QUERY_STRING"] = "";
-    variables["AUTH_PATH"] = request["Authorization"];
+    variables["AUTH_TYPE"] = request["Authorization"];
     variables["CONTENT_TYPE"] = request["Content-Type"];
     variables["CONTENT_LENGTH"] = request["Content-Length"];
 
@@ -49,7 +42,8 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     variables["HTTP_USER_AGENT"] = request["User-Agent"];
     variables["HTTP_ACCECPT_ENCODING"] = request["Accept-Encoding"];
     variables["HTTP_ACCECPT_LANGUAGE"] = request["Accept-Language"];
-    variables["HTTPS"] = ""; // Really needed?
+
+    variables["SCRIPT_FILENAME"] = request["URI"]; // If php?
 
     env_array = CGIHandler::get_env_array();
 
