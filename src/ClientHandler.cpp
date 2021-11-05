@@ -58,3 +58,17 @@ void ClientHandler::set_cgi(CGIHandler* cgi)
 {
     _cgi = cgi;
 }
+
+std::string ClientHandler::set_date()
+{
+    struct timeval tv;
+    time_t         nowtime;
+    struct tm*     nowtm;
+    char           tmbuf[64];
+
+    gettimeofday(&tv, NULL);
+    nowtime = tv.tv_sec;
+    nowtm = localtime(&nowtime);
+    strftime(tmbuf, sizeof tmbuf, "%a, %d %b %Y %H:%M:%S GMT", nowtm);
+    return std::string(tmbuf);
+}

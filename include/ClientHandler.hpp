@@ -3,6 +3,7 @@
 
 #include "FileHandler.hpp"
 #include "Request.hpp"
+#include <sys/time.h>
 
 class CGIHandler;
 
@@ -13,6 +14,7 @@ class ClientHandler
     {
         std::string content;
         std::string content_type;
+        std::string date;
         int         code;
     } Response;
 
@@ -41,6 +43,7 @@ class ClientHandler
     Response&                 response();
 
     void        set_content_type(std::string uri_path, Config& server_config);
+    std::string set_date();
     CGIHandler* cgi();
     void        set_cgi(CGIHandler* cgi);
 };

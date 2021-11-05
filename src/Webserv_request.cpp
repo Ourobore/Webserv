@@ -87,7 +87,7 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
     headers_content << "HTTP/1.1 " << res.code << " " << res_status[res.code]
                     << "\r\n"
                     << "Server: webserv/42\r\n"
-                    << "Date: \r\n"
+                    << "Date: " << res.date << "\r\n"
                     << "Content-Type: " << res.content_type << "\r\n"
                     << "Content-Length: " << res.content.length() << "\r\n"
                     << "Connection: " << connection << "\r\n"
