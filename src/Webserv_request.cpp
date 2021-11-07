@@ -27,6 +27,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
 
     else
     {
+        client.set_date();
         if (!ft::is_dir(req["URI"]))
             file = ft::open_file_stream(req["URI"], server_config, "r");
         if (file.stream())

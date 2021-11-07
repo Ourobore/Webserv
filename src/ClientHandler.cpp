@@ -59,7 +59,7 @@ void ClientHandler::set_cgi(CGIHandler* cgi)
     _cgi = cgi;
 }
 
-std::string ClientHandler::set_date()
+void ClientHandler::set_date()
 {
     struct timeval tv;
     time_t         nowtime;
@@ -68,7 +68,8 @@ std::string ClientHandler::set_date()
 
     gettimeofday(&tv, NULL);
     nowtime = tv.tv_sec;
-    nowtm = localtime(&nowtime);
+    nowtm = gmtime(&nowtime);
     strftime(tmbuf, sizeof tmbuf, "%a, %d %b %Y %H:%M:%S GMT", nowtm);
-    return std::string(tmbuf);
+
+    _response.date = std::string(tmbuf);
 }

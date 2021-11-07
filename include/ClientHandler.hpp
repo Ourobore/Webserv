@@ -43,7 +43,7 @@ class ClientHandler
     Response&                 response();
 
     void        set_content_type(std::string uri_path, Config& server_config);
-    std::string set_date();
+    void        set_date();
     CGIHandler* cgi();
     void        set_cgi(CGIHandler* cgi);
 };
