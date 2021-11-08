@@ -51,7 +51,7 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // cgi_path =
     // config.get_locations()[request.location_index()].get_cgi_pass();
-    cgi_path = "requirements/cgi-bin/php-cgi";
+    cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
     script_name = variables["SCRIPT_NAME"];
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 

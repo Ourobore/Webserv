@@ -16,17 +16,13 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     client.requests().push_back(req); // Will need to delete when executed,
                                       // surely will be front() request
                                       // If must be handled with CGI
-    // handle_cgi(server_config, req, client);
-    // return;
 
-    FileHandler file;
     if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
                                 server_config))
         handle_cgi(server_config, req, client);
-    // Then if not
-
     else
     {
+        FileHandler file;
         client.set_date();
         if (!ft::is_dir(req["URI"]))
             file = ft::open_file_stream(req["URI"], server_config, "r");
