@@ -144,34 +144,46 @@ void Request::resolve_index()
 
 void Request::parse_uri(Config& server_config)
 {
+    std::string           tmp = tokens["Request-URI"];
+    size_t                back_pos = 0;
     std::vector<Location> locations = server_config.get_locations();
     _location_index = -1;
-
-    for (size_t i = 0; i < locations.size(); i++)
+    while (back_pos != std::string::npos)
     {
-        if (tokens["Request-URI"] == locations[i].get_path())
+        for (size_t i = 0; i < locations.size(); i++)
         {
-            _location_index = i;
+            if (tmp == locations[i].get_path())
+            {
+                _location_index = i;
 
-            // Concatenate root + client request uri
-            if (!locations[i].get_root().empty())
-                tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                "/" + ft::strtrim(tokens["Request-URI"], "/");
-            else
-                tokens["URI"] = ft::strtrim(server_config.get_root(), "/") +
-                                "/" + ft::strtrim(tokens["Request-URI"], "/");
+                // Concatenate root + client request uri
+                if (!locations[i].get_root().empty())
+                    tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
+                                    "/" +
+                                    ft::strtrim(tokens["Request-URI"], "/");
 
-            // Append location{index} list
-            std::vector<std::string> indexes = locations[i].get_index();
-            for (size_t j = 0; j < indexes.size(); j++)
-                _index_names.push_back(indexes[j]);
+                // Append location{index} list
+                std::vector<std::string> indexes = locations[i].get_index();
+                for (size_t j = 0; j < indexes.size(); j++)
+                    _index_names.push_back(indexes[j]);
 
-            // Append server{index} list
-            indexes = server_config.get_index();
-            for (size_t j = 0; j < indexes.size(); j++)
-                _index_names.push_back(indexes[j]);
-            break;
+                // Append server{index} list
+                indexes = server_config.get_index();
+                for (size_t j = 0; j < indexes.size(); j++)
+                    _index_names.push_back(indexes[j]);
+                break;
+            }
         }
+        // Si on a pas trouve de location correspondant, on retente en enlevant
+        // une precision
+        if (tokens["URI"].empty())
+        {
+            back_pos = tmp.find_last_of("/");
+            if (back_pos != std::string::npos)
+                tmp.erase(back_pos);
+        }
+        else
+            back_pos = std::string::npos;
     }
     if (tokens["URI"].empty())
     {
