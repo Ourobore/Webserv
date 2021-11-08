@@ -17,28 +17,38 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
                                       // surely will be front() request
                                       // If must be handled with CGI
 
-    if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
-                                server_config))
-        handle_cgi(server_config, req, client);
-    else
+    if (req["Method"] == "GET")
     {
-        FileHandler file;
-        client.set_date();
-        if (!ft::is_dir(req["URI"]))
-            file = ft::open_file_stream(req["URI"], server_config, "r");
-        if (file.stream())
+        if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
+                                    server_config))
+            handle_cgi(server_config, req, client);
+        else
         {
-            client.set_content_type(req["URI"], server_config);
-            client.files().push_back(file);
-            struct pollfd file_poll = {file.fd(), POLLIN, 0};
-            pfds.push_back(file_poll);
-            return;
-        }
-        else // It is a directory. TODO: check autoindex
-        {
-            file = ft::open_file_stream(req["URI"], server_config, "r");
+            FileHandler file;
+            client.set_date();
+            if (!ft::is_dir(req["URI"]))
+                file = ft::open_file_stream(req["URI"], server_config, "r");
+            if (file.stream())
+            {
+                client.set_content_type(req["URI"], server_config);
+                client.files().push_back(file);
+                struct pollfd file_poll = {file.fd(), POLLIN, 0};
+                pfds.push_back(file_poll);
+                return;
+            }
+            else // It is a directory. TODO: check autoindex
+            {
+                file = ft::open_file_stream(req["URI"], server_config, "r");
+            }
         }
     }
+    else if (req["Method"] == "POST")
+        handle_post(server_config, req, client);
+    else if (req["Method"] == "DELETE")
+    {
+    }
+    else
+        client.requests().pop_back();
 }
 
 void Webserv::handle_cgi(Config& config, Request& request,

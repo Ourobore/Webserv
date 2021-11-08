@@ -55,8 +55,11 @@ class Webserv
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
-    void handle_cgi(Config& config, Request& request, ClientHandler& client);
     void respond(int socket_fd, Request& req, ClientHandler::Response& res);
+
+    // Request type handling
+    void handle_post(Config& config, Request& request, ClientHandler& client);
+    void handle_cgi(Config& config, Request& request, ClientHandler& client);
 
     // Utilities
     Server&        get_server_from_client(int client_fd);
