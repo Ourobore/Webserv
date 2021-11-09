@@ -3,6 +3,7 @@ a.out*
 obj/
 objs_client/
 objs_server/
+upload/
 tags
 server
 client
