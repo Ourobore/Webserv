@@ -43,7 +43,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         }
     }
     else if (req["Method"] == "POST")
-        handle_post(server_config, req, client);
+    {
+        // Need checking if form or file upload, and location. Content type?
+        handle_upload(server_config, req, client);
+    }
     else if (req["Method"] == "DELETE")
     {
     }

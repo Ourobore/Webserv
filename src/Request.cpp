@@ -62,7 +62,12 @@ void Request::parse_body()
     std::string                        content;
     std::vector<std::string>::iterator it;
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
+    {
         content.append(*it);
+        // Body needs the \n, or the content will be on one line
+        if (it + 1 != req_lines.end())
+            content.append("\n");
+    }
 
     tokens["Body"] = content;
 }

@@ -45,7 +45,7 @@ class Webserv
 
     // Polling
     void poll_events();
-    void poll_file(ClientHandler& client, int file_index);
+    void poll_file(ClientHandler& client, size_t& file_index);
 
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);
@@ -58,7 +58,7 @@ class Webserv
     void respond(int socket_fd, Request& req, ClientHandler::Response& res);
 
     // Request type handling
-    void handle_post(Config& config, Request& request, ClientHandler& client);
+    void handle_upload(Config& config, Request& request, ClientHandler& client);
     void handle_cgi(Config& config, Request& request, ClientHandler& client);
 
     // Utilities

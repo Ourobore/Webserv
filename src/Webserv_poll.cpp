@@ -4,7 +4,7 @@
 /* Get the corresponding file, read it all, and then close it and remove it from
    the client pending files and poll file descriptor array. Lastly, set the
    corresponding client events to POLLOUT to write response when possible */
-void Webserv::poll_file(ClientHandler& client, int file_index)
+void Webserv::poll_file(ClientHandler& client, size_t& file_index)
 {
     FileHandler* file = is_file_fd(pfds[file_index].fd);
 
@@ -17,6 +17,7 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
         // Setting up client to POLLOUT and remove file fd from pfds
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
+        // --file_index?
 
         // Set content and status response
         client.response().content = file->string_output();
@@ -47,6 +48,7 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
         fclose(file->stream());
         client.files().erase(client.files().begin());
         pfds.erase(pfds.begin() + file_index);
+        --file_index;
     }
 }
 
