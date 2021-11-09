@@ -37,7 +37,17 @@ void Webserv::poll_file(ClientHandler& client, int file_index)
             client.set_cgi(NULL);
         }
     }
-    // if (pfds[i].revents & POLLOUT) ?
+    if (pfds[file_index].revents & POLLOUT)
+    {
+        // Write file content from upload
+        write(file->fd(), file->string_output().c_str(),
+              file->string_output().length());
+
+        // FileHandler cleaning
+        fclose(file->stream());
+        client.files().erase(client.files().begin());
+        pfds.erase(pfds.begin() + file_index);
+    }
 }
 
 void Webserv::poll_events()
