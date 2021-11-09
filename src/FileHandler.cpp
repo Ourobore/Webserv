@@ -119,6 +119,11 @@ std::string FileHandler::string_output() const
     return (_string_output);
 }
 
+void FileHandler::set_string_output(std::string string_output)
+{
+    _string_output = string_output;
+}
+
 void FileHandler::set_status(int status)
 {
     _status = status;

@@ -43,6 +43,7 @@ class FileHandler
     int         fd() const;
     int         status() const;
     std::string string_output() const;
+    void        set_string_output(std::string string_output);
     void        set_status(int status);
 
     // Exceptions
