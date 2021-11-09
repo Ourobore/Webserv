@@ -17,7 +17,7 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         // Setting up client to POLLOUT and remove file fd from pfds
         pfds[get_poll_index(client.fd())].events = POLLOUT;
         pfds.erase(pfds.begin() + file_index);
-        // --file_index?
+        // --file_index? Faster?
 
         // Set content and status response
         client.response().content = file->string_output();

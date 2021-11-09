@@ -41,11 +41,12 @@ class ClientHandler
     std::vector<Request>&     requests();
     std::vector<FileHandler>& files();
     Response&                 response();
+    CGIHandler*               cgi();
 
-    void        set_content_type(std::string uri_path, Config& server_config);
-    void        set_date();
-    CGIHandler* cgi();
-    void        set_cgi(CGIHandler* cgi);
+    void clear_response();
+    void set_content_type(std::string uri_path, Config& server_config);
+    void set_date();
+    void set_cgi(CGIHandler* cgi);
 };
 
 #endif

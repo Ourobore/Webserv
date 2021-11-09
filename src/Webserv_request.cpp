@@ -12,10 +12,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
 
     // Parsing Request + add request to ClientHandler object
     Request req = Request(recv_data.c_str(), server_config);
-
-    client.requests().push_back(req); // Will need to delete when executed,
-                                      // surely will be front() request
-                                      // If must be handled with CGI
+    client.requests().push_back(req);
 
     if (req["Method"] == "GET")
     {
@@ -81,6 +78,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     // Send the response in a struct with headers infos
     respond(client.fd(), req, res);
 
+    client.clear_response();
     client.requests().erase(client.requests().begin());
     pfds[client_index].events = POLLIN;
 }

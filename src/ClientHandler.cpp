@@ -42,21 +42,30 @@ ClientHandler::Response& ClientHandler::response()
     return (_response);
 }
 
+CGIHandler* ClientHandler::cgi()
+{
+    return (_cgi);
+}
+
+void ClientHandler::clear_response()
+{
+    _response.content = "";
+    _response.content_type = "";
+    _response.date = "";
+    _response.code = 0;
+}
+
+void ClientHandler::set_cgi(CGIHandler* cgi)
+{
+    _cgi = cgi;
+}
+
 void ClientHandler::set_content_type(std::string uri_path,
                                      Config&     server_config)
 {
     std::string file_extension =
         uri_path.substr(uri_path.find_last_of('.') + 1);
     _response.content_type = server_config.get_mimetypes()[file_extension];
-}
-CGIHandler* ClientHandler::cgi()
-{
-    return (_cgi);
-}
-
-void ClientHandler::set_cgi(CGIHandler* cgi)
-{
-    _cgi = cgi;
 }
 
 void ClientHandler::set_date()

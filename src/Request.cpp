@@ -153,6 +153,7 @@ void Request::parse_uri(Config& server_config)
     size_t                back_pos = 0;
     std::vector<Location> locations = server_config.get_locations();
     _location_index = -1;
+
     while (back_pos != std::string::npos)
     {
         for (size_t i = 0; i < locations.size(); i++)
