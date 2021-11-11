@@ -11,7 +11,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     std::cout << recv_data << std::endl;
 
     // Parsing Request + add request to ClientHandler object
-    Request req = Request(recv_data.c_str(), server_config);
+    Request req = Request(recv_data, server_config);
     client.requests().push_back(req);
 
     if (req["Method"] == "GET")

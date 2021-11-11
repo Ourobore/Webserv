@@ -1,9 +1,9 @@
 #include "Request.hpp"
 #include "utilities.hpp"
 
-Request::Request(const char* bytes, Config& server_config) : _index_names()
+Request::Request(std::string bytes, Config& server_config) : _index_names()
 {
-    req_str = std::string(bytes);
+    req_str = bytes;
     split_lines();
     if (!req_lines.empty())
     {
@@ -63,7 +63,7 @@ void Request::parse_body()
     std::vector<std::string>::iterator it;
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
     {
-        content.append(*it);
+        content.append((*it).c_str(), (*it).length());
         // Body needs the \n, or the content will be on one line
         if (it + 1 != req_lines.end())
             content.append("\n");

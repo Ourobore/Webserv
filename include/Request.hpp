@@ -29,7 +29,7 @@ class Request
     void                     resolve_index();
 
   public:
-    Request(const char* bytes, Config& server_config);
+    Request(std::string bytes, Config& server_config);
     std::map<std::string, std::string> tokens;
 
     // Access request like a std::map

@@ -11,9 +11,14 @@ namespace multipart
     /* Remove body from content and return file name */
     static std::string get_filename(std::string file_content)
     {
-        std::string filename =
-            file_content.substr(file_content.find("filename=\"") + 10);
-        filename = filename.substr(0, filename.find("\""));
+        std::string filename("");
+
+        if (!file_content.empty())
+        {
+            filename =
+                file_content.substr(file_content.find("filename=\"") + 10);
+            filename = filename.substr(0, filename.find("\""));
+        }
 
         return (filename);
     }
@@ -30,11 +35,12 @@ void Webserv::handle_upload(Config& config, Request& request,
 {
     std::string request_body = request["Body"];
     std::string boundary =
-        "\r\n--" + multipart::get_boundary(request["Content-Type"]);
+        "--" + multipart::get_boundary(request["Content-Type"]);
 
-    while (request_body != boundary + "--\r") // End of body, with end boundary
+    while (request_body + "\r" !=
+           boundary + "--\r") // End of body, with end boundary
     {
-        if (request_body.find(boundary) == 0) // If we hit boundary
+        if (request_body.find(boundary + "\r") == 0) // If we hit boundary
         {
             request_body = request_body.substr(boundary.length() + 1);
             continue;

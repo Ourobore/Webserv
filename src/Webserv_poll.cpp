@@ -102,7 +102,7 @@ int Webserv::recv_all(int file_descriptor, std::string& recv_output, int flags)
 
     while ((recv_ret = recv(file_descriptor, chunk, CHUNK_SIZE - 1, flags)) > 0)
     {
-        recv_output += std::string(chunk);
+        recv_output.append(chunk, recv_ret);
         bytes_received += recv_ret;
         memset(chunk, 0, CHUNK_SIZE);
     }
