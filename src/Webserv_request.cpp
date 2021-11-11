@@ -38,7 +38,15 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             }
             else // It is a directory. TODO: check autoindex
             {
-                file = ft::open_file_stream(req["URI"], server_config, "r");
+                file = ft::open_file_stream(req["URI"], server_config, "r+");
+                if (file.stream())
+                {
+                    client.set_content_type(req["URI"], server_config);
+                    client.files().push_back(file);
+                    struct pollfd file_poll = {file.fd(), POLLIN, 0};
+                    pfds.push_back(file_poll);
+                    return;
+                }
             }
         }
     }
