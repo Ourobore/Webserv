@@ -121,7 +121,19 @@ int Request::parse_first_header(Config& server_config)
             return 0;
 
         tokens["Request-URI"] = words[1];
+        // parse query string
+        size_t pos = tokens["Request-URI"].find_last_of('?');
+        if (pos != std::string::npos)
+        {
+            tokens["Query-string"] = tokens["Request-URI"].substr(pos + 1);
+            tokens["Request-URI"].erase(pos);
+        }
         parse_uri(server_config);
+
+        // Check method
+        if (tokens["Method"] == "POST" || tokens["Method"] == "DELETE")
+        {
+        }
 
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
@@ -147,6 +159,19 @@ void Request::resolve_index()
     }
 }
 
+/*
+
+ /php/info.php/test1/test2?var1=value1
+    tokens["Request-URI"] = /php/info.php
+    tokens["Query-string"] = var1=value1
+    tokens["Pathinfo"] = test1/test2
+
+    tokens["URI"] = requirements/html/php/info.php
+
+    tmp = /php
+
+*/
+
 void Request::parse_uri(Config& server_config)
 {
     std::string           tmp = tokens["Request-URI"];
@@ -165,8 +190,7 @@ void Request::parse_uri(Config& server_config)
                 // Concatenate root + client request uri
                 if (!locations[i].get_root().empty())
                     tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                    "/" +
-                                    ft::strtrim(tokens["Request-URI"], "/");
+                                    "/" + ft::strtrim(tmp, "/");
 
                 // Append location{index} list
                 std::vector<std::string> indexes = locations[i].get_index();
@@ -177,6 +201,7 @@ void Request::parse_uri(Config& server_config)
                 indexes = server_config.get_index();
                 for (size_t j = 0; j < indexes.size(); j++)
                     _index_names.push_back(indexes[j]);
+                // resolve_index();
                 break;
             }
         }
