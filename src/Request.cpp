@@ -128,12 +128,18 @@ int Request::parse_first_header(Config& server_config)
             tokens["Query-string"] = tokens["Request-URI"].substr(pos + 1);
             tokens["Request-URI"].erase(pos);
         }
-        parse_uri(server_config);
-
-        // Check method
-        if (tokens["Method"] == "POST" || tokens["Method"] == "DELETE")
+        // Check uri type (file or directory)
+        pos = tokens["Request-URI"].find_last_of('.');
+        if (pos != std::string::npos)
         {
+            pos = tokens["Request-URI"].find("/", pos);
+            if (pos != std::string::npos)
+            {
+                tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
+                tokens["Request-URI"].erase(pos);
+            }
         }
+        parse_uri(server_config);
 
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
@@ -190,18 +196,21 @@ void Request::parse_uri(Config& server_config)
                 // Concatenate root + client request uri
                 if (!locations[i].get_root().empty())
                     tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                    "/" + ft::strtrim(tmp, "/");
+                                    "/" +
+                                    ft::strtrim(tokens["Request-URI"], "/");
+                if (ft::is_dir(tokens["URI"]))
+                {
+                    // Append location{index} list
+                    std::vector<std::string> indexes = locations[i].get_index();
+                    for (size_t j = 0; j < indexes.size(); j++)
+                        _index_names.push_back(indexes[j]);
 
-                // Append location{index} list
-                std::vector<std::string> indexes = locations[i].get_index();
-                for (size_t j = 0; j < indexes.size(); j++)
-                    _index_names.push_back(indexes[j]);
-
-                // Append server{index} list
-                indexes = server_config.get_index();
-                for (size_t j = 0; j < indexes.size(); j++)
-                    _index_names.push_back(indexes[j]);
-                // resolve_index();
+                    // Append server{index} list
+                    indexes = server_config.get_index();
+                    for (size_t j = 0; j < indexes.size(); j++)
+                        _index_names.push_back(indexes[j]);
+                    resolve_index();
+                }
                 break;
             }
         }
@@ -221,8 +230,8 @@ void Request::parse_uri(Config& server_config)
         tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
+        resolve_index();
     }
-    resolve_index();
 }
 
 std::string Request::operator[](const std::string& key) const

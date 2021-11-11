@@ -14,6 +14,9 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     Request req = Request(recv_data.c_str(), server_config);
     client.requests().push_back(req);
 
+    // Check methods in location conf
+    // Check req["Body"].length() with server_config.get_client_max();
+
     if (req["Method"] == "GET")
     {
         if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
