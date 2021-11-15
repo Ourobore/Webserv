@@ -63,6 +63,26 @@ bool ft::is_regular_file(std::string uri_path)
     return false;
 }
 
+bool ft::access_method(Config& server_config, Request& request)
+{
+    if (request.location_index() != -1)
+    {
+        Location location =
+            server_config.get_locations()[request.location_index()];
+
+        if (location.get_methods()[request.tokens["Method"]])
+            return (true);
+        else
+            return (false);
+    }
+
+    /* If no corresponding location */
+    if (request.tokens["Method"] == "GET")
+        return (true);
+    else
+        return (false);
+}
+
 /* Just some wrappper for file opening. Useful? Avoid try catch */
 FileHandler ft::open_file_stream(std::string filename, Config& config,
                                  std::string mode)

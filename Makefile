@@ -26,6 +26,7 @@ SRC			=	Socket.cpp \
 				Location.cpp \
 				parsing_mimetypes.cpp \
 				upload.cpp \
+				delete.cpp \
 
 # *.o files
 OBJDIR = obj/

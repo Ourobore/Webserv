@@ -3,6 +3,7 @@
 
 #include "Config.hpp"
 #include "FileHandler.hpp"
+#include "Request.hpp"
 
 #include <fcntl.h>
 #include <iostream>
@@ -54,6 +55,9 @@ namespace ft
     bool is_dir(std::string uri_path);
 
     bool is_regular_file(std::string uri_path);
+
+    /* Return if the method of the request is authorized */
+    bool access_method(Config& server_config, Request& request);
 
     /* Just some wrapppers for file opening */
     FileHandler open_file_stream(std::string filename, Config& config,

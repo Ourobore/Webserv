@@ -14,7 +14,8 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     Request req = Request(recv_data, server_config);
     client.requests().push_back(req);
 
-    if (req["Method"] == "GET")
+    bool authorized_method = ft::access_method(server_config, req);
+    if (req["Method"] == "GET" && authorized_method)
     {
         if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
                                     server_config))
@@ -39,13 +40,14 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             }
         }
     }
-    else if (req["Method"] == "POST")
+    else if (req["Method"] == "POST" && authorized_method)
     {
         // Need checking if form or file upload, and location. Content type?
         handle_upload(server_config, req, client);
     }
-    else if (req["Method"] == "DELETE")
+    else if (req["Method"] == "DELETE" && authorized_method)
     {
+        handle_delete(server_config, req, client);
     }
     else
         client.requests().pop_back();
