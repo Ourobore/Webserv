@@ -62,8 +62,8 @@ void Location::set_method(std::string line)
     if (line == "")
     {
         this->methods["GET"] = true;
-        this->methods["POST"] = true;
-        this->methods["DELETE"] = true;
+        this->methods["POST"] = false;
+        this->methods["DELETE"] = false;
     }
     else
     {
