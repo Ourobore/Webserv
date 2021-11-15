@@ -37,12 +37,12 @@ void Webserv::handle_upload(Config& config, Request& request,
     std::string boundary =
         "--" + multipart::get_boundary(request["Content-Type"]);
 
-    while (request_body + "\r" !=
-           boundary + "--\r") // End of body, with end boundary
+    while (request_body !=
+           boundary + "--\r\n") // End of body, with end boundary
     {
-        if (request_body.find(boundary + "\r") == 0) // If we hit boundary
+        if (request_body.find(boundary + "\r\n") == 0) // If we hit boundary
         {
-            request_body = request_body.substr(boundary.length() + 1);
+            request_body = request_body.substr(boundary.length() + 2);
             continue;
         }
 

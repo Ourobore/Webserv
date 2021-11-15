@@ -16,7 +16,8 @@ Request::Request(std::string bytes, Config& server_config) : _index_names()
         {
             req_lines.erase(req_lines.begin());
             parse_headers();
-            parse_body();
+            tokens["Body"] = bytes.substr(bytes.find("\r\n\r\n") + 4);
+            // parse_body();
         }
     }
 }
