@@ -4,6 +4,44 @@
 #include "Webserv.hpp"
 #include <exception>
 
+FileHandler create_autoindex(Request& req, Config& server_config)
+{
+    FileHandler              file;
+    std::vector<std::string> ls = ft::list_directory(req["URI"].c_str());
+    std::ofstream            outfile((req["URI"] + "/autoindex.html").c_str());
+    std::vector<std::string>::iterator it;
+
+    outfile << "<html>"
+            << "<head>"
+            << "<title>Index of " << req["Request-URI"] << "</title>"
+            << "</head>"
+            << "<body>"
+            << "</h1>Index of " << req["Request-URI"] << "</h1>"
+            << "<hr />"
+            << "<pre><a href="
+            << "/" + req[+"Request-URI"].substr(
+                         0, req["Request-URI"].find_last_of('/'))
+            << ">../</a>" << std::endl;
+
+    for (it = ls.begin(); it != ls.end(); ++it)
+    {
+        if (*it != "." && *it != "..")
+        {
+            outfile << "<a href=\"" << (req["Request-URI"] + "/" + *it) << "\">"
+                    << *it << "</a>" << std::endl;
+        }
+    }
+    outfile << "</pre>"
+            << "<hr />"
+            << "</body>"
+            << "</html>";
+    outfile.close();
+    file = ft::open_file_stream((req["URI"] + "/autoindex.html"), server_config,
+                                "r+");
+    remove((req["URI"] + "/autoindex.html").c_str());
+    return file;
+}
+
 // Handle clients requests
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
@@ -38,41 +76,19 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             }
             else // It is a directory. TODO: check autoindex
             {
-                std::vector<std::string> ls =
-                    ft::list_directory(req["URI"].c_str());
-                std::ofstream outfile((req["URI"] + "/autoindex.html").c_str());
-                std::vector<std::string>::iterator it;
+                std::string autoindex = "";
+                if (req.location_index() != -1)
+                    autoindex =
+                        server_config.get_locations()[req.location_index()]
+                            .get_autoindex();
 
-                outfile << "<html>"
-                        << "<head>"
-                        << "<title>Index of " << req["Request-URI"]
-                        << "</title>"
-                        << "</head>"
-                        << "<body>"
-                        << "</h1>Index of " << req["Request-URI"] << "</h1>"
-                        << "<hr />"
-                        << "<pre><a href="
-                        << req["URI"].substr(0, req["URI"].find_last_of('/'))
-                        << ">../</a>" << std::endl;
-
-                for (it = ls.begin(); it != ls.end(); ++it)
+                if (autoindex == "on")
                 {
-                    if (*it != "." && *it != "..")
-                    {
-                        outfile << "<a href=\"" << (req["URI"] + "/" + *it)
-                                << "\">" << *it << "</a>" << std::endl;
-                    }
+                    file = create_autoindex(req, server_config);
                 }
-                outfile << "</pre>"
-                        << "<hr />"
-                        << "</body>"
-                        << "</html>";
-                outfile.close();
-                file = ft::open_file_stream((req["URI"] + "/autoindex.html"),
-                                            server_config, "r+");
-                remove((req["URI"] + "/autoindex.html").c_str());
-
-                // file = ft::open_file_stream(req["URI"], server_config, "r+");
+                else
+                    file =
+                        ft::open_file_stream(req["URI"], server_config, "r+");
                 if (file.stream())
                 {
                     client.set_content_type(req["URI"], server_config);
