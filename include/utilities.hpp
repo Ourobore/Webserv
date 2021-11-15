@@ -4,10 +4,12 @@
 #include "Config.hpp"
 #include "FileHandler.hpp"
 
+#include <dirent.h>
 #include <fcntl.h>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <sys/types.h>
 #include <unistd.h>
 
 namespace ft
@@ -60,6 +62,8 @@ namespace ft
                                  std::string mode = "r");
     FileHandler open_file_stream(int file_descriptor, Config& config,
                                  std::string mode = "r");
+
+    std::vector<std::string> list_directory(const char* dirpath);
 
 } // namespace ft
 

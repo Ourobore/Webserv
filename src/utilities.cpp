@@ -130,3 +130,23 @@ FileHandler ft::open_file_stream(int file_descriptor, Config& config,
         return (error_500);
     }
 }
+
+std::vector<std::string> ft::list_directory(const char* dirpath)
+{
+    DIR*           dir;
+    struct dirent* ent;
+
+    std::vector<std::string> ls;
+
+    dir = opendir(dirpath);
+    if (dir)
+    {
+        while ((ent = readdir(dir)) != NULL)
+        {
+            ls.push_back(ent->d_name);
+        }
+        closedir(dir);
+    }
+
+    return ls;
+}
