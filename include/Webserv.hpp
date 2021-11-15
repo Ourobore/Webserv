@@ -8,6 +8,7 @@
 #include "Request.hpp"
 #include "Server.hpp"
 #include "Socket.hpp"
+#include "generate.hpp"
 #include "utilities.hpp"
 
 #include <arpa/inet.h>

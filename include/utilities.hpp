@@ -4,6 +4,7 @@
 #include "Config.hpp"
 #include "FileHandler.hpp"
 #include "Request.hpp"
+#include "generate.hpp"
 
 #include <fcntl.h>
 #include <iostream>

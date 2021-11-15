@@ -6,8 +6,13 @@ Webserv::Webserv()
 {
     // Init status code for server response
     res_status[200] = "OK";
+    res_status[202] = "Accepted";
+    res_status[204] = "No Content";
+    res_status[301] = "Moved Permanently";
     res_status[400] = "Bad Request";
+    res_status[403] = "Forbidden";
     res_status[404] = "Not Found";
+    res_status[405] = "Method Not Allowed";
 }
 
 Webserv::~Webserv()

@@ -12,7 +12,8 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
     {
         if (client.cgi() && client.cgi()->output_pipe)
             close(client.cgi()->output_pipe[PIPEWRITE]);
-        file->read_all();
+        if (file->stream())
+            file->read_all();
 
         // Setting up client to POLLOUT and remove file fd from pfds
         pfds[get_poll_index(client.fd())].events = POLLOUT;
