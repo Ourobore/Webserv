@@ -96,20 +96,36 @@ FileHandler ft::open_file_stream(std::string filename, Config& config,
     catch (FileHandler::NoFile exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_404(config.get_error_pages()["404"], mode);
-        if (!error_404.stream())
+        try // If we can get the error 404 page
+        {
+            FileHandler error_404(config.get_error_pages()["404"], mode);
+            error_404.set_status(404);
+            return (error_404);
+        }
+        catch (...) // Else generate one
+        {
+            FileHandler error_404;
             error_404.set_string_output(generate::status_message(404));
-        error_404.set_status(404);
-        return (error_404);
+            error_404.set_status(404);
+            return (error_404);
+        }
     }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_500(config.get_error_pages()["500"], mode);
-        if (!error_500.stream())
+        try // If we can get the error 500 page
+        {
+            FileHandler error_500(config.get_error_pages()["500"], mode);
+            error_500.set_status(500);
+            return (error_500);
+        }
+        catch (...) // Else generate one
+        {
+            FileHandler error_500;
             error_500.set_string_output(generate::status_message(500));
-        error_500.set_status(500);
-        return (error_500);
+            error_500.set_status(500);
+            return (error_500);
+        }
     }
 }
 
@@ -126,19 +142,35 @@ FileHandler ft::open_file_stream(int file_descriptor, Config& config,
     catch (FileHandler::NoFile exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_404(config.get_error_pages()["404"], mode);
-        if (!error_404.stream())
+        try // If we can get the error 404 page
+        {
+            FileHandler error_404(config.get_error_pages()["404"], mode);
+            error_404.set_status(404);
+            return (error_404);
+        }
+        catch (...) // Else generate one
+        {
+            FileHandler error_404;
             error_404.set_string_output(generate::status_message(404));
-        error_404.set_status(404);
-        return (error_404);
+            error_404.set_status(404);
+            return (error_404);
+        }
     }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
-        FileHandler error_500(config.get_error_pages()["500"], mode);
-        if (!error_500.stream())
+        try // If we can get the error 500 page
+        {
+            FileHandler error_500(config.get_error_pages()["500"], mode);
+            error_500.set_status(500);
+            return (error_500);
+        }
+        catch (...) // Else generate one
+        {
+            FileHandler error_500;
             error_500.set_string_output(generate::status_message(500));
-        error_500.set_status(500);
-        return (error_500);
+            error_500.set_status(500);
+            return (error_500);
+        }
     }
 }

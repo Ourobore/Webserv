@@ -22,22 +22,36 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             handle_cgi(server_config, req, client);
         else
         {
-            FileHandler file;
+            // FileHandler file;
             client.set_date();
             if (!ft::is_dir(req["URI"]))
-                file = ft::open_file_stream(req["URI"], server_config, "r");
-            if (file.stream())
             {
-                client.set_content_type(req["URI"], server_config);
-                client.files().push_back(file);
-                struct pollfd file_poll = {file.fd(), POLLIN, 0};
-                pfds.push_back(file_poll);
-                return;
+                FileHandler file =
+                    ft::open_file_stream(req["URI"], server_config);
+                if (file.stream())
+                {
+                    client.set_content_type(req["URI"], server_config);
+                    client.files().push_back(file);
+                    struct pollfd file_poll = {file.fd(), POLLIN, 0};
+                    pfds.push_back(file_poll);
+                    return;
+                }
+                else if (file.status() != 200) // If file opening failed
+                {
+                    client.response().code = file.status();
+                    client.response().content = "text/html";
+                    client.response().content =
+                        generate::error_page(file.status());
+                    pfds[get_poll_index(client.fd())].events = POLLOUT;
+                }
             }
             else // It is a directory. TODO: check autoindex
             {
-                file = ft::open_file_stream(req["URI"], server_config, "r");
+                FileHandler file =
+                    ft::open_file_stream(req["URI"], server_config);
             }
+            // If !file.stream(), write generated page directly in
+            // client.response() and set client to POLLOUT
         }
     }
     else if (req["Method"] == "POST" && authorized_method)

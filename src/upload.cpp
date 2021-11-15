@@ -60,12 +60,15 @@ void Webserv::handle_upload(Config& config, Request& request,
             // Opening file and storing content
             FileHandler new_file = ft::open_file_stream(
                 "requirements/upload/" + filename, config, "w+");
-            new_file.set_string_output(file_content);
+            if (new_file.status() == 200) // Or internal error if one failed?
+            {
+                new_file.set_string_output(file_content);
 
-            // Updating pfds and files vector
-            struct pollfd pfd = {new_file.fd(), POLLOUT, 0};
-            pfds.push_back(pfd);
-            client.files().push_back(new_file);
+                // Updating pfds and files vector
+                struct pollfd pfd = {new_file.fd(), POLLOUT, 0};
+                pfds.push_back(pfd);
+                client.files().push_back(new_file);
+            }
         }
 
         // Remove part we just parsed
