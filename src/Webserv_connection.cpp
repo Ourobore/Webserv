@@ -19,11 +19,20 @@ Webserv::~Webserv()
 {
 }
 
+void Webserv::catch_signal(int signal)
+{
+    std::cout << std::endl
+              << "Signal called (" << strsignal(signal) << "). Stopping..."
+              << std::endl;
+    exit(1);
+}
+
 void Webserv::start()
 {
     while (true)
     {
         std::cout << "=== Waiting... ===" << std::endl;
+        signal(SIGINT, catch_signal);
         // Convert vector to simple array
         struct pollfd* pfds_array = &(pfds[0]);
 

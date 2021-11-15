@@ -10,6 +10,7 @@
 #include "Socket.hpp"
 #include "generate.hpp"
 #include "utilities.hpp"
+#include <csignal>
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -68,6 +69,7 @@ class Webserv
     ClientHandler& get_client_from_file(int file_descriptor);
     int            get_poll_index(int file_descriptor);
     FileHandler*   is_file_fd(int file_descriptor);
+    static void    catch_signal(int signal);
 
     // Accessors
     Server&                              get_server(int server_fd);
