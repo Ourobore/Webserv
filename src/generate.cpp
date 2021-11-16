@@ -33,6 +33,14 @@ std::string generate::file_deleted()
     return (output.str());
 }
 
+void generate::response(ClientHandler& client, int status_code)
+{
+    client.response().code = status_code;
+    client.response().content_type = "text/html";
+    client.response().content = generate::error_page(status_code);
+    client.set_date();
+}
+
 std::string generate::status_message(int status_code)
 {
     std::string message("");

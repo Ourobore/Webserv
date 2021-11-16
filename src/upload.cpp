@@ -28,26 +28,16 @@ namespace multipart
     {
         file_content = file_content.substr(file_content.find("\r\n\r\n") + 4);
     }
-} // namespace multipart
 
-void Webserv::handle_upload(Config& config, Request& request,
-                            ClientHandler& client)
-{
-    std::string request_body = request["Body"];
-    std::string boundary =
-        "--" + multipart::get_boundary(request["Content-Type"]);
+    /* Wrapper that loop on all request body to extract every file content */
+    static void get_files(Config& config, Request& request,
+                          ClientHandler& client, std::vector<pollfd>& pfds)
+    {
+        Location    location = config.get_locations()[request.location_index()];
+        std::string request_body = request["Body"];
+        std::string boundary =
+            "--" + multipart::get_boundary(request["Content-Type"]);
 
-    Location location = config.get_locations()[request.location_index()];
-    if (location.get_upload().empty())
-    {
-        client.response().code = 403;
-        client.response().content_type = "text/html";
-        client.response().content = generate::error_page(403);
-        client.set_date();
-        pfds[get_poll_index(client.fd())].events = POLLOUT;
-    }
-    else // Should we check the content type and if upload path is correct?
-    {
         while (request_body !=
                boundary + "--\r\n") // End of body, with end boundary
         {
@@ -86,5 +76,43 @@ void Webserv::handle_upload(Config& config, Request& request,
             // Remove part we just parsed
             request_body = request_body.substr(file_length);
         }
+    }
+} // namespace multipart
+
+void Webserv::handle_upload(Config& config, Request& request,
+                            ClientHandler& client)
+{
+    Location location = config.get_locations()[request.location_index()];
+    if (location.get_upload().empty()) // If upload is not authorized
+    {
+        generate::response(client, 403);
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
+    else // Should we check if upload path is correct?
+    {
+        multipart::get_files(config, request, client, pfds);
+
+        // We need to answer the pending POST request
+        client.set_date();
+        if (!ft::is_dir(request["URI"]))
+        {
+            FileHandler file = ft::open_file_stream(request["URI"], config);
+            if (file.stream())
+            {
+                client.set_content_type(request["URI"], config);
+                client.files().push_back(file);
+                struct pollfd file_poll = {file.fd(), POLLIN, 0};
+                pfds.push_back(file_poll);
+                return;
+            }
+            else if (file.status() != 200) // If file opening failed
+            {
+                client.response().code = file.status();
+                client.response().content = "text/html";
+                client.response().content = generate::error_page(file.status());
+                pfds[get_poll_index(client.fd())].events = POLLOUT;
+            }
+        }
+        // If dir?
     }
 }
