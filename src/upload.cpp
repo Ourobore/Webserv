@@ -37,41 +37,54 @@ void Webserv::handle_upload(Config& config, Request& request,
     std::string boundary =
         "--" + multipart::get_boundary(request["Content-Type"]);
 
-    while (request_body !=
-           boundary + "--\r\n") // End of body, with end boundary
+    Location location = config.get_locations()[request.location_index()];
+    if (location.get_upload().empty())
     {
-        if (request_body.find(boundary + "\r\n") == 0) // If we hit boundary
+        client.response().code = 403;
+        client.response().content_type = "text/html";
+        client.response().content = generate::error_page(403);
+        client.set_date();
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
+    else // Should we check the content type and if upload path is correct?
+    {
+        while (request_body !=
+               boundary + "--\r\n") // End of body, with end boundary
         {
-            request_body = request_body.substr(boundary.length() + 2);
-            continue;
-        }
-
-        // Get file content: multipart header + file content
-        std::string file_content =
-            request_body.substr(0, request_body.find(boundary));
-        int file_length = file_content.length();
-
-        // Get filename and remove header from file_content
-        std::string filename = multipart::get_filename(file_content);
-        if (!filename.empty())
-        {
-            multipart::remove_header(file_content);
-
-            // Opening file and storing content
-            FileHandler new_file = ft::open_file_stream(
-                "requirements/upload/" + filename, config, "w+");
-            if (new_file.status() == 200) // Or internal error if one failed?
+            if (request_body.find(boundary + "\r\n") == 0) // If we hit boundary
             {
-                new_file.set_string_output(file_content);
-
-                // Updating pfds and files vector
-                struct pollfd pfd = {new_file.fd(), POLLOUT, 0};
-                pfds.push_back(pfd);
-                client.files().push_back(new_file);
+                request_body = request_body.substr(boundary.length() + 2);
+                continue;
             }
-        }
 
-        // Remove part we just parsed
-        request_body = request_body.substr(file_length);
+            // Get file content: multipart header + file content
+            std::string file_content =
+                request_body.substr(0, request_body.find(boundary));
+            int file_length = file_content.length();
+
+            // Get filename and remove header from file_content
+            std::string filename = multipart::get_filename(file_content);
+            if (!filename.empty())
+            {
+                multipart::remove_header(file_content);
+
+                // Opening file and storing content
+                FileHandler new_file = ft::open_file_stream(
+                    location.get_upload() + "/" + filename, config, "w+");
+                if (new_file.status() ==
+                    200) // Or internal error if one failed?
+                {
+                    new_file.set_string_output(file_content);
+
+                    // Updating pfds and files vector
+                    struct pollfd pfd = {new_file.fd(), POLLOUT, 0};
+                    pfds.push_back(pfd);
+                    client.files().push_back(new_file);
+                }
+            }
+
+            // Remove part we just parsed
+            request_body = request_body.substr(file_length);
+        }
     }
 }

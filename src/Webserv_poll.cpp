@@ -15,14 +15,14 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         if (file->stream())
             file->read_all();
 
-        // Setting up client to POLLOUT and remove file fd from pfds
-        pfds[get_poll_index(client.fd())].events = POLLOUT;
-        pfds.erase(pfds.begin() + file_index);
-        --file_index; // Faster ?
-
         // Set content and status response
         client.response().content = file->string_output();
         client.response().code = file->status();
+
+        // Setting up client to POLLOUT and remove file fd from pfds
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+        pfds.erase(pfds.begin() + file_index);
+        //--file_index; // Faster ? No cause crash. Why? does the other one too?
 
         // FileHandler cleaning
         fclose(file->stream());
@@ -33,13 +33,13 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         {
 
             int pos = client.response().content.find("\r\n\r\n");
-            client.response().content.erase(0, pos + 4); // +3 or +4 ?
+            client.response().content.erase(0, pos + 4);
 
             delete client.cgi();
             client.set_cgi(NULL);
         }
     }
-    if (pfds[file_index].revents & POLLOUT)
+    else if (pfds[file_index].revents & POLLOUT)
     {
         // Write file content from upload
         write(file->fd(), file->string_output().c_str(),
@@ -99,13 +99,13 @@ int Webserv::recv_all(int file_descriptor, std::string& recv_output, int flags)
 {
     int  recv_ret = 0;
     int  bytes_received = 0;
-    char chunk[CHUNK_SIZE] = {0};
+    char chunk[CHUNK_SIZE + 1] = {0};
 
-    while ((recv_ret = recv(file_descriptor, chunk, CHUNK_SIZE - 1, flags)) > 0)
+    while ((recv_ret = recv(file_descriptor, chunk, CHUNK_SIZE, flags)) > 0)
     {
         recv_output.append(chunk, recv_ret);
         bytes_received += recv_ret;
-        memset(chunk, 0, CHUNK_SIZE);
+        memset(chunk, 0, CHUNK_SIZE + 1);
     }
     return (bytes_received);
 }
