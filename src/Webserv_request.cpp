@@ -4,6 +4,44 @@
 #include "Webserv.hpp"
 #include <exception>
 
+FileHandler create_autoindex(Request& req, Config& server_config)
+{
+    FileHandler              file;
+    std::vector<std::string> ls = ft::list_directory(req["URI"].c_str());
+    std::ofstream            outfile((req["URI"] + "/autoindex.html").c_str());
+    std::vector<std::string>::iterator it;
+
+    outfile << "<html>"
+            << "<head>"
+            << "<title>Index of " << req["Request-URI"] << "</title>"
+            << "</head>"
+            << "<body>"
+            << "</h1>Index of " << req["Request-URI"] << "</h1>"
+            << "<hr />"
+            << "<pre><a href="
+            << "/" + req[+"Request-URI"].substr(
+                         0, req["Request-URI"].find_last_of('/'))
+            << ">../</a>" << std::endl;
+
+    for (it = ls.begin(); it != ls.end(); ++it)
+    {
+        if (*it != "." && *it != "..")
+        {
+            outfile << "<a href=\"" << (req["Request-URI"] + "/" + *it) << "\">"
+                    << *it << "</a>" << std::endl;
+        }
+    }
+    outfile << "</pre>"
+            << "<hr />"
+            << "</body>"
+            << "</html>";
+    outfile.close();
+    file = ft::open_file_stream((req["URI"] + "/autoindex.html"), server_config,
+                                "r+");
+    remove((req["URI"] + "/autoindex.html").c_str());
+    return file;
+}
+
 // Handle clients requests
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
@@ -22,12 +60,11 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             handle_cgi(server_config, req, client);
         else
         {
-            // FileHandler file;
+            FileHandler file;
             client.set_date();
             if (!ft::is_dir(req["URI"]))
             {
-                FileHandler file =
-                    ft::open_file_stream(req["URI"], server_config);
+                file = ft::open_file_stream(req["URI"], server_config);
                 if (file.stream())
                 {
                     client.set_content_type(req["URI"], server_config);
@@ -47,8 +84,27 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             }
             else // It is a directory. TODO: check autoindex
             {
-                FileHandler file =
-                    ft::open_file_stream(req["URI"], server_config);
+                std::string autoindex = "";
+                if (req.location_index() != -1)
+                    autoindex =
+                        server_config.get_locations()[req.location_index()]
+                            .get_autoindex();
+
+                if (autoindex == "on")
+                {
+                    file = create_autoindex(req, server_config);
+                }
+                else
+                    file =
+                        ft::open_file_stream(req["URI"], server_config, "r+");
+                if (file.stream())
+                {
+                    client.set_content_type(req["URI"], server_config);
+                    client.files().push_back(file);
+                    struct pollfd file_poll = {file.fd(), POLLIN, 0};
+                    pfds.push_back(file_poll);
+                    return;
+                }
             }
             // If !file.stream(), write generated page directly in
             // client.response() and set client to POLLOUT

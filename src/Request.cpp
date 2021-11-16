@@ -122,6 +122,24 @@ int Request::parse_first_header(Config& server_config)
             return 0;
 
         tokens["Request-URI"] = words[1];
+        // parse query string
+        size_t pos = tokens["Request-URI"].find_last_of('?');
+        if (pos != std::string::npos)
+        {
+            tokens["Query-string"] = tokens["Request-URI"].substr(pos + 1);
+            tokens["Request-URI"].erase(pos);
+        }
+        // Check uri type (file or directory)
+        pos = tokens["Request-URI"].find_last_of('.');
+        if (pos != std::string::npos)
+        {
+            pos = tokens["Request-URI"].find("/", pos);
+            if (pos != std::string::npos)
+            {
+                tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
+                tokens["Request-URI"].erase(pos);
+            }
+        }
         parse_uri(server_config);
 
         if (words.size() == 3)
@@ -148,6 +166,19 @@ void Request::resolve_index()
     }
 }
 
+/*
+
+ /php/info.php/test1/test2?var1=value1
+    tokens["Request-URI"] = /php/info.php
+    tokens["Query-string"] = var1=value1
+    tokens["Pathinfo"] = test1/test2
+
+    tokens["URI"] = requirements/html/php/info.php
+
+    tmp = /php
+
+*/
+
 void Request::parse_uri(Config& server_config)
 {
     std::string           tmp = tokens["Request-URI"];
@@ -168,16 +199,19 @@ void Request::parse_uri(Config& server_config)
                     tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
                                     "/" +
                                     ft::strtrim(tokens["Request-URI"], "/");
+                if (ft::is_dir(tokens["URI"]))
+                {
+                    // Append location{index} list
+                    std::vector<std::string> indexes = locations[i].get_index();
+                    for (size_t j = 0; j < indexes.size(); j++)
+                        _index_names.push_back(indexes[j]);
 
-                // Append location{index} list
-                std::vector<std::string> indexes = locations[i].get_index();
-                for (size_t j = 0; j < indexes.size(); j++)
-                    _index_names.push_back(indexes[j]);
-
-                // Append server{index} list
-                indexes = server_config.get_index();
-                for (size_t j = 0; j < indexes.size(); j++)
-                    _index_names.push_back(indexes[j]);
+                    // Append server{index} list
+                    indexes = server_config.get_index();
+                    for (size_t j = 0; j < indexes.size(); j++)
+                        _index_names.push_back(indexes[j]);
+                    resolve_index();
+                }
                 break;
             }
         }
@@ -197,8 +231,8 @@ void Request::parse_uri(Config& server_config)
         tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
+        resolve_index();
     }
-    resolve_index();
 }
 
 std::string Request::operator[](const std::string& key) const

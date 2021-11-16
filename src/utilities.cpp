@@ -110,6 +110,13 @@ FileHandler ft::open_file_stream(std::string filename, Config& config,
             return (error_404);
         }
     }
+    catch (FileHandler::IsDir exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        error_404.set_status(404);
+        return (error_404);
+    }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
@@ -156,6 +163,13 @@ FileHandler ft::open_file_stream(int file_descriptor, Config& config,
             return (error_404);
         }
     }
+    catch (FileHandler::IsDir exception)
+    {
+        // std::cout << exception.what() << std::endl;
+        FileHandler error_404(config.get_error_pages()["404"], mode);
+        error_404.set_status(404);
+        return (error_404);
+    }
     catch (FileHandler::OpenError exception)
     {
         // std::cout << exception.what() << std::endl;
@@ -173,4 +187,24 @@ FileHandler ft::open_file_stream(int file_descriptor, Config& config,
             return (error_500);
         }
     }
+}
+
+std::vector<std::string> ft::list_directory(const char* dirpath)
+{
+    DIR*           dir;
+    struct dirent* ent;
+
+    std::vector<std::string> ls;
+
+    dir = opendir(dirpath);
+    if (dir)
+    {
+        while ((ent = readdir(dir)) != NULL)
+        {
+            ls.push_back(ent->d_name);
+        }
+        closedir(dir);
+    }
+
+    return ls;
 }
