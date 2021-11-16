@@ -113,9 +113,15 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     else if (req["Method"] == "POST" && authorized_method)
     {
         // Need checking if form or file upload, and location. Content type?
-        if (req["Content-Type"].find("multipart/form-data") !=
-            std::string::npos)
-            handle_upload(server_config, req, client);
+
+        if (req["Body"].length() > server_config.get_client_max())
+            client.response().code = 413;
+        else
+        {
+            if (req["Content-Type"].find("multipart/form-data") !=
+                std::string::npos)
+                handle_upload(server_config, req, client);
+        }
     }
     else if (req["Method"] == "DELETE" && authorized_method)
     {

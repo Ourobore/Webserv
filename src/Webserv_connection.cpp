@@ -13,6 +13,7 @@ Webserv::Webserv()
     res_status[403] = "Forbidden";
     res_status[404] = "Not Found";
     res_status[405] = "Method Not Allowed";
+    res_status[413] = "Payload Too Large";
 }
 
 Webserv::~Webserv()
