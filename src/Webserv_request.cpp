@@ -79,7 +79,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         // Need checking if form or file upload, and location. Content type?
 
         if (req["Body"].length() > server_config.get_client_max())
-            client.response().code = 413;
+        {
+            generate::response(client, 413);
+            pfds[get_poll_index(client.fd())].events = POLLOUT;
+        }
         else
         {
             if (req["Content-Type"].find("multipart/form-data") !=
