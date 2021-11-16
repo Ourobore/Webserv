@@ -4,44 +4,6 @@
 #include "Webserv.hpp"
 #include <exception>
 
-FileHandler create_autoindex(Request& req, Config& server_config)
-{
-    FileHandler              file;
-    std::vector<std::string> ls = ft::list_directory(req["URI"].c_str());
-    std::ofstream            outfile((req["URI"] + "/autoindex.html").c_str());
-    std::vector<std::string>::iterator it;
-
-    outfile << "<html>"
-            << "<head>"
-            << "<title>Index of " << req["Request-URI"] << "</title>"
-            << "</head>"
-            << "<body>"
-            << "</h1>Index of " << req["Request-URI"] << "</h1>"
-            << "<hr />"
-            << "<pre><a href="
-            << "/" + req[+"Request-URI"].substr(
-                         0, req["Request-URI"].find_last_of('/'))
-            << ">../</a>" << std::endl;
-
-    for (it = ls.begin(); it != ls.end(); ++it)
-    {
-        if (*it != "." && *it != "..")
-        {
-            outfile << "<a href=\"" << (req["Request-URI"] + "/" + *it) << "\">"
-                    << *it << "</a>" << std::endl;
-        }
-    }
-    outfile << "</pre>"
-            << "<hr />"
-            << "</body>"
-            << "</html>";
-    outfile.close();
-    file = ft::open_file_stream((req["URI"] + "/autoindex.html"), server_config,
-                                "r+");
-    remove((req["URI"] + "/autoindex.html").c_str());
-    return file;
-}
-
 // Handle clients requests
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
@@ -51,6 +13,13 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // Parsing Request + add request to ClientHandler object
     Request req = Request(recv_data, server_config);
     client.requests().push_back(req);
+
+    if (req["Method"].empty())
+    {
+        generate::response(client, 400);
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+        return;
+    }
 
     bool authorized_method = ft::access_method(server_config, req);
     if (req["Method"] == "GET" && authorized_method)
@@ -92,19 +61,14 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
 
                 if (autoindex == "on")
                 {
-                    file = create_autoindex(req, server_config);
+                    client.response().code = 200;
+                    client.response().content = generate::autoindex(req);
+                    client.response().content_type = "text/html";
                 }
                 else
-                    file =
-                        ft::open_file_stream(req["URI"], server_config, "r+");
-                if (file.stream())
-                {
-                    client.set_content_type(req["URI"], server_config);
-                    client.files().push_back(file);
-                    struct pollfd file_poll = {file.fd(), POLLIN, 0};
-                    pfds.push_back(file_poll);
-                    return;
-                }
+                    generate::response(client, 404);
+                client.set_date();
+                pfds[get_poll_index(client.fd())].events = POLLOUT;
             }
             // If !file.stream(), write generated page directly in
             // client.response() and set client to POLLOUT
@@ -128,7 +92,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         handle_delete(server_config, req, client);
     }
     else
-        client.requests().pop_back();
+    {
+        generate::response(client, 405);
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
 }
 
 void Webserv::handle_cgi(Config& config, Request& request,

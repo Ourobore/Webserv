@@ -1,4 +1,5 @@
 #include "generate.hpp"
+#include "utilities.hpp"
 
 // clang-format off
 
@@ -13,7 +14,7 @@ std::string generate::error_page(int status_code)
            << "  <body>\r\n"
            << "    <center><h1>" << status_code << " " << status_message(status_code) << "</h1>" << "</center>\r\n"
            << "    <hr/>\r\n"
-           << "    <center>webserv/42</center >\r\n"
+           << "    <center>webserv/42</center>\r\n"
            << "  </body>\r\n"
            << "</html>\r\n";
 
@@ -27,6 +28,34 @@ std::string generate::file_deleted()
     output << "<html>\r\n"
            << "  <body>\r\n"
            << "    <h1>File deleted.</h1>\r\n"
+           << "  </body>\r\n"
+           << "</html>\r\n";
+
+    return (output.str());
+}
+
+std::string generate::autoindex(Request& request)
+{
+    std::vector<std::string> ls = ft::list_directory(request["URI"].c_str());
+    std::vector<std::string>::iterator it;
+
+    std::ostringstream output;
+
+    output << "<html>\r\n"
+           << "  <head>\r\n"
+           << "    <title>Index of " << request["Request-URI"] << "</title>\r\n"
+           << "  </head > \r\n"
+           << "  <body>\r\n"
+           << "    <h1>Index of " << request["Request-URI"] << "</h1>\r\n"
+           << "    <hr/>\r\n"
+           << "    <pre><a href=/" + request[+"Request-URI"].substr(0, request["Request-URI"].find_last_of('/')) << ">../</a>" << std::endl;
+
+        for (it = ls.begin(); it != ls.end(); ++it)
+            if (*it != "." && *it != "..")
+                output<< "<a href=\"" << (request["Request-URI"] + "/" + *it) << "\">" << *it << "</a>" << std::endl;
+
+    output << "    </pre>\r\n"
+           << "    <hr/>\r\n"
            << "  </body>\r\n"
            << "</html>\r\n";
 

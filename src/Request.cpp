@@ -3,13 +3,14 @@
 
 Request::Request(std::string bytes, Config& server_config) : _index_names()
 {
+    _location_index = -1;
     req_str = bytes;
     split_lines();
     if (!req_lines.empty())
     {
         if (!parse_first_header(server_config))
         {
-            parse_body();
+            parse_body(); // Need error managment, not needed anymore
             return;
         }
         else
@@ -104,13 +105,15 @@ std::vector<std::string> Request::split_tokens(std::string line)
 
 int Request::parse_first_header(Config& server_config)
 {
-    static const std::string types[3] = {"GET", "POST", "DELETE"};
+    static const std::string types[9] = {"GET",     "POST",  "DELETE",
+                                         "HEAD",    "PUT",   "CONNECT",
+                                         "OPTIONS", "TRACE", "PATCH"};
 
     std::vector<std::string> words = split_tokens(req_lines[0]);
-    if (words.size() > 1 && words.size() <= 3)
+    if (words.size() > 1 && words.size() <= 9)
     {
         // Check method type
-        for (int i = 0; i < 3; ++i)
+        for (int i = 0; i < 9; ++i)
         {
             if (words[0] == types[i]) // Method is valid
             {
@@ -122,6 +125,7 @@ int Request::parse_first_header(Config& server_config)
             return 0;
 
         tokens["Request-URI"] = words[1];
+
         // parse query string
         size_t pos = tokens["Request-URI"].find_last_of('?');
         if (pos != std::string::npos)

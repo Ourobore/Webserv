@@ -255,7 +255,7 @@ std::map<std::string, std::string> Config::get_error_pages() const
     return (this->error_pages);
 }
 
-int Config::get_client_max() const
+size_t Config::get_client_max() const
 {
     return (this->client_max);
 }

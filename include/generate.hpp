@@ -2,6 +2,7 @@
 #define GENERATE_HPP
 
 #include "ClientHandler.hpp"
+//#include "utilities.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -18,6 +19,9 @@ namespace generate
 
     /* Output when file is deleted */
     std::string file_deleted();
+
+    /* Generate an autoindex html page */
+    std::string autoindex(Request& request);
 
     /* Wrapper to rapidly set client response to a generated page*/
     void response(ClientHandler& client, int status_code);

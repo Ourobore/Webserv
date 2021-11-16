@@ -22,7 +22,7 @@ class Config
     int                                port;
     std::vector<std::string>           server_names;
     std::map<std::string, std::string> error_pages;
-    int                                client_max;
+    size_t                             client_max;
     std::string                        root;
     std::vector<std::string>           index;
     std::vector<Location>              location;
@@ -48,7 +48,7 @@ class Config
     int                                get_port() const;
     std::vector<std::string>           get_server_names() const;
     std::map<std::string, std::string> get_error_pages() const;
-    int                                get_client_max() const;
+    size_t                             get_client_max() const;
     std::string                        get_root() const;
     std::vector<std::string>           get_index() const;
     std::vector<Location>              get_locations() const;
