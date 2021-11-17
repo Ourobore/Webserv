@@ -78,8 +78,12 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     {
         // Need checking if form or file upload, and location. Content type?
 
-        if (req["Body"].length() > server_config.get_client_max())
-            client.response().code = 413;
+        if (req["Body"].length() >
+            server_config.get_client_max()) // Payload too large
+        {
+            generate::response(client, 413);
+            pfds[get_poll_index(client.fd())].events = POLLOUT;
+        }
         else
         {
             if (req["Content-Type"].find("multipart/form-data") !=
@@ -91,7 +95,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     {
         handle_delete(server_config, req, client);
     }
-    else
+    else // Method Not Allowed
     {
         generate::response(client, 405);
         pfds[get_poll_index(client.fd())].events = POLLOUT;
