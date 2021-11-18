@@ -95,24 +95,8 @@ void Webserv::handle_upload(Config& config, Request& request,
         // We need to answer the pending POST request
         client.set_date();
         if (!ft::is_dir(request["URI"]))
-        {
-            FileHandler file = ft::open_file_stream(request["URI"], config);
-            if (file.stream())
-            {
-                client.set_content_type(request["URI"], config);
-                client.files().push_back(file);
-                struct pollfd file_poll = {file.fd(), POLLIN, 0};
-                pfds.push_back(file_poll);
-                return;
-            }
-            else if (file.status() != 200) // If file opening failed
-            {
-                client.response().code = file.status();
-                client.response().content = "text/html";
-                client.response().content = generate::error_page(file.status());
-                pfds[get_poll_index(client.fd())].events = POLLOUT;
-            }
-        }
-        // If dir?
+            wrapper_open_file(client, config, request);
+        else
+            wrapper_open_dir(client, config, request);
     }
 }

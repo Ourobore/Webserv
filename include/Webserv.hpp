@@ -57,7 +57,12 @@ class Webserv
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
-    void respond(int socket_fd, Request& req, ClientHandler::Response& res);
+    void respond(int socket_fd, ClientHandler::Response& res);
+    void wrapper_open_file(ClientHandler& client, Config& config,
+                           Request& request);
+    void wrapper_open_dir(ClientHandler& client, Config& config,
+                          Request& request);
+    void wrapper_open_error(ClientHandler& client, Config& config, int error);
 
     // Request type handling
     void handle_upload(Config& config, Request& request, ClientHandler& client);
@@ -68,8 +73,9 @@ class Webserv
     Server&        get_server_from_client(int client_fd);
     ClientHandler& get_client_from_file(int file_descriptor);
     int            get_poll_index(int file_descriptor);
-    FileHandler*   is_file_fd(int file_descriptor);
-    static void    catch_signal(int signal);
+
+    FileHandler* is_file_fd(int file_descriptor);
+    static void  catch_signal(int signal);
 
     // Accessors
     Server&                              get_server(int server_fd);
