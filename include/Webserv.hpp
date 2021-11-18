@@ -59,9 +59,10 @@ class Webserv
     void response_handler(ClientHandler& client, int client_index);
     void respond(int socket_fd, ClientHandler::Response& res);
     void wrapper_open_file(ClientHandler& client, Config& config,
-                           const std::string& filename);
+                           Request& request);
     void wrapper_open_dir(ClientHandler& client, Config& config,
                           Request& request);
+    void wrapper_open_error(ClientHandler& client, Config& config, int error);
 
     // Request type handling
     void handle_upload(Config& config, Request& request, ClientHandler& client);
