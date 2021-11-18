@@ -170,19 +170,6 @@ void Request::resolve_index()
     }
 }
 
-/*
-
- /php/info.php/test1/test2?var1=value1
-    tokens["Request-URI"] = /php/info.php
-    tokens["Query-string"] = var1=value1
-    tokens["Pathinfo"] = test1/test2
-
-    tokens["URI"] = requirements/html/php/info.php
-
-    tmp = /php
-
-*/
-
 void Request::parse_uri(Config& server_config)
 {
     std::string           tmp = tokens["Request-URI"];

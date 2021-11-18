@@ -4,6 +4,46 @@
 #include "Webserv.hpp"
 #include <exception>
 
+void Webserv::wrapper_open_file(ClientHandler& client, Config& config,
+                                const std::string& filename)
+{
+    FileHandler file = ft::open_file_stream(filename, config);
+    if (file.stream())
+    {
+        client.set_content_type(filename, config);
+        client.files().push_back(file);
+        struct pollfd file_poll = {file.fd(), POLLIN, 0};
+        pfds.push_back(file_poll);
+    }
+    else if (file.status() != 200) // If file opening failed
+    {
+        client.response().code = file.status();
+        client.response().content = "text/html";
+        client.response().content = generate::error_page(file.status());
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
+}
+
+void Webserv::wrapper_open_dir(ClientHandler& client, Config& config,
+                               Request& request)
+{
+    std::string autoindex("");
+    if (request.location_index() != -1)
+        autoindex =
+            config.get_locations()[request.location_index()].get_autoindex();
+
+    if (autoindex == "on")
+    {
+        client.response().code = 200;
+        client.response().content = generate::autoindex(request);
+        client.response().content_type = "text/html";
+        client.set_date();
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
+    else
+        wrapper_open_file(client, config, config.get_error_pages()["404"]);
+}
+
 // Handle clients requests
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
@@ -29,49 +69,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             handle_cgi(server_config, req, client);
         else
         {
-            FileHandler file;
-            client.set_date();
-            if (!ft::is_dir(req["URI"]))
-            {
-                file = ft::open_file_stream(req["URI"], server_config);
-                if (file.stream())
-                {
-                    client.set_content_type(req["URI"], server_config);
-                    client.files().push_back(file);
-                    struct pollfd file_poll = {file.fd(), POLLIN, 0};
-                    pfds.push_back(file_poll);
-                    return;
-                }
-                else if (file.status() != 200) // If file opening failed
-                {
-                    client.response().code = file.status();
-                    client.response().content = "text/html";
-                    client.response().content =
-                        generate::error_page(file.status());
-                    pfds[get_poll_index(client.fd())].events = POLLOUT;
-                }
-            }
-            else // It is a directory. TODO: check autoindex
-            {
-                std::string autoindex = "";
-                if (req.location_index() != -1)
-                    autoindex =
-                        server_config.get_locations()[req.location_index()]
-                            .get_autoindex();
-
-                if (autoindex == "on")
-                {
-                    client.response().code = 200;
-                    client.response().content = generate::autoindex(req);
-                    client.response().content_type = "text/html";
-                }
-                else
-                    generate::response(client, 404);
-                client.set_date();
-                pfds[get_poll_index(client.fd())].events = POLLOUT;
-            }
-            // If !file.stream(), write generated page directly in
-            // client.response() and set client to POLLOUT
+            if (!ft::is_dir(req["URI"])) // If file
+                wrapper_open_file(client, server_config, req["URI"]);
+            else // It is a directory
+                wrapper_open_dir(client, server_config, req);
         }
     }
     else if (req["Method"] == "POST" && authorized_method)
@@ -92,9 +93,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         }
     }
     else if (req["Method"] == "DELETE" && authorized_method)
-    {
         handle_delete(server_config, req, client);
-    }
     else // Method Not Allowed
     {
         generate::response(client, 405);
@@ -123,20 +122,19 @@ void Webserv::handle_cgi(Config& config, Request& request,
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
     // Start to build the Response { content; content_type; code }
-    Request&                       req = client.requests().front();
     struct ClientHandler::Response res = client.response();
 
     // Send the response in a struct with headers infos
-    respond(client.fd(), req, res);
+    client.set_date();
+    respond(client.fd(), res);
 
     client.clear_response();
     client.requests().erase(client.requests().begin());
     pfds[client_index].events = POLLIN;
 }
 
-void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
+void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 {
-    (void)req; // Maybe remove, useful ?
     std::string connection = "close";
     if (res.code == 200)
         connection = "keep-alive";
