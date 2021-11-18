@@ -25,7 +25,8 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         //--file_index; // Faster ? No cause crash. Why? does the other one too?
 
         // FileHandler cleaning
-        fclose(file->stream());
+        if (file->stream())
+            fclose(file->stream());
         client.files().erase(client.files().begin());
 
         // If CGI, clean output from CGI header, then delete ClientHandler::_cgi
