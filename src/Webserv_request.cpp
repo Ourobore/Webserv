@@ -72,6 +72,16 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         wrapper_open_error(client, server_config, 400);
         return;
     }
+    if (req.location_index() != -1 &&
+        server_config.get_locations()[req.location_index()].get_redir().first ==
+            "301")
+    {
+        client.response().code = 301;
+        client.response().content_type = "text/html";
+        client.set_date();
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+        return;
+    }
 
     bool authorized_method = ft::access_method(server_config, req);
     if (req["Method"] == "GET" && authorized_method)
@@ -152,8 +162,14 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
     headers_content << "HTTP/1.1 " << res.code << " " << res_status[res.code]
                     << "\r\n"
                     << "Server: webserv/42\r\n"
-                    << "Date: " << res.date << "\r\n"
-                    << "Content-Type: " << res.content_type << "\r\n"
+                    << "Date: " << res.date << "\r\n";
+    if (res.code == 301)
+    {
+        headers_content << "Location: "
+                        << "http://localhost:8080/about.html"
+                        << "\r\n";
+    }
+    headers_content << "Content-Type: " << res.content_type << "\r\n"
                     << "Content-Length: " << res.content.length() << "\r\n"
                     << "Connection: " << connection << "\r\n"
                     << "\r\n";
