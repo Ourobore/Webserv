@@ -72,14 +72,16 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         wrapper_open_error(client, server_config, 400);
         return;
     }
-    if (req.location_index() != -1 &&
-        server_config.get_locations()[req.location_index()].get_redir().first ==
-            "301")
+    if (req.location_index() != -1)
     {
-        client.response().code = 301;
-        client.response().content_type = "text/html";
-        client.set_date();
-        pfds[get_poll_index(client.fd())].events = POLLOUT;
+        std::pair<std::string, std::string> redir =
+            server_config.get_locations()[req.location_index()].get_redir();
+        if (!redir.first.empty() && !redir.second.empty())
+        {
+            client.set_location_header(redir.second);
+            wrapper_open_error(client, server_config,
+                               ft::to_type<int>(redir.first));
+        }
         return;
     }
 
@@ -165,9 +167,7 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
                     << "Date: " << res.date << "\r\n";
     if (res.code == 301)
     {
-        headers_content << "Location: "
-                        << "http://localhost:8080/about.html"
-                        << "\r\n"
+        headers_content << "Location: " << res.location << "\r\n"
                         << "Cache-Control: no-store"
                         << "\r\n";
     }
