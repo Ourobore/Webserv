@@ -4,6 +4,66 @@
 #include "Webserv.hpp"
 #include <exception>
 
+// Handle clients requests
+void Webserv::request_handler(ClientHandler& client, Config& server_config)
+{
+    // Print request from client [Debug]
+    std::cout << recv_data << std::endl;
+
+    // Parsing Request + add request to ClientHandler object
+    Request req = Request(recv_data, server_config);
+    client.requests().push_back(req);
+
+    if (req["Method"].empty())
+    {
+        wrapper_open_error(client, server_config, 400);
+        return;
+    }
+
+    std::pair<std::string, std::string> redir;
+    if (req.location_index() != -1)
+        redir = server_config.get_locations()[req.location_index()].get_redir();
+
+    bool authorized_method = ft::access_method(server_config, req);
+    if (req["Method"] == "GET" && authorized_method)
+    {
+        if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
+                                    server_config))
+            handle_cgi(server_config, req, client);
+        else if (req.location_index() != -1 && redir.second != "")
+        {
+            client.set_location_header(redir.second);
+            wrapper_open_error(client, server_config,
+                               ft::to_type<int>(redir.first));
+            return;
+        }
+        else
+        {
+            if (!ft::is_dir(req["URI"])) // If file
+                wrapper_open_file(client, server_config, req);
+            else // It is a directory
+                wrapper_open_dir(client, server_config, req);
+        }
+    }
+    else if (req["Method"] == "POST" && authorized_method)
+    {
+        // Need checking if form or file upload, and location. Content type?
+        if (req["Body"].length() >
+            server_config.get_client_max()) // Payload too large
+            wrapper_open_error(client, server_config, 413);
+        else
+        {
+            if (req["Content-Type"].find("multipart/form-data") !=
+                std::string::npos)
+                handle_upload(server_config, req, client);
+        }
+    }
+    else if (req["Method"] == "DELETE" && authorized_method)
+        handle_delete(server_config, req, client);
+    else // Method Not Allowed
+        wrapper_open_error(client, server_config, 405);
+}
+
 void Webserv::wrapper_open_file(ClientHandler& client, Config& config,
                                 Request& request)
 {
@@ -55,69 +115,6 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
 
     // Tell when client is ready to be written in
     pfds[get_poll_index(client.fd())].events = POLLOUT;
-}
-
-// Handle clients requests
-void Webserv::request_handler(ClientHandler& client, Config& server_config)
-{
-    // Print request from client [Debug]
-    std::cout << recv_data << std::endl;
-
-    // Parsing Request + add request to ClientHandler object
-    Request req = Request(recv_data, server_config);
-    client.requests().push_back(req);
-
-    if (req["Method"].empty())
-    {
-        wrapper_open_error(client, server_config, 400);
-        return;
-    }
-
-    std::pair<std::string, std::string> redir;
-    if (req.location_index() != -1)
-        redir = server_config.get_locations()[req.location_index()].get_redir();
-
-    bool authorized_method = ft::access_method(server_config, req);
-    if (req["Method"] == "GET" && authorized_method)
-    {
-        if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
-                                    server_config))
-            handle_cgi(server_config, req, client);
-        else if (req.location_index() != -1 && redir.second != "")
-        {
-            client.set_location_header(redir.second);
-            wrapper_open_error(client, server_config,
-                               ft::to_type<int>(redir.first));
-            return;
-        }
-        else
-        {
-            if (!ft::is_dir(req["URI"])) // If file
-                wrapper_open_file(client, server_config, req);
-            else // It is a directory
-                wrapper_open_dir(client, server_config, req);
-        }
-    }
-    else if (req["Method"] == "POST" && authorized_method)
-    {
-        // Need checking if form or file upload, and location. Content type?
-
-        if (req["Body"].length() > server_config.get_client_max())
-        {
-            generate::response(client, 413);
-            pfds[get_poll_index(client.fd())].events = POLLOUT;
-        }
-        else
-        {
-            if (req["Content-Type"].find("multipart/form-data") !=
-                std::string::npos)
-                handle_upload(server_config, req, client);
-        }
-    }
-    else if (req["Method"] == "DELETE" && authorized_method)
-        handle_delete(server_config, req, client);
-    else // Method Not Allowed
-        wrapper_open_error(client, server_config, 405);
 }
 
 void Webserv::handle_cgi(Config& config, Request& request,

@@ -75,8 +75,7 @@ void Webserv::poll_events()
                 {
                     // DEBUG: check recv loop condition
                     recv_data = "";
-                    int bytes_received =
-                        recv_all(pfds[i].fd, recv_data, MSG_DONTWAIT);
+                    int bytes_received = recv_all(pfds[i].fd, recv_data, 0);
 
                     if (bytes_received <= 0)
                         close_connection(bytes_received, i);
