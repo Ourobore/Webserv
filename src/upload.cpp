@@ -38,8 +38,8 @@ namespace multipart
         std::string boundary =
             "--" + multipart::get_boundary(request["Content-Type"]);
 
-        while (request_body !=
-               boundary + "--\r\n") // End of body, with end boundary
+        while (request_body != boundary + "--\r\n" &&
+               !request_body.empty()) // End of body, with end boundary
         {
             if (request_body.find(boundary + "\r\n") == 0) // If we hit boundary
             {
@@ -84,11 +84,8 @@ void Webserv::handle_upload(Config& config, Request& request,
 {
     Location location = config.get_locations()[request.location_index()];
     if (location.get_upload().empty()) // If upload is not authorized
-    {
-        generate::response(client, 403);
-        pfds[get_poll_index(client.fd())].events = POLLOUT;
-    }
-    else // Should we check if upload path is correct?
+        wrapper_open_error(client, config, 403);
+    else
     {
         multipart::get_files(config, request, client, pfds);
 

@@ -16,7 +16,7 @@ std::string generate::error_page(int status_code)
            << "    <hr/>\r\n"
            << "    <center>webserv/42</center>\r\n"
            << "  </body>\r\n"
-           << "</html>\r\n";
+           << "</html>\r\n\r\n";
 
     return (output.str());
 }
@@ -29,7 +29,7 @@ std::string generate::file_deleted()
            << "  <body>\r\n"
            << "    <h1>File deleted.</h1>\r\n"
            << "  </body>\r\n"
-           << "</html>\r\n";
+           << "</html>\r\n\r\n";
 
     return (output.str());
 }
@@ -57,7 +57,7 @@ std::string generate::autoindex(Request& request)
     output << "    </pre>\r\n"
            << "    <hr/>\r\n"
            << "  </body>\r\n"
-           << "</html>\r\n";
+           << "</html>\r\n\r\n";
 
     return (output.str());
 }

@@ -64,6 +64,7 @@ void Webserv::accept_connection(int server_fd)
               << std::endl;
 
     // Add new client socket to the struct pollfd
+    fcntl(accept_fd, F_SETFL, O_NONBLOCK);
     struct pollfd new_sock = {accept_fd, POLLIN, 0};
     pfds.push_back(new_sock);
     clients.push_back(ClientHandler(accept_fd));
