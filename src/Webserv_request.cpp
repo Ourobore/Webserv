@@ -42,9 +42,12 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
             wrapper_open_error(client, server_config, 413);
         else
         {
+            // If upload
             if (req["Content-Type"].find("multipart/form-data") !=
                 std::string::npos)
                 handle_upload(server_config, req, client);
+            else
+                handle_post(server_config, req, client);
         }
     }
     else if (req["Method"] == "DELETE" && authorized_method)

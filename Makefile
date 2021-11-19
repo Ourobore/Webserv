@@ -27,6 +27,7 @@ SRC			=	Socket.cpp \
 				parsing_mimetypes.cpp \
 				upload.cpp \
 				delete.cpp \
+				post.cpp \
 				generate.cpp \
 
 # *.o files

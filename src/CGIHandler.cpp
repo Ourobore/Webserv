@@ -28,9 +28,13 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // Request variables
     variables["SCRIPT_NAME"] = request["URI"];
-    variables["PATH_INFO"] = "/"; // Testing, should not use relative path
+    if (request["Pathinfo"].empty())
+        variables["PATH_INFO"] = "/"; // Testing, should not use relative path
+    else
+        variables["PATH_INFO"] = request["Pathinfo"];
     // variables["PATH_TRANSLATED"] = "";
-    variables["QUERY_STRING"] = "";
+    // variables["QUERY_STRING"] = "";
+    variables["QUERY_STRING"] = request["Query-string"];
     variables["AUTH_TYPE"] = request["Authorization"];
     variables["CONTENT_TYPE"] = request["Content-Type"];
     variables["CONTENT_LENGTH"] = request["Content-Length"];
@@ -49,8 +53,6 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // Setting CGI binary and script paths
 
-    // cgi_path =
-    // config.get_locations()[request.location_index()].get_cgi_pass();
     cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
     script_name = variables["SCRIPT_NAME"];
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
@@ -59,13 +61,19 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     // DEBUG_print_env_array();
 
     // Setting CGI arguments for execve()
-    cgi_argv = new char*[3]();
+    cgi_argv = new char*[4]();
 
     cgi_argv[0] = new char[cgi_path.length() + 1]();
     memcpy(cgi_argv[0], cgi_path.c_str(), cgi_path.length());
 
     cgi_argv[1] = new char[script_name.length() + 1]();
     memcpy(cgi_argv[1], script_name.c_str(), script_name.length());
+
+    // if (request["Method"] == "POST")
+    // {
+    //  cgi_argv[2] = new char[request["Body"].length() + 1]();
+    //  memcpy(cgi_argv[2], request["Body"].c_str(), request["Body"].length());
+    // }
 }
 
 CGIHandler::~CGIHandler()
