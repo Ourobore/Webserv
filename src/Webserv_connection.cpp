@@ -96,7 +96,7 @@ Server& Webserv::get_server_from_client(int client_fd)
     {
         // If the IP is localhost, we need to chang it to be network 'readable'
         std::string server_address = it->ip_addr();
-        if (server_address == "localhost")
+        if (server_address == "localhost" || server_address == "0.0.0.0")
             server_address = "127.0.0.1";
 
         in_addr_t server_ip_addr = inet_addr(server_address.c_str());

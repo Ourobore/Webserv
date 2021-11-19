@@ -72,18 +72,10 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         wrapper_open_error(client, server_config, 400);
         return;
     }
+
+    std::pair<std::string, std::string> redir;
     if (req.location_index() != -1)
-    {
-        std::pair<std::string, std::string> redir =
-            server_config.get_locations()[req.location_index()].get_redir();
-        if (!redir.first.empty() && !redir.second.empty())
-        {
-            client.set_location_header(redir.second);
-            wrapper_open_error(client, server_config,
-                               ft::to_type<int>(redir.first));
-        }
-        return;
-    }
+        redir = server_config.get_locations()[req.location_index()].get_redir();
 
     bool authorized_method = ft::access_method(server_config, req);
     if (req["Method"] == "GET" && authorized_method)
@@ -91,6 +83,13 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
                                     server_config))
             handle_cgi(server_config, req, client);
+        else if (req.location_index() != -1 && redir.second != "")
+        {
+            client.set_location_header(redir.second);
+            wrapper_open_error(client, server_config,
+                               ft::to_type<int>(redir.first));
+            return;
+        }
         else
         {
             if (!ft::is_dir(req["URI"])) // If file
