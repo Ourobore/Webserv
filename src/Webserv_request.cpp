@@ -154,7 +154,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
 void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 {
     std::string connection = "close";
-    if (res.code == 200)
+    if (res.code == 200 || res.code == 301)
         connection = "keep-alive";
 
     // Response headers for web browser clients
@@ -167,6 +167,8 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
     {
         headers_content << "Location: "
                         << "http://localhost:8080/about.html"
+                        << "\r\n"
+                        << "Cache-Control: no-store"
                         << "\r\n";
     }
     headers_content << "Content-Type: " << res.content_type << "\r\n"
