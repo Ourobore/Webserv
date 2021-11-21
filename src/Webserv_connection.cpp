@@ -64,10 +64,12 @@ void Webserv::accept_connection(int server_fd)
               << std::endl;
 
     // Add new client socket to the struct pollfd
-    fcntl(accept_fd, F_SETFL, O_NONBLOCK);
+    // fcntl(accept_fd, F_SETFL, O_NONBLOCK);
     struct pollfd new_sock = {accept_fd, POLLIN, 0};
     pfds.push_back(new_sock);
     clients.push_back(ClientHandler(accept_fd));
+    clients.back().raw_request = "";  // To modify tmp
+    clients.back().request_bytes = 0; // To modify tmp
 }
 
 void Webserv::close_connection(int bytes_received, int client_index)

@@ -47,6 +47,10 @@ class ClientHandler
     void set_content_type(std::string uri_path, Config& server_config);
     void set_date();
     void set_cgi(CGIHandler* cgi);
+
+    // Temporary, read and append request
+    std::string raw_request;
+    int         request_bytes;
 };
 
 #endif

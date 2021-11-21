@@ -73,16 +73,37 @@ void Webserv::poll_events()
                 // Or if this is a client
                 else
                 {
-                    // DEBUG: check recv loop condition
-                    recv_data = "";
-                    int bytes_received = recv_all(pfds[i].fd, recv_data, 0);
-
-                    if (bytes_received <= 0)
-                        close_connection(bytes_received, i);
+                    int  recv_ret = 0;
+                    char chunk[CHUNK_SIZE + 1] = {0};
+                    recv_ret =
+                        recv(pfds[i].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
+                    if (recv_ret <= 0 && client.request_bytes == 0)
+                        close_connection(recv_ret, i);
                     else
-                        request_handler(
-                            client,
-                            get_server_from_client(client.fd()).config());
+                    {
+                        client.raw_request.append(chunk, recv_ret);
+                        client.request_bytes += recv_ret;
+                        char peek;
+                        recv_ret = recv(pfds[i].fd, &peek, 1, MSG_PEEK);
+                        if (recv_ret == -1)
+                        {
+                            request_handler(
+                                client,
+                                get_server_from_client(client.fd()).config());
+                            client.request_bytes = 0;
+                            client.raw_request.clear();
+                        }
+                    }
+                    // DEBUG: check recv loop condition
+                    // recv_data = "";
+                    // int bytes_received = recv_all(pfds[i].fd, recv_data, 0);
+
+                    // if (bytes_received <= 0)
+                    //     close_connection(bytes_received, i);
+                    // else
+                    //     request_handler(
+                    //         client,
+                    //         get_server_from_client(client.fd()).config());
                 }
             }
             /* Else if fd is ready to write, write response, then set events to

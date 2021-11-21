@@ -25,7 +25,7 @@
 #define STDIN 0
 #define STDOUT 1
 
-const int CHUNK_SIZE = 64;
+const int CHUNK_SIZE = 32768; // 2^15
 
 class Webserv
 {

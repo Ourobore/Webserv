@@ -8,10 +8,10 @@
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
     // Print request from client [Debug]
-    std::cout << recv_data << std::endl;
+    // std::cout << client.raw_request << std::endl;
 
     // Parsing Request + add request to ClientHandler object
-    Request req = Request(recv_data, server_config);
+    Request req = Request(client.raw_request, server_config);
     client.requests().push_back(req);
 
     if (req["Method"].empty())
