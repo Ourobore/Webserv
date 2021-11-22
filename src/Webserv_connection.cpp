@@ -45,9 +45,16 @@ void Webserv::start()
 
 void Webserv::create_server(Config& config)
 {
-    servers.push_back(Server(config));
-    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    pfds.push_back(pfd);
+    std::vector<int> ports = config.get_port();
+
+    for (std::vector<int>::iterator it = ports.begin(); it != ports.end(); ++it)
+    {
+        servers.push_back(Server(config, *it));
+        struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+        pfds.push_back(pfd);
+        std::cout << "Create " << config.get_server_names()[0] << " at port"
+                  << *it << std::endl;
+    }
 }
 
 void Webserv::accept_connection(int server_fd)

@@ -18,7 +18,7 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // Server variables
     variables["SERVER_PROTOCOL"] = request["Protocol"];
-    variables["SERVER_PORT"] = ft::to_string(config.get_port());
+    variables["SERVER_PORT"] = ft::to_string(config.get_port()[0]);
 
     // Client variables. May need to take informations from client socket?
     variables["REMOTE_HOST"] = "localhost";

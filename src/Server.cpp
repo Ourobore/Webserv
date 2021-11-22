@@ -5,14 +5,16 @@
 #include <sstream>
 #include <string>
 
-Server::Server(Config& config)
-    : sock(AF_INET, SOCK_STREAM, 0, config.get_port(), config.get_host()),
-      _config(config), _ip_addr(config.get_host()), _port(config.get_port())
+Server::Server(Config& config, int port)
+    : sock(AF_INET, SOCK_STREAM, 0, port, config.get_host()), _config(config),
+      _ip_addr(config.get_host()), _port(port)
 {
     _address = sock.address();
     _addrlen = sock.addrlen(); // To check later if the size change and must
                                // do a reevaluation later
     _sock_fd = sock.fd();
+    int yes = 1;
+    setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof yes);
 
     Socket::reuse_addr(_sock_fd);
     int ret = bind(_sock_fd, reinterpret_cast<sockaddr*>(&_address), _addrlen);
