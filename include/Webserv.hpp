@@ -73,6 +73,7 @@ class Webserv
     Server&        get_server_from_client(int client_fd);
     ClientHandler& get_client_from_file(int file_descriptor);
     int            get_poll_index(int file_descriptor);
+    std::string    get_requested_host();
 
     FileHandler* is_file_fd(int file_descriptor);
     static void  catch_signal(int signal);
