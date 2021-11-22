@@ -14,6 +14,9 @@ Server::Server(Config& config)
                                // do a reevaluation later
     _sock_fd = sock.fd();
 
+    int yes = 1;
+    setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof yes);
+
     Socket::reuse_addr(_sock_fd);
     int ret = bind(_sock_fd, reinterpret_cast<sockaddr*>(&_address), _addrlen);
     Socket::check_error(ret, "server socket bind failed");

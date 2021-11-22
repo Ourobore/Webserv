@@ -82,6 +82,21 @@ void Webserv::close_connection(int bytes_received, int client_index)
     pfds.erase(pfds.begin() + client_index);
 }
 
+std::string Webserv::get_requested_host()
+{
+    std::string requested_host = "";
+
+    size_t pos = recv_data.find("\nHost:");
+    if (pos != std::string::npos)
+    {
+        requested_host = recv_data.substr(pos + 7);
+        pos = requested_host.find_first_of(":\r");
+        if (pos != std::string::npos)
+            requested_host.erase(pos);
+    }
+    return requested_host;
+}
+
 /* Return the server from which the client is connected */
 Server& Webserv::get_server_from_client(int client_fd)
 {
@@ -102,11 +117,22 @@ Server& Webserv::get_server_from_client(int client_fd)
 
         in_addr_t server_ip_addr = inet_addr(server_address.c_str());
         if (client_port == it->port() && client_ip_addr == server_ip_addr)
-            return (*it);
+        {
+            std::string              requested_host = get_requested_host();
+            std::vector<std::string> server_names =
+                it->config().get_server_names();
+
+            std::vector<std::string>::iterator sn;
+            for (sn = server_names.begin(); sn != server_names.end(); ++sn)
+            {
+                if (*sn == requested_host)
+                    return (*it);
+            }
+        }
     }
-    return (servers.back());
-    // We should not arrive here, but right now we can't
-    // determine if there is an error. Return a pointer?
+    // Return default_server (first server block) if server_name doesn't match
+    // any
+    return (servers.front());
 }
 
 Server& Webserv::get_server(int server_fd)
