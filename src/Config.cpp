@@ -6,7 +6,13 @@
 
 Config::Config(std::string config)
 {
-    set_host_port(search_config(config, "listen"));
+    size_t      pos = -1;
+    std::string tmp;
+    while ((pos = config.find("listen", pos + 1)) != std::string::npos)
+    {
+        tmp = config.substr(pos - 6);
+        set_host_port(search_config(tmp, "listen"));
+    }
     set_server_name(search_config(config, "server_name"));
     set_error_page(config);
     set_client_max(search_config(config, "client_max_body_size"));
@@ -59,7 +65,7 @@ std::string Config::search_config(std::string config, std::string key)
             i++;
         }
         if ((config[doublon - 2] == ';' || config[doublon - 2] == '}') &&
-            i != 0)
+            i != 0 && key != "listen")
             throw std::string("Error: Double " + key);
         i = 1;
     }
@@ -98,12 +104,20 @@ void Config::set_host_port(std::string line)
 {
     size_t            space_pos;
     size_t            split_pos;
+    int               tmp_port;
     std::stringstream ss;
 
     if (line == "")
     {
-        this->host = "0.0.0.0";
-        this->port = 80;
+        this->host = "localhost";
+        tmp_port = 80;
+        for (std::vector<int>::iterator it = this->port.begin();
+             it != this->port.end(); ++it)
+        {
+            if (tmp_port == *it)
+                return;
+        }
+        this->port.push_back(tmp_port);
         return;
     }
     space_pos = line.find(" ");
@@ -114,20 +128,45 @@ void Config::set_host_port(std::string line)
             if (!std::isdigit(line[i]))
             {
                 this->host = line.substr(space_pos + 1);
-                this->port = 80;
+                if (this->host != "localhost")
+                    throw std::string("Error: Wrong address IP");
+                tmp_port = 80;
+                for (std::vector<int>::iterator it = this->port.begin();
+                     it != this->port.end(); ++it)
+                {
+                    if (tmp_port == *it)
+                        return;
+                }
+                this->port.push_back(tmp_port);
             }
-        if (this->port != 80)
+        if (tmp_port != 80)
         {
-            this->host = "0.0.0.0";
+            this->host = "localhost";
             ss << line.substr(space_pos + 1);
-            ss >> this->port;
+            ss >> tmp_port;
+            for (std::vector<int>::iterator it = this->port.begin();
+                 it != this->port.end(); ++it)
+            {
+                if (tmp_port == *it)
+                    return;
+            }
+            this->port.push_back(tmp_port);
         }
     }
     else
     {
         this->host = line.substr(space_pos + 1, (split_pos - space_pos - 1));
+        if (this->host != "localhost")
+            throw std::string("Error: Wrong address IP");
         ss << line.substr(split_pos + 1);
-        ss >> this->port;
+        ss >> tmp_port;
+        for (std::vector<int>::iterator it = this->port.begin();
+             it != this->port.end(); ++it)
+        {
+            if (tmp_port == *it)
+                return;
+        }
+        this->port.push_back(tmp_port);
     }
 }
 
@@ -240,7 +279,7 @@ std::string Config::get_host() const
     return (this->host);
 }
 
-int Config::get_port() const
+std::vector<int> Config::get_port() const
 {
     return (this->port);
 }
@@ -279,7 +318,10 @@ std::ostream& operator<<(std::ostream& os, Config const& src)
 {
     os << std::endl << "////Configuration////" << std::endl << std::endl;
     os << "Host: " << src.get_host() << std::endl;
-    os << "Port: " << src.get_port() << std::endl;
+    os << "Port: " << std::endl;
+    std::vector<int> ports = src.get_port();
+    for (std::vector<int>::iterator it = ports.begin(); it != ports.end(); ++it)
+        os << "\t-" << *it << std::endl;
     os << "Server_names:" << std::endl;
     std::vector<std::string> names = src.get_server_names();
     for (std::vector<std::string>::iterator it = names.begin();
