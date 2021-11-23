@@ -12,23 +12,23 @@ SRCDIR		=	src/
 MAIN 		=	main.cpp
 SRC			=	Socket.cpp \
 				Server.cpp \
-				Request.cpp \
 				Webserv_connection.cpp \
 				Webserv_request.cpp \
-				Webserv_file.cpp \
 				Webserv_poll.cpp \
+				Webserv_file.cpp \
 				Config.cpp \
+				Location.cpp \
 				parsing_config.cpp \
 				CGIHandler.cpp \
 				FileHandler.cpp \
 				ClientHandler.cpp \
 				utilities.cpp \
-				Location.cpp \
+				generate.cpp \
+				Request.cpp \
 				parsing_mimetypes.cpp \
 				upload.cpp \
 				delete.cpp \
 				post.cpp \
-				generate.cpp \
 
 # *.o files
 OBJDIR = obj/

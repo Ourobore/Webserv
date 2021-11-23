@@ -32,8 +32,9 @@ void Webserv::start()
 {
     while (true)
     {
-        std::cout << "=== Waiting... ===" << std::endl;
+        // std::cout << "=== Waiting... ===" << std::endl;
         signal(SIGINT, catch_signal);
+
         // Convert vector to simple array
         struct pollfd* pfds_array = &(pfds[0]);
 

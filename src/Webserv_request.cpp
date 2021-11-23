@@ -159,6 +159,7 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 
     std::string response = headers_content.str() + res.content;
 
-    // send to the client through his socket
-    send(socket_fd, response.c_str(), response.length(), MSG_DONTWAIT);
+    // Send response to the client through his socket
+    // Do we need MSG_DONTWAIT? Without it sends all the data correctly
+    send(socket_fd, response.c_str(), response.length(), 0);
 }
