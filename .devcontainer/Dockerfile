@@ -32,6 +32,7 @@ RUN apt-get update && apt-get -y install \
     git \
     netcat-openbsd \
     telnet \
+    siege \
     # Install zsh and oh-my-zsh and make zsh the default shell
     zsh ;\
     cd / && sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \

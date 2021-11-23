@@ -58,12 +58,22 @@ void Webserv::poll_events()
 {
     for (size_t i = 0; i < pfds.size(); i++)
     {
-        ClientHandler& client = get_client(pfds[i].fd);
+        ClientHandler* client = get_client(pfds[i].fd);
 
         if (is_file_fd(pfds[i].fd))
-            poll_file(client, i);
+            poll_file(*client, i);
         else
         {
+            /* If there is nothing more to read we process the request */
+            if (pfds[i].revents == 0 && client &&
+                (!client->raw_request.empty() && client->request_bytes))
+            {
+                request_handler(*client,
+                                get_server_from_client(client->fd()).config());
+                client->request_bytes = 0;
+                client->raw_request.clear();
+            }
+
             // Check if someone has something to read
             if (pfds[i].revents & POLLIN)
             {
@@ -77,22 +87,13 @@ void Webserv::poll_events()
                     char chunk[CHUNK_SIZE + 1] = {0};
                     recv_ret =
                         recv(pfds[i].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
-                    if (recv_ret <= 0 && client.request_bytes == 0)
+                    if ((recv_ret == 0 && client->request_bytes == 0) ||
+                        recv_ret == -1)
                         close_connection(recv_ret, i);
                     else
                     {
-                        client.raw_request.append(chunk, recv_ret);
-                        client.request_bytes += recv_ret;
-                        char peek;
-                        recv_ret = recv(pfds[i].fd, &peek, 1, MSG_PEEK);
-                        if (recv_ret == -1)
-                        {
-                            request_handler(
-                                client,
-                                get_server_from_client(client.fd()).config());
-                            client.request_bytes = 0;
-                            client.raw_request.clear();
-                        }
+                        client->raw_request.append(chunk, recv_ret);
+                        client->request_bytes += recv_ret;
                     }
                     // DEBUG: check recv loop condition
                     // recv_data = "";
@@ -109,7 +110,7 @@ void Webserv::poll_events()
             /* Else if fd is ready to write, write response, then set events to
                POLLIN again to be ready to read next time */
             else if (pfds[i].revents & POLLOUT)
-                response_handler(client, i);
+                response_handler(*client, i);
         }
     }
 }

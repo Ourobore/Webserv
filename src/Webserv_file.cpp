@@ -19,7 +19,7 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
     return (NULL);
 }
 
-ClientHandler& Webserv::get_client_from_file(int file_descriptor)
+ClientHandler* Webserv::get_client_from_file(int file_descriptor)
 {
     std::vector<ClientHandler>::iterator client_it;
 
@@ -29,7 +29,7 @@ ClientHandler& Webserv::get_client_from_file(int file_descriptor)
         for (file_it = client_it->files().begin();
              file_it != client_it->files().end(); ++file_it)
             if (file_it->fd() == file_descriptor)
-                return (*client_it);
+                return (&*client_it);
     }
-    return (*clients.end());
+    return (NULL);
 }

@@ -25,7 +25,8 @@
 #define STDIN 0
 #define STDOUT 1
 
-const int CHUNK_SIZE = 32768; // 2^15
+const int CHUNK_SIZE = 65535; // 2^16 - 1 //32767; // 2^15 - 1
+const int POLL_DELAY = 300;
 
 class Webserv
 {
@@ -72,7 +73,7 @@ class Webserv
 
     // Utilities
     Server&        get_server_from_client(int client_fd);
-    ClientHandler& get_client_from_file(int file_descriptor);
+    ClientHandler* get_client_from_file(int file_descriptor);
     int            get_poll_index(int file_descriptor);
 
     FileHandler* is_file_fd(int file_descriptor);
@@ -80,7 +81,7 @@ class Webserv
 
     // Accessors
     Server&                              get_server(int server_fd);
-    ClientHandler&                       get_client(int client_fd);
+    ClientHandler*                       get_client(int client_fd);
     std::vector<Server>::iterator        get_server_ite(int server_fd);
     std::vector<ClientHandler>::iterator get_client_ite(int client_fd);
 

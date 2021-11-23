@@ -6,8 +6,7 @@
 #include <iostream>
 #include <string>
 
-static int BUF_SIZE = 1024;
-// Change to BUFFER_SIZE, but already one in Webserv object
+static int BUF_SIZE = 65535; // 2^16 - 1
 
 /*
 Used to open a file, or an already opened file descriptor, and read data from

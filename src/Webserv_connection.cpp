@@ -37,7 +37,7 @@ void Webserv::start()
         // Convert vector to simple array
         struct pollfd* pfds_array = &(pfds[0]);
 
-        int poll_count = poll(pfds_array, pfds.size(), -1);
+        int poll_count = poll(pfds_array, pfds.size(), POLL_DELAY);
         Socket::check_error(poll_count, "poll()");
         poll_events();
     }
@@ -124,7 +124,7 @@ Server& Webserv::get_server(int server_fd)
                              // server_fd is not really a server
 }
 
-ClientHandler& Webserv::get_client(int client_fd)
+ClientHandler* Webserv::get_client(int client_fd)
 {
     std::vector<ClientHandler>::iterator it;
 
@@ -134,10 +134,9 @@ ClientHandler& Webserv::get_client(int client_fd)
     for (it = clients.begin(); it != clients.end(); ++it)
     {
         if (it->fd() == client_fd)
-            return (*it);
+            return (&*it);
     }
-    return (*clients.end()); // Be careful, for now it must be undefined if
-                             // client_fd is not really a client
+    return (NULL);
 }
 
 std::vector<Server>::iterator Webserv::get_server_ite(int server_fd)
