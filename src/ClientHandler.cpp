@@ -4,6 +4,8 @@
 // Constructor and destructor
 ClientHandler::ClientHandler(int client_fd) : _fd(client_fd), _cgi(NULL)
 {
+    this->raw_request = "";  // To modify tmp
+    this->request_bytes = 0; // To modify tmp
 }
 
 ClientHandler::~ClientHandler()

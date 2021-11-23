@@ -4,16 +4,6 @@
 
 Webserv::Webserv()
 {
-    // Init status code for server response
-    res_status[200] = "OK";
-    res_status[202] = "Accepted";
-    res_status[204] = "No Content";
-    res_status[301] = "Moved Permanently";
-    res_status[400] = "Bad Request";
-    res_status[403] = "Forbidden";
-    res_status[404] = "Not Found";
-    res_status[405] = "Method Not Allowed";
-    res_status[413] = "Payload Too Large";
 }
 
 Webserv::~Webserv()
@@ -69,8 +59,6 @@ void Webserv::accept_connection(int server_fd)
     struct pollfd new_sock = {accept_fd, POLLIN, 0};
     pfds.push_back(new_sock);
     clients.push_back(ClientHandler(accept_fd));
-    clients.back().raw_request = "";  // To modify tmp
-    clients.back().request_bytes = 0; // To modify tmp
 }
 
 void Webserv::close_connection(int bytes_received, int client_index)
@@ -80,6 +68,7 @@ void Webserv::close_connection(int bytes_received, int client_index)
                   << pfds[client_index].fd << std::endl;
     else
         std::cout << "recv() error" << std::endl;
+
     close(pfds[client_index].fd);
     clients.erase(get_client_ite(pfds[client_index].fd));
     pfds.erase(pfds.begin() + client_index);
@@ -136,6 +125,21 @@ ClientHandler* Webserv::get_client(int client_fd)
     {
         if (it->fd() == client_fd)
             return (&*it);
+    }
+    return (NULL);
+}
+
+ClientHandler* Webserv::get_client_from_file(int file_descriptor)
+{
+    std::vector<ClientHandler>::iterator client_it;
+
+    for (client_it = clients.begin(); client_it != clients.end(); ++client_it)
+    {
+        std::vector<FileHandler>::iterator file_it;
+        for (file_it = client_it->files().begin();
+             file_it != client_it->files().end(); ++file_it)
+            if (file_it->fd() == file_descriptor)
+                return (&*client_it);
     }
     return (NULL);
 }

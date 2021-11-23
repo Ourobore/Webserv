@@ -9,7 +9,7 @@ namespace multipart
     }
 
     /* Remove body from content and return file name */
-    static std::string get_filename(std::string file_content)
+    static std::string get_filename(const std::string& file_content)
     {
         std::string filename("");
 
@@ -33,9 +33,9 @@ namespace multipart
     static void get_files(Config& config, Request& request,
                           ClientHandler& client, std::vector<pollfd>& pfds)
     {
-        Location    location = config.get_locations()[request.location_index()];
-        std::string request_body = request["Body"];
-        std::string boundary =
+        Location location = config.get_locations()[request.location_index()];
+        std::string& request_body = request.tokens["Body"];
+        std::string  boundary =
             "--" + multipart::get_boundary(request["Content-Type"]);
 
         while (request_body != boundary + "--\r\n" &&
@@ -88,6 +88,7 @@ void Webserv::handle_upload(Config& config, Request& request,
     else
     {
         multipart::get_files(config, request, client, pfds);
+        // request["Body"].clear(); // Useful?
 
         // We need to answer the pending POST request
         client.set_date();

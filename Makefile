@@ -15,7 +15,6 @@ SRC			=	Socket.cpp \
 				Webserv_connection.cpp \
 				Webserv_request.cpp \
 				Webserv_poll.cpp \
-				Webserv_file.cpp \
 				Config.cpp \
 				Location.cpp \
 				parsing_config.cpp \

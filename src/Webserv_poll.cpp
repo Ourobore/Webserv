@@ -67,12 +67,8 @@ void Webserv::poll_events()
             /* If there is nothing more to read we process the request */
             if (pfds[i].revents == 0 && client &&
                 (!client->raw_request.empty() && client->request_bytes))
-            {
                 request_handler(*client,
                                 get_server_from_client(client->fd()).config());
-                client->request_bytes = 0;
-                client->raw_request.clear();
-            }
 
             // Check if someone has something to read
             if (pfds[i].revents & POLLIN)
@@ -80,32 +76,9 @@ void Webserv::poll_events()
                 // If this is a server, handle new connection
                 if (is_server_socket(pfds[i].fd))
                     accept_connection(pfds[i].fd);
-                // Or if this is a client
+                // Or if this is a client, read the data available
                 else
-                {
-                    int  recv_ret = 0;
-                    char chunk[CHUNK_SIZE + 1] = {0};
-                    recv_ret =
-                        recv(pfds[i].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
-                    if ((recv_ret == 0 && client->request_bytes == 0) ||
-                        recv_ret == -1)
-                        close_connection(recv_ret, i);
-                    else
-                    {
-                        client->raw_request.append(chunk, recv_ret);
-                        client->request_bytes += recv_ret;
-                    }
-                    // DEBUG: check recv loop condition
-                    // recv_data = "";
-                    // int bytes_received = recv_all(pfds[i].fd, recv_data, 0);
-
-                    // if (bytes_received <= 0)
-                    //     close_connection(bytes_received, i);
-                    // else
-                    //     request_handler(
-                    //         client,
-                    //         get_server_from_client(client.fd()).config());
-                }
+                    recv_chunk(*client, i);
             }
             /* Else if fd is ready to write, write response, then set events to
                POLLIN again to be ready to read next time */
@@ -115,21 +88,22 @@ void Webserv::poll_events()
     }
 }
 
-/* Read all the data on the file descriptor, and append it in recv_output.
-   Does it need MSG_DONTWAIT as flags? Same does it need binary reading?*/
-int Webserv::recv_all(int file_descriptor, std::string& recv_output, int flags)
+/* Read the data that is available on the socket, to a limit of CHUNK_SIZE
+   bytes. Append what is read to a request buffer.
+   Disconnect the client if no data is available */
+void Webserv::recv_chunk(ClientHandler& client, int client_index)
 {
     int  recv_ret = 0;
-    int  bytes_received = 0;
     char chunk[CHUNK_SIZE + 1] = {0};
 
-    while ((recv_ret = recv(file_descriptor, chunk, CHUNK_SIZE, flags)) > 0)
+    recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
+    if ((recv_ret == 0 && client.request_bytes == 0) || recv_ret == -1)
+        close_connection(recv_ret, client_index);
+    else
     {
-        recv_output.append(chunk, recv_ret);
-        bytes_received += recv_ret;
-        memset(chunk, 0, CHUNK_SIZE + 1);
+        client.raw_request.append(chunk, recv_ret);
+        client.request_bytes += recv_ret;
     }
-    return (bytes_received);
 }
 
 /* Check if the file descriptor corresponds to a server,
@@ -144,6 +118,23 @@ bool Webserv::is_server_socket(int socket_fd)
             return (true);
     }
     return (false);
+}
+
+/* If the file descriptor corresponds to a file, return an iterator to the
+   FileHandler equivalent to this file. If not, return an end() iterator */
+FileHandler* Webserv::is_file_fd(int file_descriptor)
+{
+    std::vector<ClientHandler>::iterator client_it;
+
+    for (client_it = clients.begin(); client_it != clients.end(); ++client_it)
+    {
+        std::vector<FileHandler>::iterator file_it;
+        for (file_it = client_it->files().begin();
+             file_it != client_it->files().end(); ++file_it)
+            if (file_it->fd() == file_descriptor)
+                return (&(*file_it));
+    }
+    return (NULL);
 }
 
 /* Get the index that corresponds to file descriptor in the pollfd structure */

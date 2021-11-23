@@ -26,7 +26,7 @@
 #define STDOUT 1
 
 const int CHUNK_SIZE = 65535; // 2^16 - 1 //32767; // 2^15 - 1
-const int POLL_DELAY = 300;
+const int POLL_DELAY = 100;
 
 class Webserv
 {
@@ -35,17 +35,6 @@ class Webserv
     std::vector<ClientHandler> clients;
     std::vector<struct pollfd> pfds;
 
-    std::map<int, std::string> res_status;
-
-    typedef struct Response
-    {
-        std::string content;
-        std::string content_type;
-        int         code;
-    } Response;
-
-    std::string recv_data;
-
     // Polling
     void poll_events();
     void poll_file(ClientHandler& client, size_t& file_index);
@@ -53,7 +42,7 @@ class Webserv
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
-    int  recv_all(int file_descriptor, std::string& recv_output, int flags = 0);
+    void recv_chunk(ClientHandler& client, int client_index);
 
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);

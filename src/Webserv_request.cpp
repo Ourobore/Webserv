@@ -12,6 +12,9 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
 
     // Parsing Request + add request to ClientHandler object
     Request req = Request(client.raw_request, server_config);
+    client.raw_request.clear();
+    client.request_bytes = 0;
+
     client.requests().push_back(req);
 
     if (req["Method"].empty())
@@ -37,7 +40,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     else if (req["Method"] == "POST" && authorized_method)
     {
         // Need checking if form or file upload, and location. Content type?
-        if (req["Body"].length() >
+        if (req.tokens["Body"].length() >
             server_config.get_client_max()) // Payload too large
             wrapper_open_error(client, server_config, 413);
         else
@@ -140,6 +143,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     pfds[client_index].events = POLLIN;
 }
 
+// clang-format off
 void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 {
     std::string connection = "close";
@@ -148,8 +152,7 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 
     // Response headers for web browser clients
     std::stringstream headers_content;
-    headers_content << "HTTP/1.1 " << res.code << " " << res_status[res.code]
-                    << "\r\n"
+    headers_content << "HTTP/1.1 " << res.code << " " << generate::status_message(res.code) << "\r\n"
                     << "Server: webserv/42\r\n"
                     << "Date: " << res.date << "\r\n"
                     << "Content-Type: " << res.content_type << "\r\n"
@@ -163,3 +166,4 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
     // Do we need MSG_DONTWAIT? Without it sends all the data correctly
     send(socket_fd, response.c_str(), response.length(), 0);
 }
+// clang-format on
