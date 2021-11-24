@@ -11,11 +11,11 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // std::cout << client.raw_request << std::endl;
 
     // Parsing Request + add request to ClientHandler object
-    Request req = Request(client.raw_request, server_config);
-    client.raw_request.clear();
-    client.request_bytes = 0;
+    // Request req = Request(client.raw_request, server_config);
+    // client.raw_request.clear();
+    // client.request_bytes = 0;
 
-    client.requests().push_back(req);
+    Request& req = *client.request();
 
     if (req["Method"].empty())
     {
@@ -131,15 +131,12 @@ void Webserv::handle_cgi(Config& config, Request& request,
 
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
-    // Start to build the Response { content; content_type; code }
-    struct ClientHandler::Response res = client.response();
-
     // Send the response in a struct with headers infos
     client.set_date();
-    respond(client.fd(), res);
+    respond(client.fd(), client.response());
 
     client.clear_response();
-    client.requests().erase(client.requests().begin());
+    client.clear_request();
     pfds[client_index].events = POLLIN;
 }
 

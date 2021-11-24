@@ -89,7 +89,7 @@ void Webserv::poll_events()
 }
 
 /* Read the data that is available on the socket, to a limit of CHUNK_SIZE
-   bytes. Append what is read to a request buffer.
+   bytes. Append what is read to a request buffer, or directly to the request.
    Disconnect the client if no data is available */
 void Webserv::recv_chunk(ClientHandler& client, int client_index)
 {
@@ -101,8 +101,33 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
         close_connection(recv_ret, client_index);
     else
     {
-        client.raw_request.append(chunk, recv_ret);
-        client.request_bytes += recv_ret;
+        // If we haven't parsed the request yet
+        if (!client.request())
+        {
+            client.raw_request.append(chunk, recv_ret);
+            client.request_bytes += recv_ret;
+
+            // If we have everything to parse the request
+            if (client.raw_request.find("\r\n\r\n") != std::string::npos)
+            {
+                Request* request = client.request();
+                request =
+                    new Request(client.raw_request,
+                                get_server_from_client(client.fd()).config());
+                client.raw_request.clear();
+                client.request_bytes = 0;
+            }
+        }
+        // If request already parsed, then everything else is body
+        else
+        {
+            client.request()->tokens["Body"].append(chunk, recv_ret);
+            int new_content_length =
+                ft::to_type<int>(client.request()->tokens["Content-Length"]) +
+                recv_ret;
+            client.request()->tokens["Content-Length"] =
+                ft::to_string(new_content_length);
+        }
     }
 }
 

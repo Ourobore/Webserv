@@ -4,6 +4,7 @@
 // Constructor and destructor
 ClientHandler::ClientHandler(int client_fd) : _fd(client_fd), _cgi(NULL)
 {
+    this->_request = NULL;
     this->raw_request = "";  // To modify tmp
     this->request_bytes = 0; // To modify tmp
 }
@@ -29,9 +30,9 @@ int ClientHandler::fd() const
     return (_fd);
 }
 
-std::vector<Request>& ClientHandler::requests()
+Request* ClientHandler::request()
 {
-    return (_requests);
+    return (_request);
 }
 
 std::vector<FileHandler>& ClientHandler::files()
@@ -55,6 +56,12 @@ void ClientHandler::clear_response()
     _response.content_type = "";
     _response.date = "";
     _response.code = 0;
+}
+
+void ClientHandler::clear_request()
+{
+    delete _request;
+    _request = NULL;
 }
 
 void ClientHandler::set_cgi(CGIHandler* cgi)

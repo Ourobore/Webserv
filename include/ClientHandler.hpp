@@ -20,7 +20,7 @@ class ClientHandler
 
   private:
     int                      _fd;
-    std::vector<Request>     _requests;
+    Request*                 _request;
     std::vector<FileHandler> _files;
     Response                 _response;
     CGIHandler*              _cgi;
@@ -38,12 +38,13 @@ class ClientHandler
 
     // Accessors
     int                       fd() const;
-    std::vector<Request>&     requests();
+    Request*                  request();
     std::vector<FileHandler>& files();
     Response&                 response();
     CGIHandler*               cgi();
 
     void clear_response();
+    void clear_request();
     void set_content_type(std::string uri_path, Config& server_config);
     void set_date();
     void set_cgi(CGIHandler* cgi);
