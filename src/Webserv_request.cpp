@@ -142,14 +142,25 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
 
     // Send the response in a struct with headers infos
     client.set_date();
-    respond(client.fd(), res);
+    respond(client.fd(), *client.requests().begin(), res);
 
     client.clear_response();
     client.requests().erase(client.requests().begin());
     pfds[client_index].events = POLLIN;
 }
 
-void Webserv::respond(int socket_fd, ClientHandler::Response& res)
+void Webserv::chunk_content(std::string& content)
+{
+    //////////////////// DEBUG /////////////////////////////////////////////////
+    std::cout << "before:\n" << content << std::endl;
+    //////////////////// DEBUG /////////////////////////////////////////////////
+
+    //////////////////// DEBUG /////////////////////////////////////////////////
+    std::cout << "after:\n" << content << std::endl;
+    //////////////////// DEBUG /////////////////////////////////////////////////
+}
+
+void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
 {
     std::string connection = "close";
     if (res.code == 200 || res.code == 301)
@@ -167,9 +178,21 @@ void Webserv::respond(int socket_fd, ClientHandler::Response& res)
                         << "Cache-Control: no-store"
                         << "\r\n";
     }
-    headers_content << "Content-Type: " << res.content_type << "\r\n"
-                    << "Content-Length: " << res.content.length() << "\r\n"
-                    << "Connection: " << connection << "\r\n"
+    headers_content << "Content-Type: " << res.content_type << "\r\n";
+    headers_content << "Content-Length: " << res.content.length() << "\r\n";
+
+    size_t pos = req["Accept-Encoding"].find("chunked");
+    if (pos == std::string::npos)
+    {
+        headers_content << "Content-Length: " << res.content.length() << "\r\n";
+    }
+    else
+    {
+        headers_content << "Transfer-Encoding: chunked\r\n";
+        chunk_content(res.content);
+    }
+
+    headers_content << "Connection: " << connection << "\r\n"
                     << "\r\n";
 
     std::string response = headers_content.str() + res.content;

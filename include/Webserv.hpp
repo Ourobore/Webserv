@@ -57,7 +57,7 @@ class Webserv
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
-    void respond(int socket_fd, ClientHandler::Response& res);
+    void respond(int socket_fd, Request& req, ClientHandler::Response& res);
     void wrapper_open_file(ClientHandler& client, Config& config,
                            Request& request);
     void wrapper_open_dir(ClientHandler& client, Config& config,
@@ -68,6 +68,7 @@ class Webserv
     void handle_upload(Config& config, Request& request, ClientHandler& client);
     void handle_delete(Config& config, Request& request, ClientHandler& client);
     void handle_cgi(Config& config, Request& request, ClientHandler& client);
+    void chunk_content(std::string& content);
 
     // Utilities
     Server&        get_server_from_client(int client_fd);
