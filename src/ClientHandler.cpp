@@ -64,6 +64,11 @@ void ClientHandler::clear_request()
     _request = NULL;
 }
 
+void ClientHandler::set_request(Config& config)
+{
+    _request = new Request(this->raw_request, config);
+}
+
 void ClientHandler::set_cgi(CGIHandler* cgi)
 {
     _cgi = cgi;

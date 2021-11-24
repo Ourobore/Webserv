@@ -45,6 +45,7 @@ class ClientHandler
 
     void clear_response();
     void clear_request();
+    void set_request(Config& config);
     void set_content_type(std::string uri_path, Config& server_config);
     void set_date();
     void set_cgi(CGIHandler* cgi);
