@@ -138,7 +138,7 @@ void Webserv::handle_cgi(Config& config, Request& request,
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
     // Start to build the Response { content; content_type; code }
-    struct ClientHandler::Response res = client.response();
+    struct ClientHandler::Response& res = client.response();
 
     // Send the response in a struct with headers infos
     client.set_date();
@@ -203,7 +203,6 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
                         << "\r\n";
     }
     headers_content << "Content-Type: " << res.content_type << "\r\n";
-    headers_content << "Content-Length: " << res.content.length() << "\r\n";
 
     size_t pos = req["Accept-Encoding"].find("chunked");
     if (pos == std::string::npos)
