@@ -151,13 +151,37 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
 
 void Webserv::chunk_content(std::string& content)
 {
-    //////////////////// DEBUG /////////////////////////////////////////////////
-    std::cout << "before:\n" << content << std::endl;
-    //////////////////// DEBUG /////////////////////////////////////////////////
+    std::istringstream       iss(content);
+    std::string              line;
+    std::vector<std::string> lines;
 
-    //////////////////// DEBUG /////////////////////////////////////////////////
-    std::cout << "after:\n" << content << std::endl;
-    //////////////////// DEBUG /////////////////////////////////////////////////
+    // split lines
+    while (std::getline(iss, line))
+    {
+        if (line.find_last_of('\r') != std::string::npos)
+            line.push_back('\n');
+        else
+        {
+            line.push_back('\r');
+            line.push_back('\n');
+        }
+        lines.push_back(line);
+    }
+
+    // append to content
+    content = "";
+
+    for (std::vector<std::string>::iterator it = lines.begin();
+         it != lines.end(); ++it)
+    {
+        // size
+        size_t len = it->length() - 2;
+        if (len == 0)
+            len = 1;
+        content.append(ft::to_hex(len) + "\r\n");
+        content.append(*it);
+    }
+    content.append(ft::to_string(0) + "\r\n");
 }
 
 void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
@@ -195,7 +219,7 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
     headers_content << "Connection: " << connection << "\r\n"
                     << "\r\n";
 
-    std::string response = headers_content.str() + res.content;
+    std::string response = headers_content.str() + res.content + "\r\n";
 
     // send to the client through his socket
     send(socket_fd, response.c_str(), response.length(), MSG_DONTWAIT);

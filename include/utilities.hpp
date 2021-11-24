@@ -69,6 +69,7 @@ namespace ft
                                  std::string mode = "r");
 
     std::vector<std::string> list_directory(const char* dirpath);
+    std::string              to_hex(size_t nb);
 
 } // namespace ft
 
