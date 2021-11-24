@@ -36,9 +36,16 @@ void Webserv::start()
 
 void Webserv::create_server(Config& config)
 {
-    servers.push_back(Server(config));
-    struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
-    pfds.push_back(pfd);
+    std::vector<int> ports = config.get_port();
+
+    for (std::vector<int>::iterator it = ports.begin(); it != ports.end(); ++it)
+    {
+        servers.push_back(Server(config, *it));
+        struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
+        pfds.push_back(pfd);
+        std::cout << "Create " << config.get_server_names()[0] << " at port"
+                  << *it << std::endl;
+    }
 }
 
 void Webserv::accept_connection(int server_fd)
@@ -74,8 +81,24 @@ void Webserv::close_connection(int bytes_received, int client_index)
     pfds.erase(pfds.begin() + client_index);
 }
 
+std::string Webserv::get_requested_host(std::string& raw)
+{
+    std::string requested_host = "";
+
+    size_t pos = raw.find("\nHost:");
+    if (pos != std::string::npos)
+    {
+        requested_host = raw.substr(pos + 7);
+        pos = requested_host.find_first_of(":\r");
+        if (pos != std::string::npos)
+            requested_host.erase(pos);
+    }
+    return requested_host;
+}
+
 /* Return the server from which the client is connected */
-Server& Webserv::get_server_from_client(int client_fd)
+Server& Webserv::get_server_from_client(int          client_fd,
+                                        std::string& raw_hostname)
 {
     // Get client port and client IP address from it's fd (in in_addr_t type)
     struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
@@ -89,16 +112,27 @@ Server& Webserv::get_server_from_client(int client_fd)
     {
         // If the IP is localhost, we need to chang it to be network 'readable'
         std::string server_address = it->ip_addr();
-        if (server_address == "localhost")
+        if (server_address == "localhost" || server_address == "0.0.0.0")
             server_address = "127.0.0.1";
 
         in_addr_t server_ip_addr = inet_addr(server_address.c_str());
         if (client_port == it->port() && client_ip_addr == server_ip_addr)
-            return (*it);
+        {
+            std::string requested_host = get_requested_host(raw_hostname);
+            std::vector<std::string> server_names =
+                it->config().get_server_names();
+
+            std::vector<std::string>::iterator sn;
+            for (sn = server_names.begin(); sn != server_names.end(); ++sn)
+            {
+                if (*sn == requested_host)
+                    return (*it);
+            }
+        }
     }
-    return (servers.back());
-    // We should not arrive here, but right now we can't
-    // determine if there is an error. Return a pointer?
+    // Return default_server (first server block) if server_name doesn't match
+    // any
+    return (servers.front());
 }
 
 Server& Webserv::get_server(int server_fd)

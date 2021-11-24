@@ -65,9 +65,12 @@ void Webserv::poll_events()
         else
         {
             /* If there is nothing more to read we process the request */
-            if (pfds[i].revents == 0 && client && client->request()) // Does interfer with chunk request?
-                request_handler(*client,
-                                get_server_from_client(client->fd()).config());
+            if (pfds[i].revents == 0 && client &&
+                client->request()) // Does interfer with chunk request?
+                request_handler(*client, get_server_from_client(
+                                             client->fd(),
+                                             client->request()->tokens["Host"])
+                                             .config());
 
             // Check if someone has something to read
             if (pfds[i].revents & POLLIN)
@@ -109,7 +112,9 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
             // If we have everything to parse the request
             if (client.raw_request.find("\r\n\r\n") != std::string::npos)
             {
-                client.set_request(get_server_from_client(client.fd()).config());
+                client.set_request(
+                    get_server_from_client(client.fd(), client.raw_request)
+                        .config());
                 client.raw_request.clear();
                 client.request_bytes = 0;
             }

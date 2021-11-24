@@ -23,12 +23,23 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         return;
     }
 
+    std::pair<std::string, std::string> redir;
+    if (req.location_index() != -1)
+        redir = server_config.get_locations()[req.location_index()].get_redir();
+
     bool authorized_method = ft::access_method(server_config, req);
     if (req["Method"] == "GET" && authorized_method)
     {
         if (CGIHandler::is_cgi_file(req["URI"], req.location_index(),
                                     server_config))
             handle_cgi(server_config, req, client);
+        else if (req.location_index() != -1 && redir.second != "")
+        {
+            client.set_location_header(redir.second);
+            wrapper_open_error(client, server_config,
+                               ft::to_type<int>(redir.first));
+            return;
+        }
         else
         {
             if (!ft::is_dir(req["URI"])) // If file
@@ -114,6 +125,7 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
     // Tell when client is ready to be written in
     pfds[get_poll_index(client.fd())].events = POLLOUT;
 }
+
 void Webserv::handle_cgi(Config& config, Request& request,
                          ClientHandler& client)
 {
@@ -142,24 +154,76 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     pfds[client_index].events = POLLIN;
 }
 
+void Webserv::chunk_content(std::string& content)
+{
+    std::istringstream       iss(content);
+    std::string              line;
+    std::vector<std::string> lines;
+
+    // split lines
+    while (std::getline(iss, line))
+    {
+        if (line.find_last_of('\r') != std::string::npos)
+            line.push_back('\n');
+        else
+        {
+            line.push_back('\r');
+            line.push_back('\n');
+        }
+        lines.push_back(line);
+    }
+
+    // append to content
+    content = "";
+
+    for (std::vector<std::string>::iterator it = lines.begin();
+         it != lines.end(); ++it)
+    {
+        // size
+        size_t len = it->length() - 2;
+        if (len == 0)
+            len = 1;
+        content.append(ft::to_hex(len) + "\r\n");
+        content.append(*it);
+    }
+    content.append(ft::to_string(0) + "\r\n");
+}
+
 // clang-format off
 void Webserv::respond(int socket_fd, ClientHandler::Response& res)
 {
     std::string connection = "close";
-    if (res.code == 200)
+    if (res.code == 200 || res.code == 301)
         connection = "keep-alive";
 
     // Response headers for web browser clients
     std::stringstream headers_content;
     headers_content << "HTTP/1.1 " << res.code << " " << generate::status_message(res.code) << "\r\n"
                     << "Server: webserv/42\r\n"
-                    << "Date: " << res.date << "\r\n"
-                    << "Content-Type: " << res.content_type << "\r\n"
-                    << "Content-Length: " << res.content.length() << "\r\n"
-                    << "Connection: " << connection << "\r\n"
+                    << "Date: " << res.date << "\r\n";
+    if (res.code == 301)
+    {
+        headers_content << "Location: " << res.location << "\r\n"
+                        << "Cache-Control: no-store"
+                        << "\r\n";
+    }
+    headers_content << "Content-Type: " << res.content_type << "\r\n";
+    headers_content << "Content-Length: " << res.content.length() << "\r\n";
+    // size_t pos = req["Accept-Encoding"].find("chunked");
+    // if (pos == std::string::npos)
+    // {
+    //     headers_content << "Content-Length: " << res.content.length() << "\r\n";
+    // }
+    // else
+    // {
+    //     headers_content << "Transfer-Encoding: chunked\r\n";
+    //     chunk_content(res.content);
+    // }
+
+    headers_content << "Connection: " << connection << "\r\n"
                     << "\r\n";
 
-    std::string response = headers_content.str() + res.content;
+    std::string response = headers_content.str() + res.content + "\r\n";
 
     // Send response to the client through his socket
     // Do we need MSG_DONTWAIT? Without it sends all the data correctly

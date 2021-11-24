@@ -15,6 +15,7 @@ class ClientHandler
         std::string content;
         std::string content_type;
         std::string date;
+        std::string location;
         int         code;
     } Response;
 
@@ -49,6 +50,7 @@ class ClientHandler
     void set_content_type(std::string uri_path, Config& server_config);
     void set_date();
     void set_cgi(CGIHandler* cgi);
+    void set_location_header(std::string uri_path);
 
     // Temporary, read and append request
     std::string raw_request;

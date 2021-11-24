@@ -59,11 +59,13 @@ class Webserv
     void handle_delete(Config& config, Request& request, ClientHandler& client);
     void handle_post(Config& config, Request& request, ClientHandler& client);
     void handle_cgi(Config& config, Request& request, ClientHandler& client);
+    void chunk_content(std::string& content);
 
     // Utilities
-    Server&        get_server_from_client(int client_fd);
+    Server&        get_server_from_client(int client_fd, std::string& raw_host);
     ClientHandler* get_client_from_file(int file_descriptor);
     int            get_poll_index(int file_descriptor);
+    std::string    get_requested_host(std::string& raw);
 
     FileHandler* is_file_fd(int file_descriptor);
     static void  catch_signal(int signal);

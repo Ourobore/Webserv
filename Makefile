@@ -10,24 +10,24 @@ INC			= -Iinclude/
 # Source files
 SRCDIR		=	src/
 MAIN 		=	main.cpp
-SRC			=	Socket.cpp \
-				Server.cpp \
-				Webserv_connection.cpp \
+SRC			=	Webserv_connection.cpp \
 				Webserv_request.cpp \
 				Webserv_poll.cpp \
-				Config.cpp \
-				Location.cpp \
-				parsing_config.cpp \
-				CGIHandler.cpp \
-				FileHandler.cpp \
-				ClientHandler.cpp \
-				utilities.cpp \
-				generate.cpp \
-				Request.cpp \
-				parsing_mimetypes.cpp \
-				upload.cpp \
-				delete.cpp \
-				post.cpp \
+				socket/Socket.cpp \
+				socket/Server.cpp \
+				config/Config.cpp \
+				config/Location.cpp \
+				config/parsing_config.cpp \
+				modules/CGIHandler.cpp \
+				modules/FileHandler.cpp \
+				modules/ClientHandler.cpp \
+				utilities/utilities.cpp \
+				utilities/generate.cpp \
+				request/Request.cpp \
+				request/parsing_mimetypes.cpp \
+				methods/upload.cpp \
+				methods/delete.cpp \
+				methods/post.cpp \
 
 # *.o files
 OBJDIR = obj/
@@ -45,6 +45,12 @@ $(SERVER): $(OBJDIR) $(OBJ) $(MAIN_OBJ)
 # Create an obj/ directory with all the *.o files
 $(OBJDIR):
 	mkdir -p $@
+	mkdir -p $@config
+	mkdir -p $@methods
+	mkdir -p $@modules
+	mkdir -p $@request
+	mkdir -p $@socket
+	mkdir -p $@utilities
 
 # Compile the *.o
 $(OBJDIR)%.o: $(SRCDIR)%.cpp

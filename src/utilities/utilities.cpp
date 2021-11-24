@@ -208,3 +208,13 @@ std::vector<std::string> ft::list_directory(const char* dirpath)
 
     return ls;
 }
+
+std::string ft::to_hex(size_t nb)
+{
+    std::stringstream ss;
+    ss << std::hex << nb;
+
+    std::string res(ss.str());
+
+    return res;
+}

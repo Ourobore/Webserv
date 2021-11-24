@@ -24,7 +24,7 @@ class Server
     // Server(int domain, int type, int protocol, int port, std::string
     // interface);
     virtual ~Server();
-    Server(Config& config);
+    Server(Config& config, int port);
 
     // Accessors
     Socket&             socket();
