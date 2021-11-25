@@ -10,11 +10,6 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // Print request from client [Debug]
     // std::cout << client.raw_request << std::endl;
 
-    // Parsing Request + add request to ClientHandler object
-    // Request req = Request(client.raw_request, server_config);
-    // client.raw_request.clear();
-    // client.request_bytes = 0;
-
     Request& req = *client.request();
 
     if (req["Method"].empty())
@@ -128,6 +123,8 @@ void Webserv::handle_cgi(Config& config, Request& request,
 {
     CGIHandler* handler = new CGIHandler(config, request, client.fd());
     handler->setup_cgi(client, pfds, config);
+    if (!handler->input_pipe)
+        handler->launch_cgi();
 }
 
 void Webserv::response_handler(ClientHandler& client, int client_index)

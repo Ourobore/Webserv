@@ -129,12 +129,23 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
     }
 
     // Must add input pipe fd to files and pfds, and CGIHandler to client
-    FileHandler cgi_pipe_input =
+    if (input_pipe)
+    {
+        FileHandler cgi_pipe_input =
+            ft::open_file_stream(input_pipe[PIPEWRITE], server_config);
+
+        client.files().push_back(cgi_pipe_input);
+        struct pollfd pfdi = {cgi_pipe_input.fd(), POLLOUT, 0};
+        pfds.push_back(pfdi);
+    }
+
+    // Must add output pipe fd to files and pfds, and CGIHandler to client
+    FileHandler cgi_pipe_output =
         ft::open_file_stream(output_pipe[PIPEREAD], server_config);
 
-    client.files().push_back(cgi_pipe_input);
-    struct pollfd pfdi = {cgi_pipe_input.fd(), POLLIN, 0};
-    pfds.push_back(pfdi);
+    client.files().push_back(cgi_pipe_output);
+    struct pollfd pfdo = {cgi_pipe_output.fd(), POLLIN, 0};
+    pfds.push_back(pfdo);
     client.set_cgi(this);
 }
 
@@ -154,7 +165,8 @@ void CGIHandler::launch_cgi()
         if (input_pipe)
         {
             dup2(STDIN, input_pipe[PIPEREAD]);
-            close(STDIN);
+            close(input_pipe[PIPEWRITE]);
+            // close(STDIN);
         }
         dup2(output_pipe[PIPEWRITE], STDOUT);
         close(output_pipe[PIPEREAD]);
