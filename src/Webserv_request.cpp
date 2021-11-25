@@ -68,9 +68,6 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         handle_delete(server_config, req, client);
     else // Method Not Allowed
         wrapper_open_error(client, server_config, 405);
-
-    // Clear request as soon as possible
-    client.clear_request();
 }
 
 void Webserv::wrapper_open_file(ClientHandler& client, Config& config,
@@ -151,6 +148,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     respond(client.fd(), client.response());
 
     client.clear_response();
+    client.clear_request();
     pfds[client_index].events = POLLIN;
 }
 
