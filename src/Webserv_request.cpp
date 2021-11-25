@@ -207,7 +207,7 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
                         << "\r\n";
     }
     if (res.content_type.empty())
-        res.content_type = "text/plain";
+        res.content_type = "text/html";
     headers_content << "Content-Type: " << res.content_type << "\r\n";
     size_t pos = req["Accept-Encoding"].find("chunked");
     if (pos == std::string::npos)
