@@ -65,8 +65,9 @@ void Webserv::poll_events()
         else
         {
             /* If there is nothing more to read we process the request */
-            if (pfds[i].revents == 0 && client &&
-                client->request()) // Does interfer with chunk request?
+            if (pfds[i].revents == 0 && client && client->request() &&
+                client->files().size() ==
+                    0) // Does interfer with chunk request?
                 request_handler(*client, get_server_from_client(
                                              client->fd(),
                                              client->request()->tokens["Host"])

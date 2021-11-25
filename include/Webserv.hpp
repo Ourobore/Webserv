@@ -47,7 +47,7 @@ class Webserv
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
-    void respond(int socket_fd, ClientHandler::Response& res);
+    void respond(int socket_fd, Request& req, ClientHandler::Response& res);
     void wrapper_open_file(ClientHandler& client, Config& config,
                            Request& request);
     void wrapper_open_dir(ClientHandler& client, Config& config,
