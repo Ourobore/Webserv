@@ -191,7 +191,6 @@ void Webserv::chunk_content(std::string& content)
 // clang-format off
 void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
 {
-    (void)req;
     std::string connection = "close";
     if (res.code == 200 || res.code == 301)
         connection = "keep-alive";
@@ -207,8 +206,9 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
                         << "Cache-Control: no-store"
                         << "\r\n";
     }
+    if (res.content_type.empty())
+        res.content_type = "text/plain";
     headers_content << "Content-Type: " << res.content_type << "\r\n";
-    headers_content << "Content-Length: " << res.content.length() << "\r\n";
     size_t pos = req["Accept-Encoding"].find("chunked");
     if (pos == std::string::npos)
     {
