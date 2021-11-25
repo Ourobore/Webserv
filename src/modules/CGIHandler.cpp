@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 
 CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
-    : output_pipe(NULL)
+    : input_pipe(NULL), output_pipe(NULL)
 {
     struct sockaddr_in client_address = Socket::get_socket_address(client_fd);
 
@@ -57,8 +57,6 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     script_name = variables["SCRIPT_NAME"];
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
-    input_pipe = NULL;
-    output_pipe = NULL;
     // Debug: Printing env_array
     // DEBUG_print_env_array();
 
@@ -135,8 +133,8 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
             ft::open_file_stream(input_pipe[PIPEWRITE], server_config);
 
         client.files().push_back(cgi_pipe_input);
-        struct pollfd pfdi = {cgi_pipe_input.fd(), POLLOUT, 0};
-        pfds.push_back(pfdi);
+        struct pollfd pfd_input = {cgi_pipe_input.fd(), POLLOUT, 0};
+        pfds.push_back(pfd_input);
     }
 
     // Must add output pipe fd to files and pfds, and CGIHandler to client
@@ -144,8 +142,8 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
         ft::open_file_stream(output_pipe[PIPEREAD], server_config);
 
     client.files().push_back(cgi_pipe_output);
-    struct pollfd pfdo = {cgi_pipe_output.fd(), POLLIN, 0};
-    pfds.push_back(pfdo);
+    struct pollfd pfd_output = {cgi_pipe_output.fd(), POLLIN, 0};
+    pfds.push_back(pfd_output);
     client.set_cgi(this);
 }
 
@@ -165,7 +163,6 @@ void CGIHandler::launch_cgi()
         if (input_pipe)
         {
             dup2(STDIN, input_pipe[PIPEREAD]);
-            close(input_pipe[PIPEWRITE]);
             // close(STDIN);
         }
         dup2(output_pipe[PIPEWRITE], STDOUT);

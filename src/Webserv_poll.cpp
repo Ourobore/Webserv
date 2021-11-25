@@ -47,6 +47,7 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         {
             write(file->fd(), client.request()->tokens["Body"].c_str(),
                   client.request()->tokens["Body"].length());
+            close(file->fd());
             client.cgi()->launch_cgi();
         }
         // Else write file content from upload
@@ -173,7 +174,8 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
 
 bool Webserv::is_cgi_input(ClientHandler& client, int file_descriptor)
 {
-    if (file_descriptor == client.cgi()->input_pipe[PIPEWRITE])
+    if (client.cgi() && client.cgi()->input_pipe &&
+        file_descriptor == client.cgi()->input_pipe[PIPEWRITE])
         return (true);
     else
         return (false);

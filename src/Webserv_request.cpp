@@ -45,7 +45,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     }
     else if (req["Method"] == "POST" && authorized_method)
     {
-        // Need checking if form or file upload, and location. Content type?
+        // Need checking if POST form or file upload
         if (req.tokens["Body"].length() >
             server_config.get_client_max()) // Payload too large
             wrapper_open_error(client, server_config, 413);
