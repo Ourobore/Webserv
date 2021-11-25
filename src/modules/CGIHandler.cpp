@@ -144,7 +144,10 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
     client.files().push_back(cgi_pipe_output);
     struct pollfd pfd_output = {cgi_pipe_output.fd(), POLLIN, 0};
     pfds.push_back(pfd_output);
+
     client.set_cgi(this);
+    int tmp = client.cgi()->input_pipe[PIPEWRITE]; // Debug
+    (void)tmp;
 }
 
 void CGIHandler::launch_cgi()
