@@ -68,7 +68,9 @@ class Webserv
     std::string    get_requested_host(std::string& raw);
 
     FileHandler* is_file_fd(int file_descriptor);
-    static void  catch_signal(int signal);
+    bool         is_cgi_input(ClientHandler& client, int file_descriptor);
+
+    static void catch_signal(int signal);
 
     // Accessors
     Server&                              get_server(int server_fd);

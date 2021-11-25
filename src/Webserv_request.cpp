@@ -126,19 +126,8 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
 void Webserv::handle_cgi(Config& config, Request& request,
                          ClientHandler& client)
 {
-    // Just a CGI test here, need more verifications. For exemple if we are
-    // in a location
     CGIHandler* handler = new CGIHandler(config, request, client.fd());
-    handler->launch_cgi(client, pfds, config);
-
-    // To do: get Content-type
-
-    // Isolate body from CGI response
-    // std::string body;
-    // int         pos = cgi_output.find("\r\n\r\n");
-    // body.erase(0, pos + 3);
-
-    // return (body);
+    handler->setup_cgi(client, pfds, config);
 }
 
 void Webserv::response_handler(ClientHandler& client, int client_index)

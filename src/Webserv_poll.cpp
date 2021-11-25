@@ -42,9 +42,17 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
     }
     else if (pfds[file_index].revents & POLLOUT)
     {
-        // Write file content from upload
-        write(file->fd(), file->string_output().c_str(),
-              file->string_output().length());
+        // If CGI input, write body for POST
+        if (is_cgi_input(client, file->fd()))
+        {
+            write(file->fd(), client.request()->tokens["Body"].c_str(),
+                  client.request()->tokens["Body"].length());
+            client.cgi()->launch_cgi();
+        }
+        // Else write file content from upload
+        else
+            write(file->fd(), file->string_output().c_str(),
+                  file->string_output().length());
 
         // FileHandler cleaning
         fclose(file->stream());
@@ -161,6 +169,14 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
                 return (&(*file_it));
     }
     return (NULL);
+}
+
+bool Webserv::is_cgi_input(ClientHandler& client, int file_descriptor)
+{
+    if (file_descriptor == client.cgi()->input_pipe[PIPEWRITE])
+        return (true);
+    else
+        return (false);
 }
 
 /* Get the index that corresponds to file descriptor in the pollfd structure */

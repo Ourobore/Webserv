@@ -57,11 +57,13 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     script_name = variables["SCRIPT_NAME"];
     // root_directory = pwd + variables["DOCUMENT_ROOT"];
 
+    input_pipe = NULL;
+    output_pipe = NULL;
     // Debug: Printing env_array
     // DEBUG_print_env_array();
 
     // Setting CGI arguments for execve()
-    cgi_argv = new char*[4]();
+    cgi_argv = new char*[3]();
 
     cgi_argv[0] = new char[cgi_path.length() + 1]();
     memcpy(cgi_argv[0], cgi_path.c_str(), cgi_path.length());
@@ -86,6 +88,15 @@ CGIHandler::~CGIHandler()
     delete[] cgi_argv[1];
     delete[] cgi_argv;
 
+    if (input_pipe)
+    {
+        if (input_pipe[PIPEREAD])
+            close(input_pipe[PIPEREAD]);
+        if (input_pipe[PIPEWRITE])
+            close(input_pipe[PIPEWRITE]);
+        delete[] input_pipe;
+    }
+
     if (output_pipe[PIPEREAD])
         close(output_pipe[PIPEREAD]);
     if (output_pipe[PIPEWRITE])
@@ -93,12 +104,21 @@ CGIHandler::~CGIHandler()
     delete[] output_pipe;
 }
 
-void CGIHandler::launch_cgi(ClientHandler&              client,
-                            std::vector<struct pollfd>& pfds,
-                            Config&                     server_config)
+void CGIHandler::setup_cgi(ClientHandler&              client,
+                           std::vector<struct pollfd>& pfds,
+                           Config&                     server_config)
 {
-    int childpid = 0;
+    if (client.request()->tokens["Method"] == "POST")
+        input_pipe = new int[2]();
     output_pipe = new int[2]();
+
+    if (input_pipe && pipe(input_pipe) == -1)
+    {
+        if (input_pipe)
+            delete[] input_pipe;
+        perror("Error: couldn't create pipe\n");
+        exit(EXIT_FAILURE);
+    }
 
     if (pipe(output_pipe) == -1)
     {
@@ -108,14 +128,19 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
         exit(EXIT_FAILURE);
     }
 
-    // Must add pipe fd to files and pfds, and CGIHandler to client
-    FileHandler cgi_pipe_output =
+    // Must add input pipe fd to files and pfds, and CGIHandler to client
+    FileHandler cgi_pipe_input =
         ft::open_file_stream(output_pipe[PIPEREAD], server_config);
 
-    client.files().push_back(cgi_pipe_output);
-    struct pollfd pfd = {cgi_pipe_output.fd(), POLLIN, 0};
-    pfds.push_back(pfd);
+    client.files().push_back(cgi_pipe_input);
+    struct pollfd pfdi = {cgi_pipe_input.fd(), POLLIN, 0};
+    pfds.push_back(pfdi);
     client.set_cgi(this);
+}
+
+void CGIHandler::launch_cgi()
+{
+    int childpid = 0;
 
     childpid = fork();
     if (childpid == -1)
@@ -126,6 +151,11 @@ void CGIHandler::launch_cgi(ClientHandler&              client,
 
     if (childpid == 0)
     {
+        if (input_pipe)
+        {
+            dup2(STDIN, input_pipe[PIPEREAD]);
+            close(STDIN);
+        }
         dup2(output_pipe[PIPEWRITE], STDOUT);
         close(output_pipe[PIPEREAD]);
         chdir(root_directory.c_str());
