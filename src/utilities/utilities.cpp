@@ -218,3 +218,28 @@ std::string ft::to_hex(size_t nb)
 
     return res;
 }
+
+int ft::to_dec(std::string hex)
+{
+    int dec;
+
+    std::stringstream ss;
+    ss << hex;
+    ss >> std::hex >> dec;
+
+    return dec;
+}
+
+void ft::read_chunk(Request& request, std::string& chunk)
+{
+    while (!chunk.empty())
+    {
+        int crlf_pos = chunk.find("\r\n");
+        int chunk_length = ft::to_dec(chunk.substr(0, crlf_pos));
+
+        request.tokens["Body"].append(chunk.substr(crlf_pos + 2, chunk_length),
+                                      chunk_length);
+        chunk = chunk.substr(crlf_pos + 2 + chunk_length + 2);
+        // substr out of range here sometimes
+    }
+}

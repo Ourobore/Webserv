@@ -135,12 +135,22 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
         // If request already parsed, then everything else is body
         else
         {
-            client.request()->tokens["Body"].append(chunk, recv_ret);
-            int new_content_length =
-                ft::to_type<int>(client.request()->tokens["Content-Length"]) +
-                recv_ret;
-            client.request()->tokens["Content-Length"] =
-                ft::to_string(new_content_length);
+            if (client.request()->tokens["Transfer-Encoding"].find("chunked") !=
+                std::string::npos)
+            {
+                std::string string_chunk = chunk;
+                ft::read_chunk(*client.request(), string_chunk);
+            }
+            else
+            {
+                client.request()->tokens["Body"].append(chunk, recv_ret);
+                int new_content_length =
+                    ft::to_type<int>(
+                        client.request()->tokens["Content-Length"]) +
+                    recv_ret;
+                client.request()->tokens["Content-Length"] =
+                    ft::to_string(new_content_length);
+            }
         }
     }
 }
@@ -185,7 +195,8 @@ bool Webserv::is_cgi_input(ClientHandler& client, int file_descriptor)
         return (false);
 }
 
-/* Get the index that corresponds to file descriptor in the pollfd structure */
+/* Get the index that corresponds to file descriptor in the pollfd structure
+ */
 int Webserv::get_poll_index(int file_descriptor)
 {
     for (size_t i = 0; i < pfds.size(); ++i)

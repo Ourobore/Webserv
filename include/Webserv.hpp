@@ -25,7 +25,7 @@
 #define STDIN 0
 #define STDOUT 1
 
-const int CHUNK_SIZE = 65535; // 2^16 - 1 //32767; // 2^15 - 1
+const int CHUNK_SIZE = 65535; // 2^16 - 1
 const int POLL_DELAY = 100;
 
 class Webserv

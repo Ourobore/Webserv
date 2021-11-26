@@ -17,8 +17,14 @@ Request::Request(std::string bytes, Config& server_config) : _index_names()
         {
             req_lines.erase(req_lines.begin());
             parse_headers();
-            tokens["Body"] = bytes.substr(bytes.find("\r\n\r\n") + 4);
-            // parse_body();
+            if (tokens["Transfer-Encoding"].find("chunked") !=
+                std::string::npos)
+            {
+                std::string body = bytes.substr(bytes.find("\r\n\r\n") + 4);
+                ft::read_chunk(*this, body);
+            }
+            else
+                tokens["Body"] = bytes.substr(bytes.find("\r\n\r\n") + 4);
         }
     }
 }
