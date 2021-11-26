@@ -32,7 +32,12 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         // If CGI, clean output from CGI header, then delete ClientHandler::_cgi
         if (client.cgi())
         {
-            int pos = client.response().content.find("\r\n\r\n");
+            // Get Content-Type and remove CGI Header
+            std::string& content = client.response().content;
+            std::string& content_type = client.response().content_type;
+            content_type = content.substr(content.find("Content-type: ") + 14);
+            content_type = content_type.substr(0, content_type.find(";"));
+            int pos = content.find("\r\n\r\n");
             client.response().content.erase(0, pos + 4);
 
             delete client.cgi();
@@ -173,8 +178,6 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
 
 bool Webserv::is_cgi_input(ClientHandler& client, int file_descriptor)
 {
-    int tmp = client.cgi()->input_pipe[PIPEWRITE]; // Debug
-    (void)tmp;
     if (client.cgi() && client.cgi()->input_pipe &&
         file_descriptor == client.cgi()->input_pipe[PIPEWRITE])
         return (true);

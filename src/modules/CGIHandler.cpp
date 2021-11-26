@@ -130,7 +130,7 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
     if (input_pipe)
     {
         FileHandler cgi_pipe_input =
-            ft::open_file_stream(input_pipe[PIPEWRITE], server_config);
+            ft::open_file_stream(input_pipe[PIPEWRITE], server_config, "w");
 
         client.files().push_back(cgi_pipe_input);
         struct pollfd pfd_input = {cgi_pipe_input.fd(), POLLOUT, 0};
@@ -146,8 +146,6 @@ void CGIHandler::setup_cgi(ClientHandler&              client,
     pfds.push_back(pfd_output);
 
     client.set_cgi(this);
-    int tmp = client.cgi()->input_pipe[PIPEWRITE]; // Debug
-    (void)tmp;
 }
 
 void CGIHandler::launch_cgi()
@@ -165,8 +163,8 @@ void CGIHandler::launch_cgi()
     {
         if (input_pipe)
         {
-            dup2(STDIN, input_pipe[PIPEREAD]);
-            // close(STDIN);
+            dup2(input_pipe[PIPEREAD], STDIN);
+            close(input_pipe[PIPEWRITE]);
         }
         dup2(output_pipe[PIPEWRITE], STDOUT);
         close(output_pipe[PIPEREAD]);
