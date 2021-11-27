@@ -43,6 +43,7 @@ class Request
     int                       location_index() const;
     std::vector<std::string>& index_names();
     Chunk*                    chunk();
+    void                      set_chunk(Chunk* chunk);
 };
 
 #endif

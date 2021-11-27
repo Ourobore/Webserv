@@ -53,9 +53,8 @@ class ClientHandler
     void set_cgi(CGIHandler* cgi);
     void set_location_header(std::string uri_path);
 
-    // Temporary, read and append request
+    // Read string buffer
     std::string raw_request;
-    int         request_bytes;
 };
 
 #endif

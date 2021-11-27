@@ -10,6 +10,8 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // Print request from client [Debug]
     // std::cout << client.raw_request << std::endl;
 
+    client.raw_request.clear();
+
     Request& req = *client.request();
 
     if (req["Method"].empty())

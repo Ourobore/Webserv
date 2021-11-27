@@ -19,13 +19,13 @@ Request::Request(std::string& bytes, Config& server_config)
             req_lines.erase(req_lines.begin());
             parse_headers();
 
-            std::string body = bytes.substr(bytes.find("\r\n\r\n") + 4);
+            bytes = bytes.substr(bytes.find("\r\n\r\n") + 4);
             if (tokens["Transfer-Encoding"].find("chunked") !=
                 std::string::npos)
             {
-                while (Chunk::creation_possible(body))
+                while (Chunk::creation_possible(bytes))
                 {
-                    _chunk = new Chunk(body);
+                    _chunk = new Chunk(bytes);
                     if (_chunk->completed())
                     {
                         tokens["Body"].append(_chunk->chunk());
@@ -36,7 +36,7 @@ Request::Request(std::string& bytes, Config& server_config)
                 }
             }
             else
-                tokens["Body"] = body;
+                tokens["Body"] = bytes;
         }
     }
 }
@@ -268,4 +268,9 @@ int Request::location_index() const
 Chunk* Request::chunk()
 {
     return (_chunk);
+}
+
+void Request::set_chunk(Chunk* chunk)
+{
+    _chunk = chunk;
 }

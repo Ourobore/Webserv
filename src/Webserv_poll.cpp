@@ -112,7 +112,7 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
     char chunk[CHUNK_SIZE + 1] = {0};
 
     recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
-    if ((recv_ret == 0 && client.request_bytes == 0) || recv_ret == -1)
+    if ((recv_ret == 0 && client.raw_request.length() == 0) || recv_ret == -1)
         close_connection(recv_ret, client_index);
     else
     {
@@ -120,7 +120,6 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
         if (!client.request())
         {
             client.raw_request.append(chunk, recv_ret);
-            client.request_bytes += recv_ret;
 
             // If we have everything to parse the request
             if (client.raw_request.find("\r\n\r\n") != std::string::npos)
@@ -128,8 +127,6 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
                 client.set_request(
                     get_server_from_client(client.fd(), client.raw_request)
                         .config());
-                if (client.raw_request.empty())
-                    client.request_bytes = 0;
             }
         }
         // If request already parsed, then everything else is body
@@ -177,10 +174,7 @@ void Webserv::parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret)
             delete chunk;
         }
         else
-        {
-            Chunk* request_chunk = client.request()->chunk();
-            request_chunk = chunk;
-        }
+            client.request()->set_chunk(chunk);
     }
 }
 
