@@ -43,6 +43,7 @@ class Webserv
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
     void recv_chunk(ClientHandler& client, int client_index);
+    void parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret);
 
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);

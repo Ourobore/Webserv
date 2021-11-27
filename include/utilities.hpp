@@ -71,7 +71,7 @@ namespace ft
     std::vector<std::string> list_directory(const char* dirpath);
     std::string              to_hex(size_t nb);
     int                      to_dec(std::string hex);
-    void                     read_chunk(Request& request, std::string& chunk);
+    void add_content_length(std::string& content_length, int to_add);
 
 } // namespace ft
 

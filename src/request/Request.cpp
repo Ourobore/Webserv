@@ -1,10 +1,11 @@
 #include "Request.hpp"
 #include "utilities.hpp"
 
-Request::Request(std::string bytes, Config& server_config) : _index_names()
+Request::Request(std::string& bytes, Config& server_config)
+    : _index_names(), _chunk(NULL)
 {
     _location_index = -1;
-    req_str = bytes;
+    req_str = std::string(bytes);
     split_lines();
     if (!req_lines.empty())
     {
@@ -17,14 +18,25 @@ Request::Request(std::string bytes, Config& server_config) : _index_names()
         {
             req_lines.erase(req_lines.begin());
             parse_headers();
+
+            std::string body = bytes.substr(bytes.find("\r\n\r\n") + 4);
             if (tokens["Transfer-Encoding"].find("chunked") !=
                 std::string::npos)
             {
-                std::string body = bytes.substr(bytes.find("\r\n\r\n") + 4);
-                ft::read_chunk(*this, body);
+                while (Chunk::creation_possible(body))
+                {
+                    _chunk = new Chunk(body);
+                    if (_chunk->completed())
+                    {
+                        tokens["Body"].append(_chunk->chunk());
+                        ft::add_content_length(tokens["Content-Length"],
+                                               _chunk->chunk_length());
+                        delete _chunk;
+                    }
+                }
             }
             else
-                tokens["Body"] = bytes.substr(bytes.find("\r\n\r\n") + 4);
+                tokens["Body"] = body;
         }
     }
 }
@@ -251,4 +263,9 @@ std::vector<std::string>& Request::index_names()
 int Request::location_index() const
 {
     return (_location_index);
+}
+
+Chunk* Request::chunk()
+{
+    return (_chunk);
 }

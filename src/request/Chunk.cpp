@@ -12,7 +12,7 @@ Chunk::Chunk(std::string& raw_chunk)
             ? raw_chunk.substr(crlf_pos + 2).length()
             : _chunk_length;
 
-    _chunk.append(raw_chunk.substr(crlf_pos + 2, substr_length), substr_length);
+    _chunk.append(raw_chunk.substr(crlf_pos + 2, substr_length));
 
     // If we have all the chunk, cut everything to next chunk
     if (substr_length == _chunk_length)
@@ -29,13 +29,13 @@ void Chunk::append(std::string& raw_chunk)
 {
     // If we don't have more than this chunk
     if (raw_chunk.length() + _chunk.length() < _chunk_length)
-        _chunk.append(raw_chunk, raw_chunk.length());
+        _chunk.append(raw_chunk);
     else
     {
         // Else we have to append what is ours, and cut the rest
         size_t      end_pos = _chunk_length - _chunk.length();
         std::string end_chunk = raw_chunk.substr(0, end_pos);
-        _chunk.append(end_chunk, end_chunk.length());
+        _chunk.append(end_chunk);
         raw_chunk = raw_chunk.substr(end_pos + 2);
     }
 }

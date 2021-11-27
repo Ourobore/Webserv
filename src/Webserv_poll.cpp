@@ -128,8 +128,8 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
                 client.set_request(
                     get_server_from_client(client.fd(), client.raw_request)
                         .config());
-                client.raw_request.clear();
-                client.request_bytes = 0;
+                if (client.raw_request.empty())
+                    client.request_bytes = 0;
             }
         }
         // If request already parsed, then everything else is body
@@ -137,20 +137,49 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
         {
             if (client.request()->tokens["Transfer-Encoding"].find("chunked") !=
                 std::string::npos)
-            {
-                std::string string_chunk = chunk;
-                ft::read_chunk(*client.request(), string_chunk);
-            }
+                parse_chunk(client, chunk, recv_ret);
             else
             {
                 client.request()->tokens["Body"].append(chunk, recv_ret);
-                int new_content_length =
-                    ft::to_type<int>(
-                        client.request()->tokens["Content-Length"]) +
-                    recv_ret;
-                client.request()->tokens["Content-Length"] =
-                    ft::to_string(new_content_length);
+                ft::add_content_length(
+                    client.request()->tokens["Content-Length"], recv_ret);
+                // int new_content_length =
+                //     ft::to_type<int>(
+                //         client.request()->tokens["Content-Length"]) +
+                //     recv_ret;
+                // client.request()->tokens["Content-Length"] =
+                //     ft::to_string(new_content_length);
             }
+        }
+    }
+}
+
+void Webserv::parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret)
+{
+    client.raw_request.append(raw_chunk, recv_ret);
+    Chunk* chunk = client.request()->chunk();
+
+    if (chunk)
+    {
+        chunk->append(client.raw_request);
+        if (chunk->completed())
+        {
+            client.request()->tokens["Body"].append(chunk->chunk());
+            delete chunk;
+        }
+    }
+    while (Chunk::creation_possible(client.raw_request))
+    {
+        chunk = new Chunk(client.raw_request);
+        if (chunk->completed())
+        {
+            client.request()->tokens["Body"].append(chunk->chunk());
+            delete chunk;
+        }
+        else
+        {
+            Chunk* request_chunk = client.request()->chunk();
+            request_chunk = chunk;
         }
     }
 }
