@@ -1,7 +1,9 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include "Chunk.hpp"
 #include "Config.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <istream>
@@ -19,6 +21,8 @@ class Request
     std::vector<std::string> req_lines;
     std::vector<std::string> _index_names;
     int                      _location_index;
+
+    Chunk* _chunk;
 
     void                     split_lines();
     std::vector<std::string> split_tokens(std::string line);
@@ -38,6 +42,7 @@ class Request
     // Accessors
     int                       location_index() const;
     std::vector<std::string>& index_names();
+    Chunk*                    chunk();
 };
 
 #endif

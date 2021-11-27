@@ -25,6 +25,7 @@ SRC			=	Webserv_connection.cpp \
 				utilities/generate.cpp \
 				request/Request.cpp \
 				request/parsing_mimetypes.cpp \
+				request/Chunk.cpp \
 				methods/upload.cpp \
 				methods/delete.cpp \
 				methods/post.cpp \

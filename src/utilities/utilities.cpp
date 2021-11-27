@@ -214,9 +214,7 @@ std::string ft::to_hex(size_t nb)
     std::stringstream ss;
     ss << std::hex << nb;
 
-    std::string res(ss.str());
-
-    return res;
+    return ss.str();
 }
 
 int ft::to_dec(std::string hex)
