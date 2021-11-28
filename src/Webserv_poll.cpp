@@ -111,7 +111,7 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
     int  recv_ret = 0;
     char chunk[CHUNK_SIZE + 1] = {0};
 
-    recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
+    recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, 0);
     if ((recv_ret == 0 && client.raw_request.length() == 0) || recv_ret == -1)
         close_connection(recv_ret, client_index);
     else
@@ -140,12 +140,6 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
                 client.request()->tokens["Body"].append(chunk, recv_ret);
                 ft::add_content_length(
                     client.request()->tokens["Content-Length"], recv_ret);
-                // int new_content_length =
-                //     ft::to_type<int>(
-                //         client.request()->tokens["Content-Length"]) +
-                //     recv_ret;
-                // client.request()->tokens["Content-Length"] =
-                //     ft::to_string(new_content_length);
             }
         }
     }

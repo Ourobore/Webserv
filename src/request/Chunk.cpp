@@ -29,7 +29,10 @@ void Chunk::append(std::string& raw_chunk)
 {
     // If we don't have more than this chunk
     if (raw_chunk.length() + _chunk.length() < _chunk_length)
+    {
         _chunk.append(raw_chunk);
+        raw_chunk.clear();
+    }
     else
     {
         // Else we have to append what is ours, and cut the rest

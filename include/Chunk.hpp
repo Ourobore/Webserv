@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+/* Object that allow to manipulate and process chunks
+   from chunked requests */
+
 class Chunk
 {
   private:
