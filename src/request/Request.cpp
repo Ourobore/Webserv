@@ -2,7 +2,7 @@
 #include "utilities.hpp"
 
 Request::Request(std::string& bytes, Config& server_config)
-    : _index_names(), _chunk(NULL)
+    : _index_names(), _chunk(NULL), all_chunks_received(false)
 {
     _location_index = -1;
     req_str = std::string(bytes);
@@ -34,6 +34,8 @@ Request::Request(std::string& bytes, Config& server_config)
                         delete _chunk;
                     }
                 }
+                if (Chunk::empty_chunk(bytes))
+                    all_chunks_received = true;
             }
             else
                 tokens["Body"] = bytes;

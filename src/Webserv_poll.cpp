@@ -79,7 +79,7 @@ void Webserv::poll_events()
         {
             /* If there is nothing more to read we process the request */
             if (pfds[i].revents == 0 && client && client->request() &&
-                client->files().size() == 0)
+                request_ready(*client, *client->request()))
                 request_handler(*client, get_server_from_client(
                                              client->fd(),
                                              client->request()->tokens["Host"])
@@ -176,6 +176,18 @@ void Webserv::parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret)
         else
             client.request()->set_chunk(chunk);
     }
+    if (Chunk::empty_chunk(client.raw_request))
+        client.request()->all_chunks_received = true;
+}
+
+bool Webserv::request_ready(ClientHandler& client, Request& request)
+{
+    return ((request.tokens["Transfer-Encoding"].find("chunked") ==
+                 std::string::npos &&
+             client.files().size() == 0) ||
+            (request.tokens["Transfer-Encoding"].find("chunked") !=
+                 std::string::npos &&
+             client.files().size() == 0 && request.all_chunks_received));
 }
 
 /* Check if the file descriptor corresponds to a server,

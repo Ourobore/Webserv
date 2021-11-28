@@ -49,7 +49,7 @@ namespace multipart
 
             // Get file content: multipart header + file content
             std::string file_content =
-                request_body.substr(0, request_body.find(boundary));
+                request_body.substr(0, request_body.find(boundary) - 2);
             int file_length = file_content.length();
 
             // Get filename and remove header from file_content
@@ -75,7 +75,7 @@ namespace multipart
             }
 
             // Remove part we just parsed
-            request_body = request_body.substr(file_length);
+            request_body = request_body.substr(file_length + 2);
         }
     }
 } // namespace multipart

@@ -46,7 +46,7 @@ bool Chunk::creation_possible(std::string& raw_chunk)
     // We can create a chunk only if we have it's size
     size_t crlf_pos = raw_chunk.find("\r\n");
 
-    if (crlf_pos == std::string::npos)
+    if (crlf_pos == std::string::npos || empty_chunk(raw_chunk))
         return (false);
     else
         return (true);
@@ -56,6 +56,14 @@ bool Chunk::completed() const
 {
     // Completed if our real chunk length is equal to the one we were given
     if (_chunk_length == _chunk.length())
+        return (true);
+    else
+        return (false);
+}
+
+bool Chunk::empty_chunk(std::string& raw_chunk)
+{
+    if (raw_chunk == "0\r\n\r\n")
         return (true);
     else
         return (false);

@@ -20,6 +20,7 @@ class Chunk
     // Condition checkers
     static bool creation_possible(std::string& raw_chunk);
     bool        completed() const;
+    static bool empty_chunk(std::string& raw_chunk);
 
     // Accessors
     int          chunk_length() const;

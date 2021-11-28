@@ -35,6 +35,7 @@ class Request
   public:
     Request(std::string& bytes, Config& server_config);
     std::map<std::string, std::string> tokens;
+    bool                               all_chunks_received;
 
     // Access request like a std::map
     std::string operator[](const std::string& key) const;
