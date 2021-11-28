@@ -10,10 +10,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     // Print request from client [Debug]
     // std::cout << client.raw_request << std::endl;
 
-    // Parsing Request + add request to ClientHandler object
-    // Request req = Request(client.raw_request, server_config);
-    // client.raw_request.clear();
-    // client.request_bytes = 0;
+    client.raw_request.clear();
 
     Request& req = *client.request();
 
@@ -50,7 +47,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
     }
     else if (req["Method"] == "POST" && authorized_method)
     {
-        // Need checking if form or file upload, and location. Content type?
+        // Need checking if POST form or file upload
         if (req.tokens["Body"].length() >
             server_config.get_client_max()) // Payload too large
             wrapper_open_error(client, server_config, 413);
@@ -126,19 +123,10 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
 void Webserv::handle_cgi(Config& config, Request& request,
                          ClientHandler& client)
 {
-    // Just a CGI test here, need more verifications. For exemple if we are
-    // in a location
     CGIHandler* handler = new CGIHandler(config, request, client.fd());
-    handler->launch_cgi(client, pfds, config);
-
-    // To do: get Content-type
-
-    // Isolate body from CGI response
-    // std::string body;
-    // int         pos = cgi_output.find("\r\n\r\n");
-    // body.erase(0, pos + 3);
-
-    // return (body);
+    handler->setup_cgi(client, pfds, config);
+    if (!handler->input_pipe)
+        handler->launch_cgi();
 }
 
 void Webserv::response_handler(ClientHandler& client, int client_index)
@@ -148,7 +136,6 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     respond(client.fd(), *client.request(), client.response());
 
     client.clear_response();
-    // Clear request as soon as possible
     client.clear_request();
     pfds[client_index].events = POLLIN;
 }

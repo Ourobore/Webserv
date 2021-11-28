@@ -7,7 +7,7 @@ void Webserv::handle_post(Config& config, Request& request,
                                 config))
     {
         CGIHandler* handler = new CGIHandler(config, request, client.fd());
-        handler->launch_cgi(client, pfds, config);
+        handler->setup_cgi(client, pfds, config);
     }
     else
         wrapper_open_file(client, config, request);

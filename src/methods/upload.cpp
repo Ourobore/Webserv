@@ -33,9 +33,9 @@ namespace multipart
     static void get_files(Config& config, Request& request,
                           ClientHandler& client, std::vector<pollfd>& pfds)
     {
-        Location location = config.get_locations()[request.location_index()];
-        std::string& request_body = request.tokens["Body"];
-        std::string  boundary =
+        Location    location = config.get_locations()[request.location_index()];
+        std::string request_body = request.tokens["Body"];
+        std::string boundary =
             "--" + multipart::get_boundary(request["Content-Type"]);
 
         while (request_body != boundary + "--\r\n" &&
@@ -49,7 +49,7 @@ namespace multipart
 
             // Get file content: multipart header + file content
             std::string file_content =
-                request_body.substr(0, request_body.find(boundary));
+                request_body.substr(0, request_body.find(boundary) - 2);
             int file_length = file_content.length();
 
             // Get filename and remove header from file_content
@@ -65,6 +65,7 @@ namespace multipart
                     200) // Or internal error if one failed?
                 {
                     new_file.set_string_output(file_content);
+                    file_content.clear();
 
                     // Updating pfds and files vector
                     struct pollfd pfd = {new_file.fd(), POLLOUT, 0};
@@ -74,7 +75,7 @@ namespace multipart
             }
 
             // Remove part we just parsed
-            request_body = request_body.substr(file_length);
+            request_body = request_body.substr(file_length + 2);
         }
     }
 } // namespace multipart

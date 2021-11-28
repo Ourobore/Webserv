@@ -2,11 +2,9 @@
 #include "CGIHandler.hpp"
 
 // Constructor and destructor
-ClientHandler::ClientHandler(int client_fd) : _fd(client_fd), _cgi(NULL)
+ClientHandler::ClientHandler(int client_fd)
+    : _fd(client_fd), _request(NULL), _cgi(NULL), raw_request("")
 {
-    this->_request = NULL;
-    this->raw_request = "";  // To modify tmp
-    this->request_bytes = 0; // To modify tmp
 }
 
 ClientHandler::~ClientHandler()

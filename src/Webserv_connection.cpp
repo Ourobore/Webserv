@@ -43,8 +43,8 @@ void Webserv::create_server(Config& config)
         servers.push_back(Server(config, *it));
         struct pollfd pfd = {servers.back().sockfd(), POLLIN, 0};
         pfds.push_back(pfd);
-        std::cout << "Create " << config.get_server_names()[0] << " at port"
-                  << *it << std::endl;
+        std::cout << "Create " << config.get_server_names()[0]
+                  << " server at port " << *it << std::endl;
     }
 }
 

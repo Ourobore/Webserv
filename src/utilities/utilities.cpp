@@ -214,7 +214,22 @@ std::string ft::to_hex(size_t nb)
     std::stringstream ss;
     ss << std::hex << nb;
 
-    std::string res(ss.str());
+    return ss.str();
+}
 
-    return res;
+int ft::to_dec(std::string hex)
+{
+    int dec;
+
+    std::stringstream ss;
+    ss << hex;
+    ss >> std::hex >> dec;
+
+    return dec;
+}
+
+void ft::add_content_length(std::string& content_length, int to_add)
+{
+    int new_content_length = ft::to_type<int>(content_length) + to_add;
+    content_length = ft::to_string(new_content_length);
 }

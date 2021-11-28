@@ -32,8 +32,12 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         // If CGI, clean output from CGI header, then delete ClientHandler::_cgi
         if (client.cgi())
         {
-
-            int pos = client.response().content.find("\r\n\r\n");
+            // Get Content-Type and remove CGI Header
+            std::string& content = client.response().content;
+            std::string& content_type = client.response().content_type;
+            content_type = content.substr(content.find("Content-type: ") + 14);
+            content_type = content_type.substr(0, content_type.find(";"));
+            int pos = content.find("\r\n\r\n");
             client.response().content.erase(0, pos + 4);
 
             delete client.cgi();
@@ -42,9 +46,18 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
     }
     else if (pfds[file_index].revents & POLLOUT)
     {
-        // Write file content from upload
-        write(file->fd(), file->string_output().c_str(),
-              file->string_output().length());
+        // If CGI input, write body for POST
+        if (is_cgi_input(client, file->fd()))
+        {
+            write(file->fd(), client.request()->tokens["Body"].c_str(),
+                  client.request()->tokens["Body"].length());
+            close(file->fd());
+            client.cgi()->launch_cgi();
+        }
+        // Else write file content from upload
+        else
+            write(file->fd(), file->string_output().c_str(),
+                  file->string_output().length());
 
         // FileHandler cleaning
         fclose(file->stream());
@@ -66,8 +79,7 @@ void Webserv::poll_events()
         {
             /* If there is nothing more to read we process the request */
             if (pfds[i].revents == 0 && client && client->request() &&
-                client->files().size() ==
-                    0) // Does interfer with chunk request?
+                request_ready(*client, *client->request()))
                 request_handler(*client, get_server_from_client(
                                              client->fd(),
                                              client->request()->tokens["Host"])
@@ -99,8 +111,8 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
     int  recv_ret = 0;
     char chunk[CHUNK_SIZE + 1] = {0};
 
-    recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, MSG_DONTWAIT);
-    if ((recv_ret == 0 && client.request_bytes == 0) || recv_ret == -1)
+    recv_ret = recv(pfds[client_index].fd, chunk, CHUNK_SIZE, 0);
+    if ((recv_ret == 0 && client.raw_request.length() == 0) || recv_ret == -1)
         close_connection(recv_ret, client_index);
     else
     {
@@ -108,7 +120,6 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
         if (!client.request())
         {
             client.raw_request.append(chunk, recv_ret);
-            client.request_bytes += recv_ret;
 
             // If we have everything to parse the request
             if (client.raw_request.find("\r\n\r\n") != std::string::npos)
@@ -116,21 +127,61 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
                 client.set_request(
                     get_server_from_client(client.fd(), client.raw_request)
                         .config());
-                client.raw_request.clear();
-                client.request_bytes = 0;
             }
         }
         // If request already parsed, then everything else is body
         else
         {
-            client.request()->tokens["Body"].append(chunk, recv_ret);
-            int new_content_length =
-                ft::to_type<int>(client.request()->tokens["Content-Length"]) +
-                recv_ret;
-            client.request()->tokens["Content-Length"] =
-                ft::to_string(new_content_length);
+            if (client.request()->tokens["Transfer-Encoding"].find("chunked") !=
+                std::string::npos)
+                parse_chunk(client, chunk, recv_ret);
+            else
+            {
+                client.request()->tokens["Body"].append(chunk, recv_ret);
+                ft::add_content_length(
+                    client.request()->tokens["Content-Length"], recv_ret);
+            }
         }
     }
+}
+
+void Webserv::parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret)
+{
+    client.raw_request.append(raw_chunk, recv_ret);
+    Chunk* chunk = client.request()->chunk();
+
+    if (chunk)
+    {
+        chunk->append(client.raw_request);
+        if (chunk->completed())
+        {
+            client.request()->tokens["Body"].append(chunk->chunk());
+            delete chunk;
+        }
+    }
+    while (Chunk::creation_possible(client.raw_request))
+    {
+        chunk = new Chunk(client.raw_request);
+        if (chunk->completed())
+        {
+            client.request()->tokens["Body"].append(chunk->chunk());
+            delete chunk;
+        }
+        else
+            client.request()->set_chunk(chunk);
+    }
+    if (Chunk::empty_chunk(client.raw_request))
+        client.request()->all_chunks_received = true;
+}
+
+bool Webserv::request_ready(ClientHandler& client, Request& request)
+{
+    return ((request.tokens["Transfer-Encoding"].find("chunked") ==
+                 std::string::npos &&
+             client.files().size() == 0) ||
+            (request.tokens["Transfer-Encoding"].find("chunked") !=
+                 std::string::npos &&
+             client.files().size() == 0 && request.all_chunks_received));
 }
 
 /* Check if the file descriptor corresponds to a server,
@@ -164,7 +215,17 @@ FileHandler* Webserv::is_file_fd(int file_descriptor)
     return (NULL);
 }
 
-/* Get the index that corresponds to file descriptor in the pollfd structure */
+bool Webserv::is_cgi_input(ClientHandler& client, int file_descriptor)
+{
+    if (client.cgi() && client.cgi()->input_pipe &&
+        file_descriptor == client.cgi()->input_pipe[PIPEWRITE])
+        return (true);
+    else
+        return (false);
+}
+
+/* Get the index that corresponds to file descriptor in the pollfd structure
+ */
 int Webserv::get_poll_index(int file_descriptor)
 {
     for (size_t i = 0; i < pfds.size(); ++i)

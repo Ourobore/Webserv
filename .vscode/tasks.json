@@ -13,7 +13,10 @@
           "-Wextra",
           "-Werror",
           "-Iinclude",
-          "src/*.cpp"
+          "src/*.cpp",
+          "src/*/*.cpp",
+          "-o",
+          "server"
         ],
         "group": {
           "kind": "build",

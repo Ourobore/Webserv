@@ -25,7 +25,7 @@
 #define STDIN 0
 #define STDOUT 1
 
-const int CHUNK_SIZE = 65535; // 2^16 - 1 //32767; // 2^15 - 1
+const int CHUNK_SIZE = 65535; // 2^16 - 1
 const int POLL_DELAY = 100;
 
 class Webserv
@@ -43,6 +43,8 @@ class Webserv
     void accept_connection(int server_fd);
     void close_connection(int bytes_received, int client_index);
     void recv_chunk(ClientHandler& client, int client_index);
+    void parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret);
+    bool request_ready(ClientHandler& client, Request& request);
 
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
@@ -68,7 +70,9 @@ class Webserv
     std::string    get_requested_host(std::string& raw);
 
     FileHandler* is_file_fd(int file_descriptor);
-    static void  catch_signal(int signal);
+    bool         is_cgi_input(ClientHandler& client, int file_descriptor);
+
+    static void catch_signal(int signal);
 
     // Accessors
     Server&                              get_server(int server_fd);
