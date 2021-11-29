@@ -157,17 +157,6 @@ int Request::parse_first_header(std::vector<std::string>& req_lines,
             tokens["Query-string"] = tokens["Request-URI"].substr(pos + 1);
             tokens["Request-URI"].erase(pos);
         }
-        // Check uri type (file or directory)
-        // pos = tokens["Request-URI"].find_last_of('.');
-        // if (pos != std::string::npos)
-        // {
-        //     pos = tokens["Request-URI"].find("/", pos);
-        //     if (pos != std::string::npos)
-        //     {
-        //         tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
-        //         tokens["Request-URI"].erase(pos);
-        //     }
-        // }
         parse_uri(server_config);
 
         if (words.size() == 3)
@@ -218,12 +207,21 @@ void Request::parse_uri(Config& server_config)
                         tokens["Request-URI"].find(tmp) + tmp.length());
                     tokens["URI"].append(substr);
 
-                    tokens["Pathinfo"] = "";
+                    // Split Pathinfo from URI
                     while (!ft::is_regular_file(tokens["URI"]))
                     {
                         size_t pos = tokens["URI"].find_last_of('/');
-                        tokens["Pathinfo"].insert(0, tokens["URI"].substr(pos));
-                        tokens["URI"].erase(pos);
+                        if (pos != std::string::npos)
+                        {
+                            tokens["Pathinfo"].insert(
+                                0, tokens["URI"].substr(pos));
+                            tokens["URI"].erase(pos);
+                        }
+                        else
+                        {
+                            tokens["URI"].append(tokens["Pathinfo"]);
+                            break;
+                        }
                     }
                 }
                 if (ft::is_dir(tokens["URI"]))
@@ -260,6 +258,8 @@ void Request::parse_uri(Config& server_config)
         _index_names = server_config.get_index();
         resolve_index();
     }
+    if (tokens["Pathinfo"].empty())
+        tokens["Pathinfo"] = "/";
 }
 
 std::string Request::operator[](const std::string& key) const
