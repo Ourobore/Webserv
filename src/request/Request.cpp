@@ -217,8 +217,8 @@ void Request::parse_uri(Config& server_config)
                 // Concatenate root + client request uri
                 if (!locations[i].get_root().empty())
                 {
-                    tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                    "/" + ft::strtrim(tmp, "/");
+                    tokens["URI"] =
+                        locations[i].get_root() + "/" + ft::strtrim(tmp, "/");
                     std::string substr = tokens["Request-URI"].substr(
                         tokens["Request-URI"].find(tmp) + tmp.length());
                     tokens["URI"].append(substr);
@@ -269,7 +269,7 @@ void Request::parse_uri(Config& server_config)
     }
     if (tokens["URI"].empty())
     {
-        tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
+        tokens["URI"] = server_config.get_root() + "/" +
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
         resolve_index();

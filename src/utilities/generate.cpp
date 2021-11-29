@@ -47,13 +47,20 @@ std::string generate::autoindex(Request& request)
            << "  </head > \r\n"
            << "  <body>\r\n"
            << "    <h1>Index of " << request["Request-URI"] << "</h1>\r\n"
-           << "    <hr/>\r\n"
-           << "    <pre><a href=/" + request[+"Request-URI"].substr(0, request["Request-URI"].find_last_of('/')) << ">../</a>" << std::endl;
+           << "    <hr/>\r\n";
+    
+    std::string back = request["Request-URI"].substr(0, request["Request-URI"].find_last_of('/'));
+    if (back.empty()) {
+        back = "/";
+    }
+        
+    output << "    <pre><a href=" << "\"" << back << "\"" << ">../</a>" << std::endl;
 
-        for (it = ls.begin(); it != ls.end(); ++it)
-            if (*it != "." && *it != "..")
-                output<< "<a href=\"" << (request["Request-URI"] + "/" + *it) << "\">" << *it << "</a>" << std::endl;
-
+    for (it = ls.begin(); it != ls.end(); ++it) {
+        if (*it != "." && *it != ".."){
+            output<< "<a href=\"" << (ft::strtrim(request["Request-URI"], "/") + "/" + *it) << "\">" << *it << "</a>" << std::endl;
+        }
+    }
     output << "    </pre>\r\n"
            << "    <hr/>\r\n"
            << "  </body>\r\n"

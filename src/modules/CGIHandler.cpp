@@ -28,11 +28,8 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     // Request variables
     variables["SCRIPT_NAME"] = request["URI"];
-    if (request["Pathinfo"].empty())
-        variables["PATH_INFO"] = "/"; // Testing, should not use relative path
-    else
-        variables["PATH_INFO"] = request["Pathinfo"];
-    // variables["PATH_TRANSLATED"] = "";
+    variables["PATH_INFO"] = request["Pathinfo"];
+    variables["PATH_TRANSLATED"] = request["Path-Translated"];
     variables["QUERY_STRING"] = request["Query-string"];
     variables["AUTH_TYPE"] = request["Authorization"];
     variables["CONTENT_TYPE"] = request["Content-Type"];
