@@ -54,7 +54,7 @@ void Request::parse_headers(std::vector<std::string>& req_lines)
 
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
     {
-        words = split_tokens(*it);
+        words = split_tokens(*it, " \r\n");
         val = "";
         if (words.size() >= 2)
         {
@@ -108,9 +108,9 @@ void Request::split_lines(std::string&              req_str,
 }
 
 // Split line and extract tokens in a vector
-std::vector<std::string> Request::split_tokens(std::string line)
+std::vector<std::string> Request::split_tokens(std::string line,
+                                               std::string delimiters)
 {
-    std::string              delimiters = " \r\n";
     std::size_t              prev = 0, pos;
     std::vector<std::string> words;
 
@@ -133,7 +133,7 @@ int Request::parse_first_header(std::vector<std::string>& req_lines,
                                          "HEAD",    "PUT",   "CONNECT",
                                          "OPTIONS", "TRACE", "PATCH"};
 
-    std::vector<std::string> words = split_tokens(req_lines[0]);
+    std::vector<std::string> words = split_tokens(req_lines[0], " \r\n");
     if (words.size() > 1 && words.size() <= 9)
     {
         // Check method type
@@ -158,16 +158,16 @@ int Request::parse_first_header(std::vector<std::string>& req_lines,
             tokens["Request-URI"].erase(pos);
         }
         // Check uri type (file or directory)
-        pos = tokens["Request-URI"].find_last_of('.');
-        if (pos != std::string::npos)
-        {
-            pos = tokens["Request-URI"].find("/", pos);
-            if (pos != std::string::npos)
-            {
-                tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
-                tokens["Request-URI"].erase(pos);
-            }
-        }
+        // pos = tokens["Request-URI"].find_last_of('.');
+        // if (pos != std::string::npos)
+        // {
+        //     pos = tokens["Request-URI"].find("/", pos);
+        //     if (pos != std::string::npos)
+        //     {
+        //         tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
+        //         tokens["Request-URI"].erase(pos);
+        //     }
+        // }
         parse_uri(server_config);
 
         if (words.size() == 3)
@@ -211,9 +211,21 @@ void Request::parse_uri(Config& server_config)
 
                 // Concatenate root + client request uri
                 if (!locations[i].get_root().empty())
+                {
                     tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                    "/" +
-                                    ft::strtrim(tokens["Request-URI"], "/");
+                                    "/" + ft::strtrim(tmp, "/");
+                    std::string substr = tokens["Request-URI"].substr(
+                        tokens["Request-URI"].find(tmp) + tmp.length());
+                    tokens["URI"].append(substr);
+
+                    tokens["Pathinfo"] = "";
+                    while (!ft::is_regular_file(tokens["URI"]))
+                    {
+                        size_t pos = tokens["URI"].find_last_of('/');
+                        tokens["Pathinfo"].insert(0, tokens["URI"].substr(pos));
+                        tokens["URI"].erase(pos);
+                    }
+                }
                 if (ft::is_dir(tokens["URI"]))
                 {
                     // Append location{index} list
