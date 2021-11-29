@@ -10,14 +10,6 @@ Webserv::~Webserv()
 {
 }
 
-void Webserv::catch_signal(int signal)
-{
-    std::cout << std::endl
-              << "Signal called (" << strsignal(signal) << "). Stopping..."
-              << std::endl;
-    exit(1);
-}
-
 void Webserv::start()
 {
     while (true)
@@ -45,6 +37,22 @@ void Webserv::create_server(Config& config)
         pfds.push_back(pfd);
         std::cout << "Create " << config.get_server_names()[0]
                   << " server at port " << *it << std::endl;
+    }
+}
+
+void Webserv::catch_signal(int signal)
+{
+    std::cout << std::endl
+              << "Signal called (" << strsignal(signal) << "). Stopping..."
+              << std::endl;
+    exit(1);
+}
+
+void Webserv::clean_all()
+{
+    std::vector<Server>::iterator it_serv;
+    for (it_serv = servers.begin(); it_serv != servers.end(); ++it_serv)
+    {
     }
 }
 

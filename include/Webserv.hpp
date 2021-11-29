@@ -88,6 +88,9 @@ class Webserv
 
     void start();
     void create_server(Config& config);
+
+    // Panic button
+    void clean_all();
 };
 
 #endif
