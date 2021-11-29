@@ -45,6 +45,7 @@ class Webserv
     void recv_chunk(ClientHandler& client, int client_index);
     void parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret);
     bool request_ready(ClientHandler& client, Request& request);
+    bool request_not_treated(ClientHandler& client);
 
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);

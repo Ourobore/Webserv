@@ -78,8 +78,9 @@ void Webserv::poll_events()
         else
         {
             /* If there is nothing more to read we process the request */
-            if (pfds[i].revents == 0 && client && client->request() &&
-                request_ready(*client, *client->request()))
+            if (pfds[i].revents == 0 && client &&
+                (request_ready(*client, *client->request()) ||
+                 request_not_treated(*client)))
                 request_handler(*client, get_server_from_client(
                                              client->fd(),
                                              client->request()->tokens["Host"])
@@ -176,12 +177,25 @@ void Webserv::parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret)
 
 bool Webserv::request_ready(ClientHandler& client, Request& request)
 {
-    return ((request.tokens["Transfer-Encoding"].find("chunked") ==
-                 std::string::npos &&
-             client.files().size() == 0) ||
-            (request.tokens["Transfer-Encoding"].find("chunked") !=
-                 std::string::npos &&
-             client.files().size() == 0 && request.all_chunks_received));
+    return (client.request() &&
+            ((request.tokens["Transfer-Encoding"].find("chunked") ==
+                  std::string::npos &&
+              client.files().size() == 0) ||
+             (request.tokens["Transfer-Encoding"].find("chunked") !=
+                  std::string::npos &&
+              client.files().size() == 0 && request.all_chunks_received)));
+}
+
+bool Webserv::request_not_treated(ClientHandler& client)
+{
+    if (!client.request() && !client.raw_request.empty())
+    {
+        client.set_request(
+            get_server_from_client(client.fd(), client.raw_request).config());
+        return (true);
+    }
+    else
+        return (false);
 }
 
 /* Check if the file descriptor corresponds to a server,

@@ -33,7 +33,6 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     else
         variables["PATH_INFO"] = request["Pathinfo"];
     // variables["PATH_TRANSLATED"] = "";
-    // variables["QUERY_STRING"] = "";
     variables["QUERY_STRING"] = request["Query-string"];
     variables["AUTH_TYPE"] = request["Authorization"];
     variables["CONTENT_TYPE"] = request["Content-Type"];
@@ -47,7 +46,9 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
     variables["HTTP_ACCECPT_ENCODING"] = request["Accept-Encoding"];
     variables["HTTP_ACCECPT_LANGUAGE"] = request["Accept-Language"];
 
-    variables["SCRIPT_FILENAME"] = request["URI"]; // If php?
+    if (config.get_locations()[request.location_index()].get_cgi_extension() ==
+        ".php")
+        variables["SCRIPT_FILENAME"] = request["URI"];
 
     env_array = CGIHandler::get_env_array();
 
@@ -55,7 +56,7 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
     script_name = variables["SCRIPT_NAME"];
-    // root_directory = pwd + variables["DOCUMENT_ROOT"];
+    // root_directory = getcwd(NULL, sizeof(char)) + variables["DOCUMENT_ROOT"];
 
     // Debug: Printing env_array
     // DEBUG_print_env_array();
@@ -68,12 +69,6 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     cgi_argv[1] = new char[script_name.length() + 1]();
     memcpy(cgi_argv[1], script_name.c_str(), script_name.length());
-
-    // if (request["Method"] == "POST")
-    // {
-    //  cgi_argv[2] = new char[request["Body"].length() + 1]();
-    //  memcpy(cgi_argv[2], request["Body"].c_str(), request["Body"].length());
-    // }
 }
 
 CGIHandler::~CGIHandler()
