@@ -4,20 +4,22 @@
 Request::Request(std::string& bytes, Config& server_config)
     : _index_names(), _chunk(NULL), all_chunks_received(false)
 {
+    std::string              req_str = std::string(bytes);
+    std::vector<std::string> req_lines;
+
     _location_index = -1;
-    req_str = std::string(bytes);
-    split_lines();
+    split_lines(req_str, req_lines);
     if (!req_lines.empty())
     {
-        if (!parse_first_header(server_config))
+        if (!parse_first_header(req_lines, server_config))
         {
-            parse_body(); // Need error managment, not needed anymore
+            parse_body(req_lines); // Need error managment, not needed anymore
             return;
         }
         else
         {
             req_lines.erase(req_lines.begin());
-            parse_headers();
+            parse_headers(req_lines);
 
             bytes = bytes.substr(bytes.find("\r\n\r\n") + 4);
             if (tokens["Transfer-Encoding"].find("chunked") !=
@@ -43,7 +45,7 @@ Request::Request(std::string& bytes, Config& server_config)
     }
 }
 
-void Request::parse_headers()
+void Request::parse_headers(std::vector<std::string>& req_lines)
 {
     std::vector<std::string>::iterator it;
     std::vector<std::string>           words;
@@ -52,7 +54,7 @@ void Request::parse_headers()
 
     for (it = req_lines.begin(); it != req_lines.end(); ++it)
     {
-        words = split_tokens(*it);
+        words = split_tokens(*it, " \r\n");
         val = "";
         if (words.size() >= 2)
         {
@@ -79,7 +81,7 @@ void Request::parse_headers()
     req_lines.erase(req_lines.begin(), it);
 }
 
-void Request::parse_body()
+void Request::parse_body(std::vector<std::string>& req_lines)
 {
     std::string                        content;
     std::vector<std::string>::iterator it;
@@ -95,7 +97,8 @@ void Request::parse_body()
 }
 
 // Split the request line by line at '\n'
-void Request::split_lines()
+void Request::split_lines(std::string&              req_str,
+                          std::vector<std::string>& req_lines)
 {
     std::istringstream iss(req_str);
     std::string        line;
@@ -105,9 +108,9 @@ void Request::split_lines()
 }
 
 // Split line and extract tokens in a vector
-std::vector<std::string> Request::split_tokens(std::string line)
+std::vector<std::string> Request::split_tokens(std::string line,
+                                               std::string delimiters)
 {
-    std::string              delimiters = " \r\n";
     std::size_t              prev = 0, pos;
     std::vector<std::string> words;
 
@@ -123,13 +126,14 @@ std::vector<std::string> Request::split_tokens(std::string line)
     return words;
 }
 
-int Request::parse_first_header(Config& server_config)
+int Request::parse_first_header(std::vector<std::string>& req_lines,
+                                Config&                   server_config)
 {
     static const std::string types[9] = {"GET",     "POST",  "DELETE",
                                          "HEAD",    "PUT",   "CONNECT",
                                          "OPTIONS", "TRACE", "PATCH"};
 
-    std::vector<std::string> words = split_tokens(req_lines[0]);
+    std::vector<std::string> words = split_tokens(req_lines[0], " \r\n");
     if (words.size() > 1 && words.size() <= 9)
     {
         // Check method type
@@ -153,18 +157,23 @@ int Request::parse_first_header(Config& server_config)
             tokens["Query-string"] = tokens["Request-URI"].substr(pos + 1);
             tokens["Request-URI"].erase(pos);
         }
-        // Check uri type (file or directory)
-        pos = tokens["Request-URI"].find_last_of('.');
-        if (pos != std::string::npos)
-        {
-            pos = tokens["Request-URI"].find("/", pos);
-            if (pos != std::string::npos)
-            {
-                tokens["Pathinfo"] = tokens["Request-URI"].substr(pos + 1);
-                tokens["Request-URI"].erase(pos);
-            }
-        }
         parse_uri(server_config);
+
+        // Resolve Path-translated
+        if (_location_index != -1)
+        {
+            tokens["Path-Translated"] =
+
+                server_config.get_locations()[_location_index].get_root() +
+                tokens["Pathinfo"];
+        }
+        else
+        {
+            tokens["Path-Translated"] =
+                server_config.get_root() + tokens["Pathinfo"];
+        }
+        if (tokens["Pathinfo"].empty())
+            tokens["Pathinfo"] = "/";
 
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
@@ -207,9 +216,30 @@ void Request::parse_uri(Config& server_config)
 
                 // Concatenate root + client request uri
                 if (!locations[i].get_root().empty())
-                    tokens["URI"] = ft::strtrim(locations[i].get_root(), "/") +
-                                    "/" +
-                                    ft::strtrim(tokens["Request-URI"], "/");
+                {
+                    tokens["URI"] =
+                        locations[i].get_root() + "/" + ft::strtrim(tmp, "/");
+                    std::string substr = tokens["Request-URI"].substr(
+                        tokens["Request-URI"].find(tmp) + tmp.length());
+                    tokens["URI"].append(substr);
+
+                    // Split Pathinfo from URI
+                    while (!ft::is_regular_file(tokens["URI"]))
+                    {
+                        size_t pos = tokens["URI"].find_last_of('/');
+                        if (pos != std::string::npos)
+                        {
+                            tokens["Pathinfo"].insert(
+                                0, tokens["URI"].substr(pos));
+                            tokens["URI"].erase(pos);
+                        }
+                        else
+                        {
+                            tokens["URI"].append(tokens["Pathinfo"]);
+                            break;
+                        }
+                    }
+                }
                 if (ft::is_dir(tokens["URI"]))
                 {
                     // Append location{index} list
@@ -239,7 +269,7 @@ void Request::parse_uri(Config& server_config)
     }
     if (tokens["URI"].empty())
     {
-        tokens["URI"] = ft::strtrim(server_config.get_root(), "/") + "/" +
+        tokens["URI"] = server_config.get_root() + "/" +
                         ft::strtrim(tokens["Request-URI"], "/");
         _index_names = server_config.get_index();
         resolve_index();

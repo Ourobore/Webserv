@@ -8,7 +8,7 @@
             "program": "${workspaceFolder}/server",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "clang build",
+            // "preLaunchTask": "clang build",
             "initCommands": [
                 "settings set target.disable-aslr false"
             ]

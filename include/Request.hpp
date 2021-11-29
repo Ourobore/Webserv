@@ -17,20 +17,20 @@ class Request
 {
   private:
     Request();
-    std::string              req_str;
-    std::vector<std::string> req_lines;
     std::vector<std::string> _index_names;
     int                      _location_index;
 
     Chunk* _chunk;
 
-    void                     split_lines();
-    std::vector<std::string> split_tokens(std::string line);
-    int                      parse_first_header(Config& server_config);
-    void                     parse_uri(Config& server_config);
-    void                     parse_headers();
-    void                     parse_body();
-    void                     resolve_index();
+    void split_lines(std::string& req_str, std::vector<std::string>& req_lines);
+    std::vector<std::string> split_tokens(std::string line,
+                                          std::string delimiters);
+    int  parse_first_header(std::vector<std::string>& req_lines,
+                            Config&                   server_config);
+    void parse_uri(Config& server_config);
+    void parse_headers(std::vector<std::string>& req_lines);
+    void parse_body(std::vector<std::string>& req_lines);
+    void resolve_index();
 
   public:
     Request(std::string& bytes, Config& server_config);
