@@ -55,6 +55,7 @@ void ClientHandler::clear_response()
     _response.date = "";
     _response.location = "";
     _response.code = 0;
+    _response.chunked = false;
 }
 
 void ClientHandler::clear_request()

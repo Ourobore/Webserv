@@ -18,6 +18,7 @@ class ClientHandler
         std::string date;
         std::string location;
         int         code;
+        bool        chunked;
     } Response;
 
   private:

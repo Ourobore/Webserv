@@ -26,6 +26,7 @@
 #define STDOUT 1
 
 const int CHUNK_SIZE = 65535; // 2^16 - 1
+const int MAX_SEND = 20000000;
 const int POLL_DELAY = 100;
 
 class Webserv
@@ -50,7 +51,7 @@ class Webserv
     // Handling requests and responses
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
-    void respond(int socket_fd, Request& req, ClientHandler::Response& res);
+    void respond(Request& req, ClientHandler::Response& res);
     void wrapper_open_file(ClientHandler& client, Config& config,
                            Request& request);
     void wrapper_open_dir(ClientHandler& client, Config& config,
