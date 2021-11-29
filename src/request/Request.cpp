@@ -159,6 +159,22 @@ int Request::parse_first_header(std::vector<std::string>& req_lines,
         }
         parse_uri(server_config);
 
+        // Resolve Path-translated
+        if (_location_index != -1)
+        {
+            tokens["Path-Translated"] =
+
+                server_config.get_locations()[_location_index].get_root() +
+                tokens["Pathinfo"];
+        }
+        else
+        {
+            tokens["Path-Translated"] =
+                server_config.get_root() + tokens["Pathinfo"];
+        }
+        if (tokens["Pathinfo"].empty())
+            tokens["Pathinfo"] = "/";
+
         if (words.size() == 3)
             tokens["Protocol"] = words[2];
 
@@ -258,8 +274,6 @@ void Request::parse_uri(Config& server_config)
         _index_names = server_config.get_index();
         resolve_index();
     }
-    if (tokens["Pathinfo"].empty())
-        tokens["Pathinfo"] = "/";
 }
 
 std::string Request::operator[](const std::string& key) const
