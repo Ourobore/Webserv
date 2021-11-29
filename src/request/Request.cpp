@@ -4,20 +4,22 @@
 Request::Request(std::string& bytes, Config& server_config)
     : _index_names(), _chunk(NULL), all_chunks_received(false)
 {
+    std::string              req_str = std::string(bytes);
+    std::vector<std::string> req_lines;
+
     _location_index = -1;
-    req_str = std::string(bytes);
-    split_lines();
+    split_lines(req_str, req_lines);
     if (!req_lines.empty())
     {
-        if (!parse_first_header(server_config))
+        if (!parse_first_header(req_lines, server_config))
         {
-            parse_body(); // Need error managment, not needed anymore
+            parse_body(req_lines); // Need error managment, not needed anymore
             return;
         }
         else
         {
             req_lines.erase(req_lines.begin());
-            parse_headers();
+            parse_headers(req_lines);
 
             bytes = bytes.substr(bytes.find("\r\n\r\n") + 4);
             if (tokens["Transfer-Encoding"].find("chunked") !=
@@ -43,7 +45,7 @@ Request::Request(std::string& bytes, Config& server_config)
     }
 }
 
-void Request::parse_headers()
+void Request::parse_headers(std::vector<std::string>& req_lines)
 {
     std::vector<std::string>::iterator it;
     std::vector<std::string>           words;
@@ -79,7 +81,7 @@ void Request::parse_headers()
     req_lines.erase(req_lines.begin(), it);
 }
 
-void Request::parse_body()
+void Request::parse_body(std::vector<std::string>& req_lines)
 {
     std::string                        content;
     std::vector<std::string>::iterator it;
@@ -95,7 +97,8 @@ void Request::parse_body()
 }
 
 // Split the request line by line at '\n'
-void Request::split_lines()
+void Request::split_lines(std::string&              req_str,
+                          std::vector<std::string>& req_lines)
 {
     std::istringstream iss(req_str);
     std::string        line;
@@ -123,7 +126,8 @@ std::vector<std::string> Request::split_tokens(std::string line)
     return words;
 }
 
-int Request::parse_first_header(Config& server_config)
+int Request::parse_first_header(std::vector<std::string>& req_lines,
+                                Config&                   server_config)
 {
     static const std::string types[9] = {"GET",     "POST",  "DELETE",
                                          "HEAD",    "PUT",   "CONNECT",
