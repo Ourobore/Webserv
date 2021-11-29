@@ -132,12 +132,35 @@ void Webserv::handle_cgi(Config& config, Request& request,
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
     // Send the response in a struct with headers infos
-    client.set_date();
-    respond(client.fd(), *client.request(), client.response());
+    if (client.request())
+    {
+        client.set_date();
+        respond(*client.request(), client.response());
+        client.clear_request();
+    }
 
-    client.clear_response();
-    client.clear_request();
-    pfds[client_index].events = POLLIN;
+    ClientHandler::Response& response = client.response();
+    if (response.chunked)
+    {
+        std::string chunk = response.content.substr(0, MAX_SEND);
+        send(client.fd(), chunk.c_str(), chunk.length(), 0);
+        size_t real_length = (response.content.length() < MAX_SEND)
+                                 ? response.content.length()
+                                 : MAX_SEND;
+        response.content = response.content.substr(real_length);
+    }
+    else
+    {
+        send(client.fd(), response.content.c_str(), response.content.length(),
+             0);
+        response.content = response.content.substr(response.content.length());
+    }
+
+    if (response.content.empty())
+    {
+        client.clear_response();
+        pfds[client_index].events = POLLIN;
+    }
 }
 
 void Webserv::chunk_content(std::string& content)
@@ -176,7 +199,7 @@ void Webserv::chunk_content(std::string& content)
 }
 
 // clang-format off
-void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
+void Webserv::respond(Request& req, ClientHandler::Response& res)
 {
     std::string connection = "close";
     if (res.code == 200 || res.code == 301)
@@ -210,10 +233,12 @@ void Webserv::respond(int socket_fd, Request& req, ClientHandler::Response& res)
     headers_content << "Connection: " << connection << "\r\n"
                     << "\r\n";
 
-    std::string response = headers_content.str() + res.content + "\r\n";
+    res.content = headers_content.str() + res.content + "\r\n";
 
     // Send response to the client through his socket
-    // Do we need MSG_DONTWAIT? Without it sends all the data correctly
-    send(socket_fd, response.c_str(), response.length(), 0);
+    if (res.content.length() >= MAX_SEND)
+        res.chunked = true;
+    else
+        res.chunked = false;
 }
 // clang-format on
