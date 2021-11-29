@@ -56,7 +56,9 @@ CGIHandler::CGIHandler(Config& config, Request& request, int client_fd)
 
     cgi_path = config.get_locations()[request.location_index()].get_cgi_pass();
     script_name = variables["SCRIPT_NAME"];
-    // root_directory = getcwd(NULL, sizeof(char)) + variables["DOCUMENT_ROOT"];
+    char pwd[1024] = {0};
+    root_directory = getcwd(pwd, 1024) +
+                     request["URI"].substr(0, request["URI"].find_last_of("/"));
 
     // Debug: Printing env_array
     // DEBUG_print_env_array();
