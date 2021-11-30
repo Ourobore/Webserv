@@ -15,6 +15,7 @@ std::string generate::error_page(int status_code)
            << "    <center><h1>" << status_code << " " << status_message(status_code) << "</h1>" << "</center>\r\n"
            << "    <hr/>\r\n"
            << "    <center>webserv/42</center>\r\n"
+           << "    <center>(Generated)</center>\r\n"
            << "  </body>\r\n"
            << "</html>\r\n\r\n";
 

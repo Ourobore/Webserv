@@ -21,8 +21,6 @@ class Server
     Server();
 
   public:
-    // Server(int domain, int type, int protocol, int port, std::string
-    // interface);
     virtual ~Server();
     Server(Config& config, int port);
 
@@ -34,6 +32,9 @@ class Server
     int                 port() const;
     int                 sockfd() const;
     Config&             config();
+
+    // Panic button
+    void clean_all();
 };
 
 #endif

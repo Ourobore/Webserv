@@ -45,6 +45,9 @@ class Location
     std::string                         get_upload() const;
     std::string                         get_cgi_pass() const;
     std::string                         get_cgi_extension() const;
+
+    // Panic button
+    void clean_all();
 };
 
 std::ostream& operator<<(std::ostream& os, Location const& src);

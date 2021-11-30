@@ -60,7 +60,7 @@ class Webserv
 
     // Request type handling
     void handle_upload(Config& config, Request& request, ClientHandler& client);
-    void handle_delete(Config& config, Request& request, ClientHandler& client);
+    void handle_delete(Request& request, ClientHandler& client);
     void handle_post(Config& config, Request& request, ClientHandler& client);
     void handle_cgi(Config& config, Request& request, ClientHandler& client);
     void chunk_content(std::string& content);
@@ -74,8 +74,6 @@ class Webserv
     FileHandler* is_file_fd(int file_descriptor);
     bool         is_cgi_input(ClientHandler& client, int file_descriptor);
 
-    static void catch_signal(int signal);
-
     // Accessors
     Server&                              get_server(int server_fd);
     ClientHandler*                       get_client(int client_fd);
@@ -88,6 +86,11 @@ class Webserv
 
     void start();
     void create_server(Config& config);
+
+    // Panic button
+    void clean_all();
 };
+
+void catch_signal(int signal);
 
 #endif

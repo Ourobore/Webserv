@@ -8,7 +8,7 @@
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
     // Print request from client [Debug]
-    // std::cout << client.raw_request << std::endl;
+    // std::cout << *client.request() << std::endl;
 
     client.raw_request.clear();
 
@@ -62,7 +62,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         }
     }
     else if (req["Method"] == "DELETE" && authorized_method)
-        handle_delete(server_config, req, client);
+        handle_delete(req, client);
     else // Method Not Allowed
         wrapper_open_error(client, server_config, 405);
 }
@@ -109,7 +109,7 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
         config.get_error_pages()[ft::to_string(error)], config);
 
     // If error file exists
-    if (!error_page.string_output().empty())
+    if (error_page.stream())
         client.response().content = error_page.string_output();
 
     // If Internal Server Error
@@ -131,7 +131,7 @@ void Webserv::handle_cgi(Config& config, Request& request,
 
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
-    // Send the response in a struct with headers infos
+    // Setup the response in a struct with headers infos
     if (client.request())
     {
         client.set_date();
@@ -139,6 +139,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
         client.clear_request();
     }
 
+    // Send the response in one time or in multiple chunks
     ClientHandler::Response& response = client.response();
     if (response.chunked)
     {
@@ -156,6 +157,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
         response.content = response.content.substr(response.content.length());
     }
 
+    // When all is send, clear response
     if (response.content.empty())
     {
         client.clear_response();

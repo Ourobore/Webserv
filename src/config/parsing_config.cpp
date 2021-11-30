@@ -16,6 +16,7 @@ std::vector<size_t> recup_server(std::string config)
     size_t              server;
 
     brackets = 0;
+    end = 0;
     start = config.find('{', 0);
     server = config.find("server", 0);
     if (start == std::string::npos || server == std::string::npos ||
