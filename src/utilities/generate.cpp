@@ -51,14 +51,19 @@ std::string generate::autoindex(Request& request)
     
     std::string back = request["Request-URI"].substr(0, request["Request-URI"].find_last_of('/'));
     if (back.empty()) {
-        back = "/";
+        back = request["Request-URI"];
     }
-        
     output << "    <pre><a href=" << "\"" << back << "\"" << ">../</a>" << std::endl;
 
     for (it = ls.begin(); it != ls.end(); ++it) {
-        if (*it != "." && *it != ".."){
-            output<< "<a href=\"" << (ft::strtrim(request["Request-URI"], "/") + "/" + *it) << "\">" << *it << "</a>" << std::endl;
+        if (*it != "/." && *it != "/.."){
+            std::string href;
+
+            if (request["Request-URI"] != "/")
+                href = request["Request-URI"] + *it;
+            else
+                href = *it;
+            output<< "<a href=\"" << href << "\">" << (*it).substr(1) << "</a>" << std::endl;
         }
     }
     output << "    </pre>\r\n"

@@ -201,7 +201,7 @@ std::vector<std::string> ft::list_directory(const char* dirpath)
     {
         while ((ent = readdir(dir)) != NULL)
         {
-            ls.push_back(ent->d_name);
+            ls.push_back("/" + std::string(ent->d_name));
         }
         closedir(dir);
     }
