@@ -1,10 +1,7 @@
 #include "Webserv.hpp"
 
-void Webserv::handle_delete(Config& server_config, Request& request,
-                            ClientHandler& client)
+void Webserv::handle_delete(Request& request, ClientHandler& client)
 {
-    (void)server_config;
-
     int status = remove(request.tokens["URI"].c_str());
     if (status == -1)
         status = 202; // ACCEPTED

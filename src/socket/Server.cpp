@@ -10,8 +10,8 @@ Server::Server(Config& config, int port)
       _ip_addr(config.get_host()), _port(port)
 {
     _address = sock.address();
-    _addrlen = sock.addrlen(); // To check later if the size change and must
-                               // do a reevaluation later
+    _addrlen = sock.addrlen();
+
     _sock_fd = sock.fd();
     int yes = 1;
     setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof yes);

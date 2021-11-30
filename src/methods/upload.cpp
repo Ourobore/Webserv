@@ -89,7 +89,6 @@ void Webserv::handle_upload(Config& config, Request& request,
     else
     {
         multipart::get_files(config, request, client, pfds);
-        // request["Body"].clear(); // Useful?
 
         // We need to answer the pending POST request
         client.set_date();

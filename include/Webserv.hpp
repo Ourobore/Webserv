@@ -60,7 +60,7 @@ class Webserv
 
     // Request type handling
     void handle_upload(Config& config, Request& request, ClientHandler& client);
-    void handle_delete(Config& config, Request& request, ClientHandler& client);
+    void handle_delete(Request& request, ClientHandler& client);
     void handle_post(Config& config, Request& request, ClientHandler& client);
     void handle_cgi(Config& config, Request& request, ClientHandler& client);
     void chunk_content(std::string& content);
