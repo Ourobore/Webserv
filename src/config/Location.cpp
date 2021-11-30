@@ -39,9 +39,11 @@ std::string Location::search_config(std::string config, std::string key)
         return ("");
     while (config[begin - 2] != ';' && config[begin - 2] != '{' &&
            config[begin - 2] != '}' && begin != std::string::npos)
+    {
         begin = config.find(key, begin + 1);
-    if (begin == std::string::npos)
-        return ("");
+        if (begin == std::string::npos)
+            return ("");
+    }
     if (config[begin + key.size()] != ' ')
         throw std::string("Error: Missing space for " + key);
     end = config.find(";", begin);
