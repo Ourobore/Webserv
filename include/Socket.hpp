@@ -26,7 +26,8 @@ class Socket
     Socket(int domain, int type, int protocol, int port, std::string interface);
     virtual ~Socket();
 
-    static void check_error(int value, const std::string message);
+    static void check_error(int value, const std::string message,
+                            bool quit = true);
     void        reuse_addr();
     static void reuse_addr(int fd);
 
@@ -40,6 +41,9 @@ class Socket
     static std::string
                get_socket_ip_address(struct sockaddr_in const& socket_address);
     static int get_socket_port(struct sockaddr_in const& socket_address);
+
+    // Panic button
+    void clean_all();
 };
 
 #endif

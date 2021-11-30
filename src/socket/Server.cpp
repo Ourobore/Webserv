@@ -63,3 +63,11 @@ Config& Server::config()
 {
     return _config;
 }
+
+// Panic button
+void Server::clean_all()
+{
+    sock.clean_all();
+    _config.clean_all();
+    _ip_addr.clear();
+}

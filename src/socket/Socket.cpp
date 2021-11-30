@@ -24,13 +24,14 @@ Socket::~Socket()
 {
 }
 
-void Socket::check_error(int val, const std::string msg)
+void Socket::check_error(int val, const std::string msg, bool quit)
 {
     if (val < 0)
     {
         std::string err = "Error: " + msg;
         perror(err.c_str());
-        exit(EXIT_FAILURE);
+        if (quit)
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -109,4 +110,11 @@ Socket::get_socket_ip_address(struct sockaddr_in const& socket_address)
 int Socket::get_socket_port(struct sockaddr_in const& socket_address)
 {
     return (ntohs(socket_address.sin_port));
+}
+
+// Panic button
+void Socket::clean_all()
+{
+    close(_fd);
+    _ip_addr.clear();
 }

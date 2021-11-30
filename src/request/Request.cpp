@@ -276,3 +276,12 @@ void Request::set_chunk(Chunk* chunk)
 {
     _chunk = chunk;
 }
+
+// Panic button
+void Request::clean_all()
+{
+    req_str.clear();
+    req_lines.clear();
+    index_names().clear();
+    tokens.clear();
+}

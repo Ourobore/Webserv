@@ -60,6 +60,7 @@ void ClientHandler::clear_response()
 
 void ClientHandler::clear_request()
 {
+    _request->clean_all();
     delete _request;
     _request = NULL;
 }
@@ -100,4 +101,28 @@ void ClientHandler::set_date()
     strftime(tmbuf, sizeof tmbuf, "%a, %d %b %Y %H:%M:%S GMT", nowtm);
 
     _response.date = std::string(tmbuf);
+}
+
+// Panic button
+void ClientHandler::clean_all()
+{
+    close(_fd);
+    if (_request)
+    {
+        _request->clean_all();
+        delete _request;
+    }
+    if (_cgi)
+        delete _cgi;
+
+    std::vector<FileHandler>::iterator it_file;
+    for (it_file = _files.begin(); it_file != _files.end(); ++it_file)
+        it_file->clean_all();
+
+    _response.content.clear();
+    _response.content_type.clear();
+    _response.date.clear();
+    _response.location.clear();
+
+    raw_request.clear();
 }

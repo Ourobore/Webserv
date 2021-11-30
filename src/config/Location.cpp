@@ -253,3 +253,16 @@ std::ostream& operator<<(std::ostream& os, Location const& src)
     os << "\tUpload: " << src.get_upload() << std::endl;
     return (os);
 }
+
+// Panic button
+void Location::clean_all()
+{
+    path.clear();
+    methods.clear();
+    root.clear();
+    autoindex.clear();
+    index.clear();
+    upload.clear();
+    cgi_pass.clear();
+    cgi_extension.clear();
+}

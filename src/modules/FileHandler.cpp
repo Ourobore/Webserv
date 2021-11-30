@@ -128,3 +128,11 @@ void FileHandler::set_status(int status)
 {
     _status = status;
 }
+
+// Panic button
+void FileHandler::clean_all()
+{
+    if (_stream)
+        fclose(_stream);
+    _string_output.clear();
+}

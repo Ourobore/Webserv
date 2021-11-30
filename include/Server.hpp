@@ -34,6 +34,9 @@ class Server
     int                 port() const;
     int                 sockfd() const;
     Config&             config();
+
+    // Panic button
+    void clean_all();
 };
 
 #endif

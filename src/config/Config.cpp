@@ -104,7 +104,7 @@ void Config::set_host_port(std::string line)
 {
     size_t            space_pos;
     size_t            split_pos;
-    int               tmp_port;
+    int               tmp_port = 0;
     std::stringstream ss;
 
     if (line == "")
@@ -360,4 +360,20 @@ void Config::set_mimetypes(std::map<std::string, std::string> mimetypes)
 std::map<std::string, std::string> Config::get_mimetypes() const
 {
     return _mimetypes;
+}
+
+// Panic button
+void Config::clean_all()
+{
+    host.clear();
+    port.clear();
+    server_names.clear();
+    error_pages.clear();
+    root.clear();
+    index.clear();
+    _mimetypes.clear();
+
+    std::vector<Location>::iterator it_loc;
+    for (it_loc = location.begin(); it_loc != location.end(); ++it_loc)
+        it_loc->clean_all();
 }
