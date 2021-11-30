@@ -50,4 +50,6 @@ class Request
     void clean_all();
 };
 
+std::ostream& operator<<(std::ostream& os, Request const& request);
+
 #endif

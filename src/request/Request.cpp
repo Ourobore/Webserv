@@ -285,3 +285,25 @@ void Request::clean_all()
     index_names().clear();
     tokens.clear();
 }
+
+std::ostream& operator<<(std::ostream& os, Request const& request)
+{
+    std::map<std::string, std::string>::const_iterator it;
+    std::map<std::string, std::string>::const_iterator body;
+
+    for (it = request.tokens.begin(); it != request.tokens.end(); ++it)
+    {
+        if (it->first != "Body")
+            os << it->first << ": " << it->second << std::endl;
+        else
+            body = it;
+    }
+    std::cout << std::endl;
+
+    if (body->second.length() > 5000)
+        os << "Error: Body is too large to print.";
+    else
+        os << body->second;
+
+    return (os);
+}
