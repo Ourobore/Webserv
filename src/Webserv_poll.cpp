@@ -47,7 +47,9 @@ void Webserv::recv_chunk(ClientHandler& client, int client_index)
     char chunk[READ_SIZE + 1] = {0};
 
     recv_ret = recv(pfds[client_index].fd, chunk, READ_SIZE, 0);
-    if ((recv_ret == 0 && client.raw_request.length() == 0) || recv_ret == -1)
+    if ((recv_ret == 0 &&
+         (client.raw_request.length() == 0 && !client.request())) ||
+        recv_ret == -1)
         close_connection(recv_ret, client_index);
     else
     {

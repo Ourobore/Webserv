@@ -29,7 +29,6 @@ class Request
                             Config&                   server_config);
     void parse_uri(Config& server_config);
     void parse_headers(std::vector<std::string>& req_lines);
-    void parse_body(std::vector<std::string>& req_lines);
     void resolve_index();
 
   public:
