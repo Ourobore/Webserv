@@ -29,6 +29,8 @@ const int READ_SIZE = 65535; // 2^16 - 1
 const int MAX_SEND = 20000000;
 const int POLL_DELAY = 100;
 
+// clang-format off
+
 class Webserv
 {
   private:
@@ -42,7 +44,7 @@ class Webserv
 
     bool is_server_socket(int socket_fd);
     void accept_connection(int server_fd);
-    void close_connection(int bytes_received, int client_index);
+    void close_connection(int bytes_received, int client_index, std::string io = "recv");
     void recv_chunk(ClientHandler& client, int client_index);
     void parse_chunk(ClientHandler& client, char* raw_chunk, int recv_ret);
     bool request_ready(ClientHandler& client, Request& request);
@@ -52,10 +54,8 @@ class Webserv
     void request_handler(ClientHandler& client, Config& server_config);
     void response_handler(ClientHandler& client, int client_index);
     void respond(Request& req, ClientHandler::Response& res);
-    void wrapper_open_file(ClientHandler& client, Config& config,
-                           Request& request);
-    void wrapper_open_dir(ClientHandler& client, Config& config,
-                          Request& request);
+    void wrapper_open_file(ClientHandler& client, Config& config, Request& request);
+    void wrapper_open_dir(ClientHandler& client, Config& config, Request& request);
     void wrapper_open_error(ClientHandler& client, Config& config, int error);
 
     // Request type handling
@@ -90,6 +90,8 @@ class Webserv
     // Panic button
     void clean_all();
 };
+
+// clang-format off
 
 void catch_signal(int signal);
 

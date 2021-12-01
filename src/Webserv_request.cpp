@@ -143,25 +143,29 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     }
 
     // Send the response in one time or in multiple chunks
+    int                      bytes_sent;
     ClientHandler::Response& response = client.response();
     if (response.chunked)
     {
         std::string chunk = response.content.substr(0, MAX_SEND);
-        send(client.fd(), chunk.c_str(), chunk.length(), 0);
-        size_t real_length = (response.content.length() < MAX_SEND)
-                                 ? response.content.length()
-                                 : MAX_SEND;
-        response.content = response.content.substr(real_length);
+        bytes_sent = send(client.fd(), chunk.c_str(), chunk.length(), 0);
+        if (bytes_sent < 0)
+            close_connection(bytes_sent, get_poll_index(client.fd()), "send");
+        else
+            response.content = response.content.substr(bytes_sent);
     }
     else
     {
-        send(client.fd(), response.content.c_str(), response.content.length(),
-             0);
-        response.content = response.content.substr(response.content.length());
+        bytes_sent = send(client.fd(), response.content.c_str(),
+                          response.content.length(), 0);
+        if (bytes_sent < 0)
+            close_connection(bytes_sent, get_poll_index(client.fd()), "send");
+        else
+            response.content = response.content.substr(bytes_sent);
     }
 
     // When all is send, clear response
-    if (response.content.empty())
+    if (bytes_sent != -1 && response.content.empty())
     {
         client.clear_response();
         pfds[client_index].events = POLLIN;
