@@ -4,7 +4,7 @@ SERVER		= server
 
 # Compilation parameters
 CXX			= clang++
-CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g -fstandalone-debug
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3 -fstandalone-debug
 INC			= -Iinclude/
 
 # Source files
@@ -13,6 +13,7 @@ MAIN 		=	main.cpp
 SRC			=	Webserv_connection.cpp \
 				Webserv_request.cpp \
 				Webserv_poll.cpp \
+				Webserv_file.cpp \
 				socket/Socket.cpp \
 				socket/Server.cpp \
 				config/Config.cpp \

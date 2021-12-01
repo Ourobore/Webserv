@@ -116,6 +116,9 @@ std::string generate::status_message(int status_code)
         case 413: 
             message = "Payload Too Large";
             break;
+        case 500:
+            message = "Internal Server Error";
+            break;
     }
     return (message);
 }

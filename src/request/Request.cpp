@@ -12,10 +12,7 @@ Request::Request(std::string& bytes, Config& server_config)
     if (!req_lines.empty())
     {
         if (!parse_first_header(req_lines, server_config))
-        {
-            parse_body(req_lines); // Need error managment, not needed anymore
             return;
-        }
         else
         {
             req_lines.erase(req_lines.begin());
@@ -79,21 +76,6 @@ void Request::parse_headers(std::vector<std::string>& req_lines)
         }
     }
     req_lines.erase(req_lines.begin(), it);
-}
-
-void Request::parse_body(std::vector<std::string>& req_lines)
-{
-    std::string                        content;
-    std::vector<std::string>::iterator it;
-    for (it = req_lines.begin(); it != req_lines.end(); ++it)
-    {
-        content.append((*it).c_str(), (*it).length());
-        // Body needs the \n, or the content will be on one line
-        if (it + 1 != req_lines.end())
-            content.append("\n");
-    }
-
-    tokens["Body"] = content;
 }
 
 // Split the request line by line at '\n'

@@ -36,6 +36,7 @@ class FileHandler
     // Reading
     std::string read_all(); // Throws
     int         read_all(std::string& string_buffer);
+    bool        read_chunk();
 
     // Accessors
     FILE*       stream();

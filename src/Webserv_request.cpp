@@ -104,20 +104,23 @@ void Webserv::wrapper_open_dir(ClientHandler& client, Config& config,
 void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
                                  int error)
 {
-    generate::response(client, error);
     FileHandler error_page = ft::open_file_stream(
         config.get_error_pages()[ft::to_string(error)], config);
 
     // If error file exists
-    if (error_page.stream())
-        client.response().content = error_page.string_output();
+    if (error_page.stream() && error_page.status() == 200)
+    {
+        struct pollfd pfd = {error_page.fd(), POLLIN, 0};
+        client.files().push_back(error_page);
+        pfds.push_back(pfd);
+    }
+    else
+    {
+        generate::response(client, error);
 
-    // If Internal Server Error
-    if (error_page.status() == 500)
-        client.response().code = error_page.status();
-
-    // Tell when client is ready to be written in
-    pfds[get_poll_index(client.fd())].events = POLLOUT;
+        // Tell when client is ready to be written in
+        pfds[get_poll_index(client.fd())].events = POLLOUT;
+    }
 }
 
 void Webserv::handle_cgi(Config& config, Request& request,

@@ -98,6 +98,23 @@ int FileHandler::read_all(std::string& string_buffer)
     return (1);
 }
 
+bool FileHandler::read_chunk()
+{
+    size_t nb_elem_read = 0;
+    char   buffer[BUF_SIZE + 1];
+
+    nb_elem_read = fread(buffer, sizeof(char), BUF_SIZE, _stream);
+    if (ferror(_stream))
+        throw FileHandler::ReadError();
+
+    _string_output.append(buffer, nb_elem_read);
+
+    if (feof(_stream))
+        return (true);
+    else
+        return (false);
+}
+
 // Accessors
 FILE* FileHandler::stream()
 {
