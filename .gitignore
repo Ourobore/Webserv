@@ -9,3 +9,4 @@ server
 client
 .vscode-ctags
 .DS_Store
+.nfs*

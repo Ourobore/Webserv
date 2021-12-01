@@ -52,7 +52,7 @@ std::string generate::autoindex(Request& request)
     
     std::string back = request["Request-URI"].substr(0, request["Request-URI"].find_last_of('/'));
     if (back.empty()) {
-        back = request["Request-URI"];
+        back = "/";
     }
     output << "    <pre><a href=" << "\"" << back << "\"" << ">../</a>" << std::endl;
 

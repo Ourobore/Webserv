@@ -263,6 +263,8 @@ void Request::parse_uri(Config& server_config)
             back_pos = tmp.find_last_of("/");
             if (back_pos != std::string::npos)
                 tmp.erase(back_pos);
+            if (tmp.empty())
+                tmp = "/";
         }
         else
             back_pos = std::string::npos;
