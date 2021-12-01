@@ -61,23 +61,45 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
     }
     else if (pfds[file_index].revents & POLLOUT)
     {
-        // If CGI input, write body for POST
-        if (is_cgi_input(client, file->fd()))
-        {
-            write(file->fd(), client.request()->tokens["Body"].c_str(),
-                  client.request()->tokens["Body"].length());
-            close(file->fd());
-            client.cgi()->launch_cgi();
-        }
-        // Else write file content from upload
-        else
-            write(file->fd(), file->string_output().c_str(),
-                  file->string_output().length());
+        // If CGI input, write body in input pipe for POST
+        if (file->string_output().empty() && is_cgi_input(client, file->fd()))
+            file->set_string_output(client.request()->tokens["Body"]);
 
-        // FileHandler cleaning
-        fclose(file->stream());
-        client.files().erase(client.files().begin());
-        pfds.erase(pfds.begin() + file_index);
-        --file_index;
+        // Write data to file / input pipe (CGI)
+        int bytes_written = write(file->fd(), file->string_output().c_str(),
+                                  file->string_output().length());
+
+        // If error, close FileHandler and open a new one with an error 500
+        if (bytes_written < 0)
+        {
+            fclose(file->stream());
+            client.files().erase(client.files().begin());
+            pfds.erase(pfds.begin() + file_index);
+            --file_index;
+            Config& config = get_server_from_client(
+                                 client.fd(), client.request()->tokens["Host"])
+                                 .config();
+            wrapper_open_error(client, config, 500);
+            return;
+        }
+
+        // If everything is written, if CGI launch it, and clean
+        size_t bytes = bytes_written;
+        if (bytes == file->string_output().length())
+        {
+            if (is_cgi_input(client, file->fd()))
+            {
+                close(file->fd());
+                client.cgi()->launch_cgi();
+            }
+
+            // FileHandler cleaning
+            fclose(file->stream());
+            client.files().erase(client.files().begin());
+            pfds.erase(pfds.begin() + file_index);
+            --file_index;
+        }
+        else // Else update what there is left to write
+            file->set_string_output(file->string_output().substr(bytes));
     }
 }
