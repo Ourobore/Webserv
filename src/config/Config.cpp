@@ -44,6 +44,8 @@ std::string Config::search_config(std::string config, std::string key)
            config[begin - 2] != '}' && begin != std::string::npos)
     {
         begin = config.find(key, begin + 1);
+        if (begin == std::string::npos)
+            return ("");
     }
     if (begin == std::string::npos)
         return ("");
