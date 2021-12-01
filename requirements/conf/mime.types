@@ -9,7 +9,7 @@ types {
     application/rss+xml                              rss;
 
     text/mathml                                      mml;
-    text/plain                                       txt;
+    text/plain                                       txt php;
     text/markdown                                    md;
     text/vnd.sun.j2me.app-descriptor                 jad;
     text/vnd.wap.wml                                 wml;
