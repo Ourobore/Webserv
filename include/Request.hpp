@@ -45,6 +45,11 @@ class Request
     std::vector<std::string>& index_names();
     Chunk*                    chunk();
     void                      set_chunk(Chunk* chunk);
+
+    // Panic button
+    void clean_all();
 };
+
+std::ostream& operator<<(std::ostream& os, Request const& request);
 
 #endif

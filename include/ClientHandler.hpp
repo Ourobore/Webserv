@@ -56,6 +56,9 @@ class ClientHandler
 
     // Read string buffer
     std::string raw_request;
+
+    // Panic button
+    void clean_all();
 };
 
 #endif

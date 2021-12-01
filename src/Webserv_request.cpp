@@ -8,7 +8,7 @@
 void Webserv::request_handler(ClientHandler& client, Config& server_config)
 {
     // Print request from client [Debug]
-    // std::cout << client.raw_request << std::endl;
+    // std::cout << *client.request() << std::endl;
 
     client.raw_request.clear();
 
@@ -62,7 +62,7 @@ void Webserv::request_handler(ClientHandler& client, Config& server_config)
         }
     }
     else if (req["Method"] == "DELETE" && authorized_method)
-        handle_delete(server_config, req, client);
+        handle_delete(req, client);
     else // Method Not Allowed
         wrapper_open_error(client, server_config, 405);
 }
@@ -109,7 +109,7 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
         config.get_error_pages()[ft::to_string(error)], config);
 
     // If error file exists
-    if (!error_page.string_output().empty())
+    if (error_page.stream())
         client.response().content = error_page.string_output();
 
     // If Internal Server Error
@@ -131,7 +131,7 @@ void Webserv::handle_cgi(Config& config, Request& request,
 
 void Webserv::response_handler(ClientHandler& client, int client_index)
 {
-    // Send the response in a struct with headers infos
+    // Setup the response in a struct with headers infos
     if (client.request())
     {
         client.set_date();
@@ -139,6 +139,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
         client.clear_request();
     }
 
+    // Send the response in one time or in multiple chunks
     ClientHandler::Response& response = client.response();
     if (response.chunked)
     {
@@ -156,6 +157,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
         response.content = response.content.substr(response.content.length());
     }
 
+    // When all is send, clear response
     if (response.content.empty())
     {
         client.clear_response();
@@ -194,21 +196,24 @@ void Webserv::respond(Request& req, ClientHandler::Response& res)
     if (res.code == 200 || res.code == 301)
         connection = "keep-alive";
 
-    // Response headers for web browser clients
+    // Response headers for clients web browser
     std::stringstream headers_content;
     headers_content << "HTTP/1.1 " << res.code << " " << generate::status_message(res.code) << "\r\n"
                     << "Server: webserv/42\r\n"
                     << "Date: " << res.date << "\r\n";
+
+    // Redirection
     if (res.code == 301)
-    {
         headers_content << "Location: " << res.location << "\r\n"
                         << "Cache-Control: no-store"
                         << "\r\n";
-    }
+
+    // Content-Type
     if (res.content_type.empty())
         res.content_type = "text/html";
     headers_content << "Content-Type: " << res.content_type << "\r\n";
 
+    // Chunked response or Content-Length
     if ((req["Accept-Encoding"].find("chunked") != std::string::npos) || 
         res.content.length() >= MAX_SEND)
     {

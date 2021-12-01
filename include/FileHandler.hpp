@@ -81,6 +81,9 @@ class FileHandler
             return ("Cannot write on directory");
         }
     };
+
+    // Panic button
+    void clean_all();
 };
 
 #endif

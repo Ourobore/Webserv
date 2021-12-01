@@ -10,8 +10,8 @@ Server::Server(Config& config, int port)
       _ip_addr(config.get_host()), _port(port)
 {
     _address = sock.address();
-    _addrlen = sock.addrlen(); // To check later if the size change and must
-                               // do a reevaluation later
+    _addrlen = sock.addrlen();
+
     _sock_fd = sock.fd();
     int yes = 1;
     setsockopt(_sock_fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof yes);
@@ -62,4 +62,12 @@ int Server::sockfd() const
 Config& Server::config()
 {
     return _config;
+}
+
+// Panic button
+void Server::clean_all()
+{
+    sock.clean_all();
+    _config.clean_all();
+    _ip_addr.clear();
 }

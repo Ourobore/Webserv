@@ -2,6 +2,9 @@
 #include "FileHandler.hpp"
 #include "Webserv.hpp"
 
+Webserv* webserv;
+bool     stop_server = false;
+
 Webserv::Webserv()
 {
 }
@@ -10,17 +13,10 @@ Webserv::~Webserv()
 {
 }
 
-void Webserv::catch_signal(int signal)
-{
-    std::cout << std::endl
-              << "Signal called (" << strsignal(signal) << "). Stopping..."
-              << std::endl;
-    exit(1);
-}
-
 void Webserv::start()
 {
-    while (true)
+    webserv = this;
+    while (!stop_server)
     {
         // std::cout << "=== Waiting... ===" << std::endl;
         signal(SIGINT, catch_signal);
@@ -28,10 +24,27 @@ void Webserv::start()
         // Convert vector to simple array
         struct pollfd* pfds_array = &(pfds[0]);
 
+        // Server core: tells us if there is events on watched FD
         int poll_count = poll(pfds_array, pfds.size(), POLL_DELAY);
-        Socket::check_error(poll_count, "poll()");
+        if (poll_count < 0)
+        {
+            Socket::check_error(poll_count, "poll()", false);
+            stop_server = true;
+        }
+
+        // Process events
         poll_events();
     }
+}
+
+void catch_signal(int signal)
+{
+    std::cout << std::endl
+              << "Signal called (" << strsignal(signal) << "). Stopping..."
+              << std::endl;
+
+    webserv->clean_all();
+    stop_server = true;
 }
 
 void Webserv::create_server(Config& config)
@@ -46,6 +59,19 @@ void Webserv::create_server(Config& config)
         std::cout << "Create " << config.get_server_names()[0]
                   << " server at port " << *it << std::endl;
     }
+}
+
+void Webserv::clean_all()
+{
+    std::vector<Server>::iterator it_serv;
+    for (it_serv = servers.begin(); it_serv != servers.end(); ++it_serv)
+        it_serv->clean_all();
+
+    std::vector<ClientHandler>::iterator it_client;
+    for (it_client = clients.begin(); it_client != clients.end(); ++it_client)
+        it_client->clean_all();
+
+    pfds.clear();
 }
 
 void Webserv::accept_connection(int server_fd)
