@@ -168,7 +168,7 @@ int Request::parse_first_header(std::vector<std::string>& req_lines,
 
 void Request::resolve_index()
 {
-    std::string uri_path = ft::strtrim(tokens["URI"], "/");
+    std::string uri_path = tokens["URI"];
 
     for (size_t i = 0; i < _index_names.size(); i++)
     {
@@ -245,8 +245,8 @@ void Request::parse_uri(Config& server_config)
             back_pos = tmp.find_last_of("/");
             if (back_pos != std::string::npos)
                 tmp.erase(back_pos);
-            if (tmp.empty())
-                tmp = "/";
+            // if (tmp.empty())
+            //     tmp = "/";
         }
         else
             back_pos = std::string::npos;

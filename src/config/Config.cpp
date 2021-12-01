@@ -40,6 +40,8 @@ std::string Config::search_config(std::string config, std::string key)
     int                 i = 1;
 
     begin = config.find(key);
+    if (begin == std::string::npos)
+        return ("");
     while (config[begin - 2] != ';' && config[begin - 2] != '{' &&
            config[begin - 2] != '}' && begin != std::string::npos)
     {
@@ -176,6 +178,7 @@ void Config::set_server_name(std::string line)
 {
     size_t space_pos;
 
+    this->server_names.push_back("localhost");
     if (line == "")
         return;
     space_pos = line.find(" ");
