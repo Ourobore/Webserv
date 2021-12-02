@@ -141,20 +141,29 @@ Server& Webserv::get_server_from_client(int          client_fd,
     // For each server, check if server port and server IP address correspond to
     // the ones of the client
     std::vector<Server>::iterator it;
+    std::vector<Server>::iterator found_port_server = servers.end();
     for (it = servers.begin(); it != servers.end(); ++it)
     {
         // If the IP is localhost, we need to chang it to be network 'readable'
         std::string server_address = it->ip_addr();
-        if (server_address == "localhost" || server_address == "0.0.0.0")
+        if (server_address == "localhost")
             server_address = "127.0.0.1";
 
         in_addr_t server_ip_addr = inet_addr(server_address.c_str());
+
+        // Port ok
         if (client_port == it->port() && client_ip_addr == server_ip_addr)
         {
+            if (found_port_server == servers.end())
+                found_port_server = it;
+
             std::string requested_host = get_requested_host(raw_hostname);
+            if (requested_host == "127.0.0.1")
+                requested_host = "localhost";
             std::vector<std::string> server_names =
                 it->config().get_server_names();
 
+            // Check sever_name
             std::vector<std::string>::iterator sn;
             for (sn = server_names.begin(); sn != server_names.end(); ++sn)
             {
@@ -163,6 +172,9 @@ Server& Webserv::get_server_from_client(int          client_fd,
             }
         }
     }
+    if (found_port_server != servers.end())
+        return (*found_port_server);
+
     // Return default_server (first server block) if server_name doesn't match
     // any
     return (servers.front());

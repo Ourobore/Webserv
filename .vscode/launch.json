@@ -6,7 +6,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/server",
-            "args": [],
+            "args": ["requirements/conf/double.conf"],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "clang build",
             "initCommands": [
