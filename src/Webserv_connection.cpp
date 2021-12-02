@@ -109,8 +109,12 @@ void Webserv::close_connection(int bytes, int client_index, std::string io)
     std::cout << "Client disconnected from socket " << pfds[client_index].fd
               << std::endl;
 
+    std::vector<ClientHandler>::iterator it =
+        get_client_ite(pfds[client_index].fd);
+
     close(pfds[client_index].fd);
-    clients.erase(get_client_ite(pfds[client_index].fd));
+    it->clean_all();
+    clients.erase(it);
     pfds.erase(pfds.begin() + client_index);
 }
 
