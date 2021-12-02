@@ -111,6 +111,8 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
     if (error_page.stream() && error_page.status() == 200)
     {
         struct pollfd pfd = {error_page.fd(), POLLIN, 0};
+        if (error_page.status() != error)
+            error_page.set_status(error);
         client.files().push_back(error_page);
         pfds.push_back(pfd);
     }
@@ -172,6 +174,7 @@ void Webserv::response_handler(ClientHandler& client, int client_index)
     }
 }
 
+/* Add chunked response format to Response::content */
 void Webserv::chunk_content(std::string& content)
 {
     std::vector<std::string> chunks;

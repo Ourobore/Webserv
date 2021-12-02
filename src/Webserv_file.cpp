@@ -72,10 +72,15 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
         // If error, close FileHandler and open a new one with an error 500
         if (bytes_written < 0)
         {
-            fclose(file->stream());
-            client.files().erase(client.files().begin());
-            pfds.erase(pfds.begin() + file_index);
-            --file_index;
+            // Erase all client FileHandlers
+            while (client.files().size() != 0)
+            {
+                std::vector<FileHandler>::iterator it = client.files().begin();
+                fclose(it->stream());
+                client.files().erase(it);
+                pfds.erase(pfds.begin() + file_index);
+            }
+            // Return 500 Internal Server Error
             Config& config = get_server_from_client(
                                  client.fd(), client.request()->tokens["Host"])
                                  .config();

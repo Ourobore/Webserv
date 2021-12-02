@@ -4,7 +4,7 @@ SERVER		= server
 
 # Compilation parameters
 CXX			= clang++
-CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3 -fstandalone-debug -fsanitize=address
+CXXFLAGS	= -Wall -Werror -Wextra -std=c++98 -g3 -fstandalone-debug
 INC			= -Iinclude/
 
 # Source files
