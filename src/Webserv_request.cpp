@@ -118,7 +118,8 @@ void Webserv::wrapper_open_error(ClientHandler& client, Config& config,
     }
     else
     {
-        fclose(error_page.stream());
+        if (error_page.stream())
+            fclose(error_page.stream());
         generate::response(client, error);
 
         // Tell when client is ready to be written in
