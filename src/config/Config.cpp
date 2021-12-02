@@ -152,7 +152,7 @@ void Config::set_host_port(std::string line)
                  it != this->port.end(); ++it)
             {
                 if (tmp_port == *it)
-                    return;
+                    throw std::string("Error: Duplicate listen (same port)");
             }
             this->port.push_back(tmp_port);
         }
