@@ -97,15 +97,17 @@ void Webserv::accept_connection(int server_fd)
 void Webserv::close_connection(int bytes, int client_index, std::string io)
 {
     if (bytes == 0)
-        std::cout << "No bytes to read. Client disconnected from socket "
-                  << pfds[client_index].fd << std::endl;
+        std::cout << "No bytes to read. ";
     else
     {
         if (io == "recv")
-            std::cout << "recv() error" << std::endl;
+            std::cout << "recv() error. ";
         else if (io == "send")
-            std::cout << "send() error" << std::endl;
+            std::cout << "send() error. ";
     }
+
+    std::cout << "Client disconnected from socket " << pfds[client_index].fd
+              << std::endl;
 
     close(pfds[client_index].fd);
     clients.erase(get_client_ite(pfds[client_index].fd));
