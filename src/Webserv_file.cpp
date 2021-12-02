@@ -70,6 +70,7 @@ void Webserv::poll_file(ClientHandler& client, size_t& file_index)
                                   file->string_output().length());
 
         // If error, close FileHandler and open a new one with an error 500
+        bytes_written = -1;
         if (bytes_written < 0)
         {
             // Erase all client FileHandlers
