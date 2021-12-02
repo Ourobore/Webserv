@@ -240,7 +240,7 @@ void Request::parse_uri(Config& server_config)
         }
         // Si on a pas trouve de location correspondant, on retente en enlevant
         // une precision
-        if (tokens["URI"].empty())
+        if (tokens["URI"].empty() && _location_index == -1)
         {
             back_pos = tmp.find_last_of("/");
             if (back_pos != std::string::npos)
